@@ -1,22 +1,15 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 27
-
     defaultConfig {
-        applicationId "indi.yume.tools.sample"
         minSdkVersion 19
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
-    }
-    dataBinding {
-        enabled = true
     }
     buildTypes {
         release {
@@ -25,24 +18,21 @@ android {
         }
     }
 
+    android.libraryVariants.all {
+        sourceSets.forEach { it.java.srcDirs += "build/generated/source/kaptKotlin/${it.name}" }
+    }
 }
+
+def library_arrow_version = "0.7.1"
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "com.android.support:support-v4:${library_support_version}"
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "com.android.support:appcompat-v7:${library_support_version}"
     implementation "com.android.support:recyclerview-v7:${library_support_version}"
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-
-    implementation project(":dsladapter")
-    implementation project(":adapterdatabinding")
-
-    kapt "com.android.databinding:compiler:3.1.2"
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'
 
     testImplementation 'junit:junit:4.12'
+    testImplementation "io.arrow-kt:arrow-test:${library_arrow_version}"
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }

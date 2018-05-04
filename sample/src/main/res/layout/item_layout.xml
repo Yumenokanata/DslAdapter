@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable name="model" type="indi.yume.tools.sample.ItemModel"/>
+        <variable name="content" type="String"/>
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/title_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="@{model.title}"
+            tools:text="This is content"
+            android:textStyle="bold"
+            android:textColor="@color/color_bk"
+            android:textSize="17sp"
+            android:padding="5dp"/>
+
+        <TextView
+            android:id="@+id/content_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="@{content}"
+            tools:text="This is content"
+            android:padding="5dp"/>
+
+    </LinearLayout>
+
+</layout>

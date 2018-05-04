@@ -1,1 +1,1 @@
-include ':app', ':sample'
+include ':dsladapter', ':sample', ':adapterdatabinding'
