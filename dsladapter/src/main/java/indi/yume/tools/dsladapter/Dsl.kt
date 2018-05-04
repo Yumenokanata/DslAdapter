@@ -1,11 +1,11 @@
-package indi.yume.tools.dsladapter3
+package indi.yume.tools.dsladapter
 
 import android.support.annotation.LayoutRes
-import indi.yume.tools.dsladapter3.renderers.LayoutRenderer
-import indi.yume.tools.dsladapter3.renderers.ListRenderer
-import indi.yume.tools.dsladapter3.typeclass.BaseRenderer
-import indi.yume.tools.dsladapter3.typeclass.Renderer
-import indi.yume.tools.dsladapter3.typeclass.ViewData
+import indi.yume.tools.dsladapter.renderers.LayoutRenderer
+import indi.yume.tools.dsladapter.renderers.ListRenderer
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
+import indi.yume.tools.dsladapter.typeclass.Renderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 
 fun <T: Any> layout(@LayoutRes layout: Int): LayoutRenderer<T> =
         LayoutRenderer(layout = layout)

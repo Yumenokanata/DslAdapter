@@ -1,4 +1,4 @@
-package indi.yume.tools.dsladapter3
+package indi.yume.tools.dsladapter
 
 import org.junit.Test
 

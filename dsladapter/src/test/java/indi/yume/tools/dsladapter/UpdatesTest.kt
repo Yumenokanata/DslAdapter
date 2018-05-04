@@ -1,15 +1,15 @@
-package indi.yume.tools.dsladapter3
+package indi.yume.tools.dsladapter
 
 import android.support.v7.util.ListUpdateCallback
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.some
-import indi.yume.tools.dsladapter3.datatype.*
-import indi.yume.tools.dsladapter3.renderers.*
-import indi.yume.tools.dsladapter3.typeclass.BaseRenderer
-import indi.yume.tools.dsladapter3.typeclass.Renderer
-import indi.yume.tools.dsladapter3.typeclass.ViewData
+import indi.yume.tools.dsladapter.datatype.*
+import indi.yume.tools.dsladapter.renderers.*
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
+import indi.yume.tools.dsladapter.typeclass.Renderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 import org.junit.Test
 
 class UpdatesTest {

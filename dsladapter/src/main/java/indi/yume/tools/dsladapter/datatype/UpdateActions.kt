@@ -1,4 +1,4 @@
-package indi.yume.tools.dsladapter3.datatype
+package indi.yume.tools.dsladapter.datatype
 
 import android.support.v7.util.AdapterListUpdateCallback
 import android.support.v7.util.ListUpdateCallback

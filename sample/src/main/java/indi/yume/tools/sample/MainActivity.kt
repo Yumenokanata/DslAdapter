@@ -8,11 +8,11 @@ import android.view.View
 import android.widget.TextView
 import indi.yume.tools.adapterdatabinding.DO_NOTHING
 import indi.yume.tools.adapterdatabinding.databindingOf
-import indi.yume.tools.dsladapter3.RendererAdapter
-import indi.yume.tools.dsladapter3.datatype.dispatchUpdatesTo
-import indi.yume.tools.dsladapter3.forList
-import indi.yume.tools.dsladapter3.layout
-import indi.yume.tools.dsladapter3.renderers.LayoutRenderer
+import indi.yume.tools.dsladapter.RendererAdapter
+import indi.yume.tools.dsladapter.datatype.dispatchUpdatesTo
+import indi.yume.tools.dsladapter.forList
+import indi.yume.tools.dsladapter.layout
+import indi.yume.tools.dsladapter.renderers.LayoutRenderer
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer

@@ -1,17 +1,17 @@
-package indi.yume.tools.dsladapter3
+package indi.yume.tools.dsladapter
 
 import android.support.annotation.CheckResult
 import android.support.v7.widget.RecyclerView
 import android.util.SparseIntArray
 import android.view.ViewGroup
-import indi.yume.tools.dsladapter3.datatype.ActionComposite
-import indi.yume.tools.dsladapter3.datatype.UpdateActions
-import indi.yume.tools.dsladapter3.datatype.dispatchUpdatesTo
-import indi.yume.tools.dsladapter3.renderers.filterUselessAction
-import indi.yume.tools.dsladapter3.renderers.getEndsPonints
-import indi.yume.tools.dsladapter3.renderers.resolveIndices
-import indi.yume.tools.dsladapter3.typeclass.Renderer
-import indi.yume.tools.dsladapter3.typeclass.ViewData
+import indi.yume.tools.dsladapter.datatype.ActionComposite
+import indi.yume.tools.dsladapter.datatype.UpdateActions
+import indi.yume.tools.dsladapter.datatype.dispatchUpdatesTo
+import indi.yume.tools.dsladapter.renderers.filterUselessAction
+import indi.yume.tools.dsladapter.renderers.getEndsPonints
+import indi.yume.tools.dsladapter.renderers.resolveIndices
+import indi.yume.tools.dsladapter.typeclass.Renderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 

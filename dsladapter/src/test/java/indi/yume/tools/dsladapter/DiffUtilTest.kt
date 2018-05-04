@@ -1,11 +1,11 @@
-package indi.yume.tools.dsladapter3
+package indi.yume.tools.dsladapter
 
 import android.support.v7.util.DiffUtil
 import android.support.v7.util.ListUpdateCallback
 import android.util.ArrayMap
 import android.util.SparseArray
-import indi.yume.tools.dsladapter3.datatype.ListUpdateActions
-import indi.yume.tools.dsladapter3.datatype.toActions
+import indi.yume.tools.dsladapter.datatype.ListUpdateActions
+import indi.yume.tools.dsladapter.datatype.toActions
 import io.kotlintest.forAll
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.Gen.Companion.choose

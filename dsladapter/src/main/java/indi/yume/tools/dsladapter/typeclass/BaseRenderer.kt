@@ -1,4 +1,4 @@
-package indi.yume.tools.dsladapter3.typeclass
+package indi.yume.tools.dsladapter.typeclass
 
 import android.support.annotation.LayoutRes
 import android.support.v7.widget.RecyclerView

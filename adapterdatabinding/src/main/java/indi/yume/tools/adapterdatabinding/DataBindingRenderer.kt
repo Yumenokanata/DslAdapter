@@ -6,10 +6,10 @@ import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import indi.yume.tools.dsladapter3.datatype.*
-import indi.yume.tools.dsladapter3.renderers.checkListUpdates
-import indi.yume.tools.dsladapter3.typeclass.Renderer
-import indi.yume.tools.dsladapter3.typeclass.ViewData
+import indi.yume.tools.dsladapter.datatype.*
+import indi.yume.tools.dsladapter.renderers.checkListUpdates
+import indi.yume.tools.dsladapter.typeclass.Renderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 
 class DataBindingRenderer<T, I: Any>(
         val layout: (I) -> Int,

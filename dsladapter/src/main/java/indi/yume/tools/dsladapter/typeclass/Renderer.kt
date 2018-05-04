@@ -1,8 +1,8 @@
-package indi.yume.tools.dsladapter3.typeclass
+package indi.yume.tools.dsladapter.typeclass
 
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
-import indi.yume.tools.dsladapter3.datatype.UpdateActions
+import indi.yume.tools.dsladapter.datatype.UpdateActions
 
 interface Renderer<Data, VD: ViewData> {
     fun getData(content: Data): VD

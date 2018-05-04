@@ -1,14 +1,14 @@
-package indi.yume.tools.dsladapter3.renderers
+package indi.yume.tools.dsladapter.renderers
 
 import android.support.annotation.LayoutRes
 import android.support.v7.widget.RecyclerView
 import android.view.View
-import indi.yume.tools.dsladapter3.datatype.OnChanged
-import indi.yume.tools.dsladapter3.datatype.OnInserted
-import indi.yume.tools.dsladapter3.datatype.OnRemoved
-import indi.yume.tools.dsladapter3.datatype.UpdateActions
-import indi.yume.tools.dsladapter3.typeclass.BaseRenderer
-import indi.yume.tools.dsladapter3.typeclass.ViewData
+import indi.yume.tools.dsladapter.datatype.OnChanged
+import indi.yume.tools.dsladapter.datatype.OnInserted
+import indi.yume.tools.dsladapter.datatype.OnRemoved
+import indi.yume.tools.dsladapter.datatype.UpdateActions
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 
 class LayoutRenderer<T : Any>(
         @LayoutRes val layout: Int,

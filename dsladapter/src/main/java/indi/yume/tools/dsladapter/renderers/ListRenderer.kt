@@ -1,10 +1,10 @@
-package indi.yume.tools.dsladapter3.renderers
+package indi.yume.tools.dsladapter.renderers
 
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
-import indi.yume.tools.dsladapter3.datatype.*
-import indi.yume.tools.dsladapter3.typeclass.BaseRenderer
-import indi.yume.tools.dsladapter3.typeclass.ViewData
+import indi.yume.tools.dsladapter.datatype.*
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 
 /**
  * Created by xuemaotang on 2017/11/16.
