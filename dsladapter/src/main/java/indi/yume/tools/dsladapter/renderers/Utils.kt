@@ -11,6 +11,7 @@ import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
 import kotlin.coroutines.experimental.buildSequence
 
+typealias KeyGetter<T> = (T, Int) -> Any?
 
 class Recycler(val f: (RecyclerView.ViewHolder) -> Unit)
 
@@ -62,7 +63,7 @@ fun resolveIndices(position: Int, endPos: IntArray): Pair<Int, Int> {
 }
 
 fun <T, VD: ViewData> checkListUpdates(oldData: List<VD>, newData: List<VD>,
-                                       keyGetter: (VD, Int) -> Any?,
+                                       keyGetter: KeyGetter<VD>,
                                        renderer: Renderer<T, VD>? = null): List<UpdateActions> {
     val mapChanged: ((FakeOnChanged<VD>, List<Int>) -> UpdateActions)? =
             if (renderer == null)

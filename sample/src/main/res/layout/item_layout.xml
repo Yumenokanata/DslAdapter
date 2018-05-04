@@ -3,14 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="indi.yume.tools.sample.ItemModel"/>
+        <import type="kotlin.Unit"/>
+
         <variable name="model" type="indi.yume.tools.sample.ItemModel"/>
         <variable name="content" type="String"/>
+        <variable
+            name="click"
+            type="kotlin.jvm.functions.Function1&lt;ItemModel, Unit>" />
     </data>
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:onClick="@{() -> click.invoke(model)}">
 
         <TextView
             android:id="@+id/title_text_view"

@@ -46,6 +46,8 @@ class LayoutRenderer<T : Any>(
             else
                 emptyList()
     }
+
+    companion object
 }
 
 data class LayoutViewData<T>(override val count: Int, val data: T) : ViewData

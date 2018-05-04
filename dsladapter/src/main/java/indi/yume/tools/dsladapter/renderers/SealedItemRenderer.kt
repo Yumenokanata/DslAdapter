@@ -25,7 +25,7 @@ class SealedItemRenderer<T : Any>(
     override fun bind(data: SealedViewData<T>, index: Int, holder: RecyclerView.ViewHolder): Unit =
             data.item.run {
                 renderer.bind(data.data, index, holder)
-                holder.itemView?.tag = Recycler { recycle(it) }
+                holder.itemView?.tag = Recycler { data.item.renderer.recycle(it) }
             }
 
     override fun recycle(holder: RecyclerView.ViewHolder) {

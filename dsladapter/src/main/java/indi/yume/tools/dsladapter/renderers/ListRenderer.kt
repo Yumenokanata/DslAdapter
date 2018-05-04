@@ -13,7 +13,7 @@ import indi.yume.tools.dsladapter.typeclass.ViewData
 class ListRenderer<T, I, IV : ViewData>(
         val converter: (T) -> List<I>,
         val subs: BaseRenderer<I, IV>,
-        val keyGetter: (IV, Int) -> Any? = { iv, index -> iv }
+        val keyGetter: KeyGetter<IV> = { iv, index -> iv }
 ) : BaseRenderer<T, ListViewData<IV>>() {
 
     override fun getData(content: T): ListViewData<IV> =

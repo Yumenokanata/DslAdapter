@@ -43,6 +43,8 @@ class ConstantItemRenderer<T : Any, I>(
             else -> emptyList()
         }
     }
+
+    companion object
 }
 
 data class ConstantViewData<I>(override val count: Int, val data: I) : ViewData

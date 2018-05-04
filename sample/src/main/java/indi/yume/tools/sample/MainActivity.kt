@@ -5,14 +5,23 @@ import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
+import android.view.ViewDebug
 import android.widget.TextView
-import indi.yume.tools.adapterdatabinding.DO_NOTHING
-import indi.yume.tools.adapterdatabinding.databindingOf
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
+import arrow.core.none
+import indi.yume.tools.adapterdatabinding.*
 import indi.yume.tools.dsladapter.RendererAdapter
 import indi.yume.tools.dsladapter.datatype.dispatchUpdatesTo
 import indi.yume.tools.dsladapter.forList
 import indi.yume.tools.dsladapter.layout
-import indi.yume.tools.dsladapter.renderers.LayoutRenderer
+import indi.yume.tools.dsladapter.renderers.*
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.sample.databinding.ItemLayoutBinding
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
@@ -33,6 +42,24 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = RendererAdapter.repositoryAdapter()
                 .addStaticItem(layout<Unit>(R.layout.list_header))
+                .add({ none<List<ItemModel>>() },
+                        optionRenderer(
+                                noneItemRenderer = LayoutRenderer.dataBindingItem<Unit, ItemLayoutBinding>(
+                                        count = 5,
+                                        layout = R.layout.item_layout,
+                                        bindBinding = { ItemLayoutBinding.bind(it) },
+                                        binder = { bind, item, _ ->
+                                            bind.content = "this is empty item"
+                                        },
+                                        recycleFun = { it.model = null; it.content = null; it.click = null }),
+                                itemRenderer = databindingOf<ItemModel>(R.layout.item_layout)
+                                        .itemId(BR.model)
+                                        .stableIdForItem({ it.id })
+                                        .handler(BR.click, { v: ItemModel ->
+                                            Toast.makeText(this, "Click: ${v.content}", LENGTH_SHORT).show()
+                                        })
+                                        .forList()
+                        ))
                 .add({ provideData(index) },
                         LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
                                 stableIdForItem = { item, index -> item.id },
@@ -41,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                                 .forList({ i, index -> index }))
                 .add({ provideData(index) },
                         databindingOf<ItemModel>(R.layout.item_layout)
-                                .onRecycle(DO_NOTHING)
+                                .onRecycle(CLEAR_ALL)
                                 .itemId(BR.model)
                                 .itemId(BR.content, { m -> m.content + "xxxx" })
                                 .stableIdForItem { it.id }
@@ -77,3 +104,12 @@ class MainActivity : AppCompatActivity() {
                 .subscribeOn(Schedulers.io())
     }
 }
+
+
+fun <T, NVD : ViewData, SVD : ViewData> optionRenderer(noneItemRenderer: BaseRenderer<Unit, NVD>,
+                                                       itemRenderer: BaseRenderer<T, SVD>): SealedItemRenderer<Option<T>> =
+        SealedItemRenderer<Option<T>>(listOf(
+                item({ it is None }, { Unit }, noneItemRenderer),
+
+                item({ it is Some }, { it.orNull()!! }, itemRenderer))
+        )

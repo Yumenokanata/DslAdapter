@@ -4,12 +4,10 @@ import android.databinding.DataBindingUtil
 import android.databinding.ViewDataBinding
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import indi.yume.tools.dsladapter.datatype.*
-import indi.yume.tools.dsladapter.renderers.checkListUpdates
-import indi.yume.tools.dsladapter.typeclass.Renderer
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import java.util.*
 
 class DataBindingRenderer<T, I: Any>(
         val layout: (I) -> Int,
@@ -20,32 +18,32 @@ class DataBindingRenderer<T, I: Any>(
         val stableIdForItem: (I) -> Long,
         val collectionId: Int = BR_NO_ID,
         val keyGetter: (I, Int) -> Any? = { i, index -> i }
-): Renderer<T, DataBindingViewData<I>> {
+): BaseRenderer<T, DataBindingViewData<I>>() {
     override fun getData(content: T): DataBindingViewData<I> =
             DataBindingViewData(converte(content))
 
     override fun getItemId(data: DataBindingViewData<I>, index: Int): Long =
             stableIdForItem(data.data[index])
 
-    override fun getItemViewType(data: DataBindingViewData<I>, position: Int): Int =
+    override fun getLayoutResId(data: DataBindingViewData<I>, position: Int): Int =
             layout(data.data[position])
-
-    override fun onCreateViewHolder(parent: ViewGroup, layoutResourceId: Int): RecyclerView.ViewHolder =
-            object : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(layoutResourceId, parent, false)) {
-
-            }
 
     override fun bind(data: DataBindingViewData<I>, index: Int, holder: RecyclerView.ViewHolder) {
         val item = data.data[index]
         val view = holder.itemView
         val viewDataBinding = DataBindingUtil.bind<ViewDataBinding>(view)!!
+
+        val idList = lazy { LinkedList<Int>() }
         for ((idGet, setter) in itemIds) {
             val itemVariable = idGet(item)
             if (itemVariable != BR_NO_ID) {
                 viewDataBinding.setVariable(itemVariable, setter(item))
-                view.setTag(R.id.avocado__adapterdatabinding__item_id, itemVariable)
+                idList.value.add(itemVariable)
             }
         }
+        if (idList.isInitialized())
+            view.setTag(R.id.avocado__adapterdatabinding__item_id, idList.value)
+
         if (collectionId != BR_NO_ID) {
             viewDataBinding.setVariable(collectionId, data)
             view.setTag(R.id.avocado__adapterdatabinding__collection_id, collectionId)
@@ -63,8 +61,10 @@ class DataBindingRenderer<T, I: Any>(
             if (recycleConfig and CLEAR_ITEM != 0) {
                 val tag = view.getTag(R.id.avocado__adapterdatabinding__item_id)
                 view.setTag(R.id.avocado__adapterdatabinding__item_id, null)
-                if (tag is Int) {
-                    viewDataBinding.setVariable(tag, null)
+                if (tag is List<*>) {
+                    for (id in tag)
+                        if (id is Int)
+                            viewDataBinding.setVariable(id, null)
                 }
             }
             if (recycleConfig and CLEAR_COLLECTION != 0) {

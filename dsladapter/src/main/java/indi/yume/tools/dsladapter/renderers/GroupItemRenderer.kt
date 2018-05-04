@@ -15,8 +15,7 @@ class GroupItemRenderer<T, G, GData: ViewData, I, IData: ViewData>(
         val subsGetter: (T) -> List<I>,
         val group: BaseRenderer<G, GData>,
         val subs: BaseRenderer<I, IData>,
-        val keyGetter: (IData, Int) -> Any? = { i, index -> i },
-        val detectMoves: Boolean = false
+        val keyGetter: KeyGetter<IData> = { i, index -> i }
 ) : BaseRenderer<T, GroupViewData<GData, IData>>() {
 
     override fun getData(content: T): GroupViewData<GData, IData> =
