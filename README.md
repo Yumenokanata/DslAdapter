@@ -1,5 +1,28 @@
 # DslAdapter
+[![](https://jitpack.io/v/Yumenokanata/DslAdapter.svg)](https://jitpack.io/#Yumenokanata/DslAdapter)
+
 A RecyclerView Adapter builder by DSL. Easy to use, and all code written by kotlin.
+
+---
+
+Add this in your root build.gradle at the end of repositories:
+```groovy
+allprojects {
+	repositories {
+        jcenter()
+		maven { url "https://jitpack.io" }
+	}
+}
+```
+
+Step 2. Add the dependency in your module's gradle file
+```groovy
+dependencies {
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:0.8'
+    implementation 'com.github.Yumenokanata.DslAdapter:adapterdatabinding:0.8'
+}
+```
+
 
 ---
 
