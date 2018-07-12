@@ -1,6 +1,7 @@
 package indi.yume.tools.dsladapter
 
 import android.support.annotation.CheckResult
+import android.support.annotation.MainThread
 import android.support.v7.widget.RecyclerView
 import android.util.SparseIntArray
 import android.view.ViewGroup
@@ -74,27 +75,40 @@ class RendererAdapter(builder: Builder) : RecyclerView.Adapter<RecyclerView.View
 
     fun getViewData(): List<ViewData> = synchronized(dataLock) { data }
 
-    fun updateData() {
-        val newData = getCurrentViewData()
-        synchronized(dataLock) {
-            data = newData
-        }
-    }
-
     @CheckResult
-    fun autoUpdateAdapter(): List<UpdateActions> {
+    fun autoUpdateAdapter(): UpdateData {
         val oldData = synchronized(dataLock) { data }
         val newData = getCurrentViewData()
 
+        return UpdateData(
+                oldData = oldData,
+                newData = newData,
+                actions = getUpdates(oldData, newData))
+    }
+
+    @MainThread
+    fun updateData(updates: UpdateData) {
+        val dataHasChanged = synchronized(dataLock) {
+            if (data != updates.oldData) {
+                true
+            } else {
+                data = updates.newData
+                false
+            }
+        }
+
+        if (dataHasChanged)
+            forceUpdateAdapter()
+        else
+            updates.actions.dispatchUpdatesTo(this)
+    }
+
+    @MainThread
+    fun forceUpdateAdapter() {
+        val newData = getCurrentViewData()
         synchronized(dataLock) {
             data = newData
         }
-
-        return getUpdates(oldData, newData)
-    }
-
-    fun forceUpdateAdapter() {
-        updateData()
         notifyDataSetChanged()
     }
 
@@ -180,3 +194,10 @@ class Builder internal constructor() {
 }
 
 data class Repo<T>(val supplier: Supplier<T>, val renderer: Renderer<T, ViewData>, val isStatic: Boolean)
+
+data class UpdateData(val oldData: List<ViewData>,
+                      val newData: List<ViewData>,
+                      val actions: List<UpdateActions>) {
+    fun dispatchUpdatesTo(adapter: RendererAdapter) =
+            adapter.updateData(this)
+}

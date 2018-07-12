@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
             Single.fromCallable { adapter.autoUpdateAdapter() }
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(Consumer { it.dispatchUpdatesTo(adapter) })
+                    .subscribe(Consumer { adapter.updateData(it) })
         })
     }
 

@@ -194,7 +194,7 @@ If your data has chenged, you want to update Adapter, You have two ways to updat
 adapter.forceUpdateAdapter()
 ```
 
-2. **RendererAdapter.autoUpdateAdapter(): List<UpdateActions>**
+2. **RendererAdapter.autoUpdateAdapter(): UpdateData**
   this method will update ViewData, and calculate the difference between old and new data, return Update Actions, and you can dispatch updates to Adapter.
 ```kotlin
 adapter.autoUpdateAdapter()
@@ -206,7 +206,7 @@ adapter.autoUpdateAdapter()
 Single.fromCallable { adapter.autoUpdateAdapter() }
         .subscribeOn(Schedulers.computation())
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(Consumer { it.dispatchUpdatesTo(adapter) })
+        .subscribe(Consumer { adapter.updateData(it) })
 ```
 
 ### Auto Updates
