@@ -32,18 +32,18 @@ class UpdatesTest {
                 )
 
         val renderer = optionRenderer(
-                noneItemRenderer = ConstantItemRenderer<Unit>(count = 3, layout = 1),
+                noneItemRenderer = ConstantItemRenderer(count = 3, layout = 1, data = Unit),
                 itemRenderer = ListRenderer<List<Pair<String, List<String>>>,
                         Pair<String, List<String>>,
-                        GroupViewData<ConstantViewData<String>, ConstantViewData<String>>>(
+                        GroupViewData<LayoutViewData<String>, LayoutViewData<String>>>(
                         { it },
                         GroupItemRenderer(
                                 { it.first },
                                 { it.second },
-                                ConstantItemRenderer<String>(count = 1, layout = 3),
-                                ConstantItemRenderer<String>(count = 2, layout = 4)
+                                LayoutRenderer<String>(count = 1, layout = 3),
+                                LayoutRenderer<String>(count = 2, layout = 4)
                         ),
-                        keyGetter = { it.titleItem.data }
+                        keyGetter = { item, _ -> item.titleItem.data }
                 )
         )
 

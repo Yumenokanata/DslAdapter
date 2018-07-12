@@ -89,10 +89,10 @@ class DataBindingRenderer<T, I: Any>(
             override fun getNewListSize(): Int = newData.data.size
 
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                    keyGetter(oldData.data[oldItemPosition], oldItemPosition) == keyGetter(newData.data[oldItemPosition], newItemPosition)
+                    keyGetter(oldData.data[oldItemPosition], oldItemPosition) == keyGetter(newData.data[newItemPosition], newItemPosition)
 
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                    oldData.data[oldItemPosition] == newData.data[oldItemPosition]
+                    oldData.data[oldItemPosition] == newData.data[newItemPosition]
         }, false).toActionsWithRealIndex(oldData.data, newData.data, null, { 1 })
 
         return realActions
