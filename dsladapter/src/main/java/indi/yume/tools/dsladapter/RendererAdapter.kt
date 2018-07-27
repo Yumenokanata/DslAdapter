@@ -13,6 +13,7 @@ import indi.yume.tools.dsladapter.renderers.getEndsPonints
 import indi.yume.tools.dsladapter.renderers.resolveIndices
 import indi.yume.tools.dsladapter.typeclass.Renderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
@@ -37,7 +38,7 @@ class RendererAdapter(builder: Builder) : RecyclerView.Adapter<RecyclerView.View
      * only the last Position will be saved for same type.
      */
     private val typeToPositionMap = SparseIntArray()
-    private val presenterForViewHolder: MutableMap<RecyclerView.ViewHolder, Repo<Any>> = HashMap()
+    private val presenterForViewHolder: WeakHashMap<RecyclerView.ViewHolder, Repo<Any>> = WeakHashMap()
 
     init {
         repositories = builder.repositories
