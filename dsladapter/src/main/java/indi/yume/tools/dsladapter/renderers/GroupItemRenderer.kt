@@ -77,8 +77,8 @@ class GroupItemRenderer<T, G, GData: ViewData, I, IData: ViewData>(
                     yield(OnChanged(0, 1, null))
                 }
 
-                val realActions: List<UpdateActions> = if(oldData.subEndPoints.last() == oldData.subEndPoints.size
-                        && newData.subEndPoints.last() == newData.subEndPoints.size)
+                val realActions: List<UpdateActions> = if(oldData.subEndPoints.getEndPoint() == oldData.subEndPoints.size
+                        && newData.subEndPoints.getEndPoint() == newData.subEndPoints.size)
                     checkListUpdates(oldData.subsData, newData.subsData, keyGetter, subs)
                 else {
                     val oldSize = oldData.subsData.size
@@ -104,5 +104,5 @@ data class GroupViewData<G: ViewData, I: ViewData>(val titleItem: G,
                                                    val subsData: List<I>): ViewData {
     val subEndPoints: IntArray = subsData.getEndsPonints()
 
-    override val count: Int = subEndPoints.last() + 1
+    override val count: Int = (subEndPoints.lastOrNull() ?: -1) + 1
 }

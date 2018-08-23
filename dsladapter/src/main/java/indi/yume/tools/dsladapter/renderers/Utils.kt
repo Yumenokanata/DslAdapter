@@ -30,6 +30,8 @@ fun <T1, T2, T3, V> zip3(it1: Iterable<T1>, it2: Iterable<T2>, it3: Iterable<T3>
 fun <VD: ViewData> List<VD>.getEndsPonints(): IntArray =
         getEndsPonints { it.count }
 
+fun IntArray.getEndPoint(defaultV: Int = 0): Int = lastOrNull() ?: defaultV
+
 fun <T> List<T>.getEndsPonints(getter: (T) -> Int): IntArray {
     val ends = IntArray(size)
     var lastEndPosition = 0
@@ -42,9 +44,9 @@ fun <T> List<T>.getEndsPonints(getter: (T) -> Int): IntArray {
 }
 
 fun resolveIndices(position: Int, endPos: IntArray): Pair<Int, Int> {
-    if (position < 0 || position >= endPos.last()) {
+    if (position < 0 || position >= endPos.getEndPoint()) {
         throw IndexOutOfBoundsException(
-                "Asked for position $position while count is ${endPos.last()}")
+                "Asked for position $position while count is ${endPos.getEndPoint()}")
     }
 
     var arrayIndex = Arrays.binarySearch(endPos, position)

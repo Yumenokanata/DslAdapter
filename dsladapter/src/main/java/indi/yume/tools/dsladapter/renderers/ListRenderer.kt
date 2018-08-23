@@ -40,8 +40,8 @@ class ListRenderer<T, I, IV : ViewData>(
     }
 
     override fun getUpdates(oldData: ListViewData<IV>, newData: ListViewData<IV>): List<UpdateActions> {
-        val realActions: List<UpdateActions> = if(oldData.endsPoint.last() == oldData.size
-                && newData.endsPoint.last() == newData.size)
+        val realActions: List<UpdateActions> = if(oldData.endsPoint.getEndPoint() == oldData.size
+                && newData.endsPoint.getEndPoint() == newData.size)
             checkListUpdates(oldData, newData, keyGetter, subs)
         else {
             val oldSize = oldData.size
@@ -67,5 +67,5 @@ class ListViewData<T: ViewData>(list: List<T>) : ViewData, List<T> by list {
     val endsPoint: IntArray = list.getEndsPonints()
 
     override val count: Int
-        get() = endsPoint.last()
+        get() = endsPoint.getEndPoint()
 }
