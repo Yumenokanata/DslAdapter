@@ -104,5 +104,5 @@ data class GroupViewData<G: ViewData, I: ViewData>(val titleItem: G,
                                                    val subsData: List<I>): ViewData {
     val subEndPoints: IntArray = subsData.getEndsPonints()
 
-    override val count: Int = (subEndPoints.lastOrNull() ?: -1) + 1
+    override val count: Int = subEndPoints.getEndPoint() + 1
 }
