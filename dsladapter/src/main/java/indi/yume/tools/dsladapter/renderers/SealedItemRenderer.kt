@@ -25,15 +25,11 @@ class SealedItemRenderer<T : Any>(
     override fun bind(data: SealedViewData<T>, index: Int, holder: RecyclerView.ViewHolder): Unit =
             data.item.run {
                 renderer.bind(data.data, index, holder)
-                holder.itemView?.tag = Recycler { data.item.renderer.recycle(it) }
+                holder.bindRecycle(this) { data.item.renderer.recycle(it) }
             }
 
     override fun recycle(holder: RecyclerView.ViewHolder) {
-        val tag = holder.itemView?.tag
-        if(tag is Recycler)
-            tag.f(holder)
-
-        holder.itemView?.tag = null
+        holder.doRecycle(this)
     }
 
     override fun getUpdates(oldData: SealedViewData<T>, newData: SealedViewData<T>): List<UpdateActions> {

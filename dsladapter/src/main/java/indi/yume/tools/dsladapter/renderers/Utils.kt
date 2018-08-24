@@ -13,8 +13,6 @@ import kotlin.coroutines.experimental.buildSequence
 
 typealias KeyGetter<T> = (T, Int) -> Any?
 
-class Recycler(val f: (RecyclerView.ViewHolder) -> Unit)
-
 fun <T1, T2, T3, V> zip3(it1: Iterable<T1>, it2: Iterable<T2>, it3: Iterable<T3>,
                          zipper: (T1, T2, T3) -> V): Sequence<V> =
         buildSequence {

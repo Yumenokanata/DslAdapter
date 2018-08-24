@@ -65,6 +65,9 @@ class DataBindingBuilder<I: Any>(val layout: (I) -> Int) {
     fun forItem(): DataBindingRenderer<I, I> =
             forCollection { Collections.singletonList(it) }
 
+    fun <T: Any> forItem(mapper: (T) -> I): DataBindingRenderer<T, I> =
+            forCollection { Collections.singletonList(mapper(it)) }
+
     fun <TCol> forCollection(converter: (TCol) -> List<I>): DataBindingRenderer<TCol, I> =
             DataBindingRenderer(
                     layout = layout,

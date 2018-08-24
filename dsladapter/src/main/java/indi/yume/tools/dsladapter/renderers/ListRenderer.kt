@@ -32,7 +32,6 @@ class ListRenderer<T, I, IV : ViewData>(
     override fun bind(data: ListViewData<IV>, index: Int, holder: RecyclerView.ViewHolder) {
         val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(index, data.endsPoint)
         subs.bind(data[resolvedRepositoryIndex], resolvedItemIndex, holder)
-        holder.itemView?.tag = Recycler { subs.recycle(it) }
     }
 
     override fun recycle(holder: RecyclerView.ViewHolder) {

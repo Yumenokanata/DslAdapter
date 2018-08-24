@@ -53,22 +53,18 @@ class GroupItemRenderer<T, G, GData: ViewData, I, IData: ViewData>(
         when {
             index == 0 -> {
                 group.bind(data.titleItem, 0, holder)
-                holder.itemView?.tag = Recycler { group.recycle(it) }
+                holder.bindRecycle(this) { group.recycle(it) }
             }
             else -> {
                 val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(index - 1, data.subEndPoints)
                 subs.bind(data.subsData[resolvedRepositoryIndex], resolvedItemIndex, holder)
-                holder.itemView?.tag = Recycler { subs.recycle(it) }
+                holder.bindRecycle(this) { subs.recycle(it) }
             }
         }
     }
 
     override fun recycle(holder: RecyclerView.ViewHolder) {
-        val tag = holder.itemView?.tag
-        if(tag is Recycler)
-            tag.f(holder)
-
-        holder.itemView?.tag = null
+        holder.doRecycle(this)
     }
 
     override fun getUpdates(oldData: GroupViewData<GData, IData>, newData: GroupViewData<GData, IData>): List<UpdateActions> =
