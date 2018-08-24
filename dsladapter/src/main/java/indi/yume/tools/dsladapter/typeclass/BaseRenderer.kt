@@ -29,16 +29,28 @@ abstract class BaseRenderer<T, VD: ViewData> : Renderer<T, VD> {
     companion object {
         private class Recycler(val f: (RecyclerView.ViewHolder) -> Unit)
 
+        private class RecyclerMap(map: Map<Int, Recycler> = emptyMap()): Map<Int, Recycler> by map
+
         fun RecyclerView.ViewHolder.bindRecycle(any: Any, f: (RecyclerView.ViewHolder) -> Unit) {
-            itemView?.setTag(any.hashCode(), Recycler(f))
+            itemView?.apply {
+                val tag = tag
+                if (tag != null && tag is RecyclerMap)
+                    setTag(RecyclerMap(tag + (any.hashCode() to Recycler(f))))
+                else
+                    setTag(RecyclerMap(mapOf(any.hashCode() to Recycler(f))))
+            }
         }
 
         fun RecyclerView.ViewHolder.doRecycle(any: Any) {
             val tag = itemView?.tag
-            if(tag is Recycler)
-                tag.f(this)
-
-            itemView?.tag = null
+            val key = any.hashCode()
+            itemView?.tag = if(tag is RecyclerMap)
+                tag.get(key)?.let {
+                    it.f(this)
+                    RecyclerMap(tag - key)
+                } ?: tag
+            else
+                tag
         }
     }
 }
