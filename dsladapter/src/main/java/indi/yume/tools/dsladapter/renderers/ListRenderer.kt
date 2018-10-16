@@ -39,7 +39,7 @@ class ListRenderer<T, I, IV : ViewData>(
     }
 
     override fun getUpdates(oldData: ListViewData<IV>, newData: ListViewData<IV>): List<UpdateActions> {
-        val realActions: List<UpdateActions> = if(oldData.endsPoint.getEndPoint() == oldData.size
+        val realActions: List<UpdateActions> = if (oldData.endsPoint.getEndPoint() == oldData.size
                 && newData.endsPoint.getEndPoint() == newData.size)
             checkListUpdates(oldData, newData, keyGetter, subs)
         else {
@@ -49,7 +49,7 @@ class ListRenderer<T, I, IV : ViewData>(
             oldData.withIndex().zip(newData)
             { (index, oldItem), newItem ->
                 ActionComposite(
-                        (if(index == 0) 0 else oldData.endsPoint[index - 1]),
+                        (if (index == 0) 0 else oldData.endsPoint[index - 1]),
                         subs.getUpdates(oldItem, newItem))
             } + when {
                 oldSize == newSize -> emptyList()
@@ -62,7 +62,7 @@ class ListRenderer<T, I, IV : ViewData>(
     }
 }
 
-class ListViewData<T: ViewData>(list: List<T>) : ViewData, List<T> by list {
+class ListViewData<T : ViewData>(list: List<T>) : ViewData, List<T> by list {
     val endsPoint: IntArray = list.getEndsPonints()
 
     override val count: Int

@@ -24,39 +24,39 @@ class GroupItemRenderer<T, G, GData: ViewData, I, IData: ViewData>(
 
     override fun getItemId(data: GroupViewData<GData, IData>, index: Int): Long =
         when {
-            index == 0 -> group.getItemId(data.titleItem, 0)
+            index < data.titleSize -> group.getItemId(data.titleItem, index)
             else -> {
-                val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(index - 1, data.subEndPoints)
+                val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(index - data.titleSize, data.subEndPoints)
                 subs.getItemId(data.subsData[resolvedRepositoryIndex], resolvedItemIndex)
             }
         }
 
     override fun getItemViewType(data: GroupViewData<GData, IData>, position: Int): Int =
             when {
-                position == 0 -> group.getItemViewType(data.titleItem, 0)
+                position < data.titleSize -> group.getItemViewType(data.titleItem, position)
                 else -> {
-                    val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(position - 1, data.subEndPoints)
+                    val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(position - data.titleSize, data.subEndPoints)
                     subs.getItemViewType(data.subsData[resolvedRepositoryIndex], resolvedItemIndex)
                 }
             }
 
     override fun getLayoutResId(data: GroupViewData<GData, IData>, position: Int): Int =
             when {
-                position == 0 -> group.getLayoutResId(data.titleItem, 0)
+                position < data.titleSize -> group.getLayoutResId(data.titleItem, position)
                 else -> {
-                    val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(position - 1, data.subEndPoints)
+                    val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(position - data.titleSize, data.subEndPoints)
                     subs.getLayoutResId(data.subsData[resolvedRepositoryIndex], resolvedItemIndex)
                 }
             }
 
     override fun bind(data: GroupViewData<GData, IData>, index: Int, holder: RecyclerView.ViewHolder) {
         when {
-            index == 0 -> {
-                group.bind(data.titleItem, 0, holder)
+            index < data.titleSize -> {
+                group.bind(data.titleItem, index, holder)
                 holder.bindRecycle(this) { group.recycle(it) }
             }
             else -> {
-                val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(index - 1, data.subEndPoints)
+                val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(index - data.titleSize, data.subEndPoints)
                 subs.bind(data.subsData[resolvedRepositoryIndex], resolvedItemIndex, holder)
                 holder.bindRecycle(this) { subs.recycle(it) }
             }
@@ -70,7 +70,12 @@ class GroupItemRenderer<T, G, GData: ViewData, I, IData: ViewData>(
     override fun getUpdates(oldData: GroupViewData<GData, IData>, newData: GroupViewData<GData, IData>): List<UpdateActions> =
             buildSequence {
                 if (oldData.titleItem != newData.titleItem) {
-                    yield(OnChanged(0, 1, null))
+                    if (oldData.titleSize == newData.titleSize) {
+                        yield(OnChanged(0, newData.titleSize, null))
+                    } else {
+                        yield(OnRemoved(0, oldData.titleSize))
+                        yield(OnInserted(0, newData.titleSize))
+                    }
                 }
 
                 val realActions: List<UpdateActions> = if(oldData.subEndPoints.getEndPoint() == oldData.subEndPoints.size
@@ -98,7 +103,9 @@ class GroupItemRenderer<T, G, GData: ViewData, I, IData: ViewData>(
 
 data class GroupViewData<G: ViewData, I: ViewData>(val titleItem: G,
                                                    val subsData: List<I>): ViewData {
+    val titleSize: Int = titleItem.count
+
     val subEndPoints: IntArray = subsData.getEndsPonints()
 
-    override val count: Int = subEndPoints.getEndPoint() + 1
+    override val count: Int = titleSize + subEndPoints.getEndPoint()
 }

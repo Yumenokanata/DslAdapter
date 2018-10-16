@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
 
     <data>
         <import type="indi.yume.tools.sample.ItemModel"/>
@@ -17,7 +19,9 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{() -> click.invoke(model)}">
+        android:paddingLeft="30dp"
+        android:onClick="@{() -> click.invoke(model)}"
+        app:selected="@{true}" >
 
         <TextView
             android:id="@+id/title_text_view"
@@ -27,16 +31,17 @@
             android:text="@{model.title}"
             tools:text="This is content"
             android:textStyle="bold"
-            android:textColor="@color/color_bk"
+            android:textColor="@color/item_text_color"
             android:textSize="17sp"
             android:padding="5dp"/>
 
         <TextView
             android:id="@+id/content_text_view"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:text="@{content}"
             tools:text="This is content"
+            android:textColor="@color/item_text_color"
             android:padding="5dp"/>
 
     </LinearLayout>

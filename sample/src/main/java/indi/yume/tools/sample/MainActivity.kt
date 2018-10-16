@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = RendererAdapter.repositoryAdapter()
                 .addStaticItem(layout<Unit>(R.layout.list_header))
-                .add({ none<List<ItemModel>>() },
+                .add({ none<List<Option<ItemModel>>>() },
                         optionRenderer(
                                 noneItemRenderer = LayoutRenderer.dataBindingItem<Unit, ItemLayoutBinding>(
                                         count = 5,
@@ -52,14 +52,32 @@ class MainActivity : AppCompatActivity() {
                                             bind.content = "this is empty item"
                                         },
                                         recycleFun = { it.model = null; it.content = null; it.click = null }),
-                                itemRenderer = databindingOf<ItemModel>(R.layout.item_layout)
-                                        .itemId(BR.model)
-                                        .stableIdForItem({ it.id })
-                                        .handler(BR.click, { v: ItemModel ->
-                                            Toast.makeText(this, "Click: ${v.content}", LENGTH_SHORT).show()
-                                        })
+                                itemRenderer = LayoutRenderer.dataBindingItem<Option<ItemModel>, ItemLayoutBinding>(
+                                        count = 5,
+                                        layout = R.layout.item_layout,
+                                        bindBinding = { ItemLayoutBinding.bind(it) },
+                                        binder = { bind, item, _ ->
+                                            bind.content = "this is empty item"
+                                        },
+                                        recycleFun = { it.model = null; it.content = null; it.click = null })
                                         .forList()
                         ))
+                .add({ provideData(index) },
+                        ComposeRenderer.startBuild {
+                            plus({ it },
+                                    LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
+                                            stableIdForItem = { item, index -> item.id },
+                                            binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = itemModel.title },
+                                            recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
+                                            .forList({ i, index -> index }))
+                            plus(databindingOf<ItemModel>(R.layout.item_layout)
+                                            .onRecycle(CLEAR_ALL)
+                                            .itemId(BR.model)
+                                            .itemId(BR.content, { m -> m.content + "xxxx" })
+                                            .stableIdForItem { it.id }
+                                            .checkKey { i, index -> index }
+                                            .forList())
+                        })
                 .add({ provideData(index) },
                         LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
                                 stableIdForItem = { item, index -> item.id },
@@ -67,19 +85,25 @@ class MainActivity : AppCompatActivity() {
                                 recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
                                 .forList({ i, index -> index }))
                 .add({ provideData(index) },
-                        databindingOf<ItemModel>(R.layout.item_layout)
-                                .onRecycle(CLEAR_ALL)
-                                .itemId(BR.model)
-                                .itemId(BR.content, { m -> m.content + "xxxx" })
-                                .stableIdForItem { it.id }
-                                .checkKey { i, index -> index }
-                                .forList())
+                        GroupItemRenderer(
+                                groupGetter = { "title" },
+                                subsGetter = { it },
+                                group = LayoutRenderer<String>(layout = R.layout.simple_item,
+                                        count = 3,
+                                        binder = { view, title, index -> view.findViewById<TextView>(R.id.simple_text_view).text = title + index },
+                                        recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" }),
+                                subs = databindingOf<ItemModel>(R.layout.item_layout)
+                                        .onRecycle(CLEAR_ALL)
+                                        .itemId(BR.model)
+                                        .itemId(BR.content, { m -> m.content + "xxxx" })
+                                        .stableIdForItem { it.id }
+                                        .checkKey { i, index -> index }
+                                        .forItem()))
                 .addItem(DateFormat.getInstance().format(Date()),
                         databindingOf<String>(R.layout.list_footer)
                                 .itemId(BR.text)
                                 .forItem())
                 .build()
-        adapter.setHasStableIds(true)
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -99,7 +123,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun dataSupplier(pageIndex: Int): Single<List<ItemModel>> {
-        return Single.just(genList(pageIndex * 10, 10))
+        return Single.just(genList(pageIndex * 10, 10 - pageIndex % 10))
                 .delay(300, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.io())
     }
