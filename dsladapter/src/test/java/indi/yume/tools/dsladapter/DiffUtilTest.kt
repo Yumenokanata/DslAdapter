@@ -1,24 +1,14 @@
 package indi.yume.tools.dsladapter
 
-import android.support.v7.util.DiffUtil
-import android.support.v7.util.ListUpdateCallback
-import android.util.ArrayMap
-import android.util.SparseArray
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListUpdateCallback
 import indi.yume.tools.dsladapter.datatype.ListUpdateActions
 import indi.yume.tools.dsladapter.datatype.toActions
-import io.kotlintest.forAll
-import io.kotlintest.properties.Gen
 import io.kotlintest.properties.Gen.Companion.choose
 import io.kotlintest.properties.Gen.Companion.list
-import io.kotlintest.properties.Gen.Companion.string
 import io.kotlintest.properties.forAll
 import io.kotlintest.properties.map
 import org.junit.Test
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.concurrent.timerTask
-import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 
 class DiffUtilTest {

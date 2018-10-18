@@ -1,10 +1,8 @@
 package indi.yume.tools.dsladapter.renderers
 
-import android.support.v7.widget.RecyclerView
-import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.datatype.UpdateActions
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
-import indi.yume.tools.dsladapter.typeclass.Renderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 /**

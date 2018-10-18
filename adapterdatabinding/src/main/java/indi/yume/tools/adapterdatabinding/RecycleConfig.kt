@@ -1,7 +1,6 @@
 package indi.yume.tools.adapterdatabinding
 
-import android.support.annotation.IntDef
-import android.support.v7.widget.RecyclerView
+import androidx.annotation.IntDef
 
 @Retention(AnnotationRetention.SOURCE)
 @IntDef(flag = true, value = [DO_NOTHING, CLEAR_ITEM, CLEAR_COLLECTION, CLEAR_HANDLERS, CLEAR_ALL])
