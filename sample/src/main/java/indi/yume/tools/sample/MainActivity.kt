@@ -1,21 +1,19 @@
 package indi.yume.tools.sample
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.View
-import android.view.ViewDebug
 import android.widget.TextView
-import android.widget.Toast
-import android.widget.Toast.LENGTH_SHORT
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.none
-import indi.yume.tools.adapterdatabinding.*
+import indi.yume.tools.adapterdatabinding.CLEAR_ALL
+import indi.yume.tools.adapterdatabinding.dataBindingItem
+import indi.yume.tools.adapterdatabinding.databindingOf
 import indi.yume.tools.dsladapter.RendererAdapter
-import indi.yume.tools.dsladapter.datatype.dispatchUpdatesTo
 import indi.yume.tools.dsladapter.forList
 import indi.yume.tools.dsladapter.layout
 import indi.yume.tools.dsladapter.renderers.*

@@ -1,6 +1,6 @@
 package indi.yume.tools.dsladapter.renderers
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.datatype.OnInserted
 import indi.yume.tools.dsladapter.datatype.OnRemoved
 import indi.yume.tools.dsladapter.datatype.UpdateActions

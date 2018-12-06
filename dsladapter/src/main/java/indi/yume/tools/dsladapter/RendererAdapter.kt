@@ -1,10 +1,10 @@
 package indi.yume.tools.dsladapter
 
-import android.support.annotation.CheckResult
-import android.support.annotation.MainThread
-import android.support.v7.widget.RecyclerView
 import android.util.SparseIntArray
 import android.view.ViewGroup
+import androidx.annotation.CheckResult
+import androidx.annotation.MainThread
+import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.datatype.ActionComposite
 import indi.yume.tools.dsladapter.datatype.UpdateActions
 import indi.yume.tools.dsladapter.datatype.dispatchUpdatesTo
@@ -15,7 +15,6 @@ import indi.yume.tools.dsladapter.typeclass.Renderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 typealias Supplier<T> = () -> T
 

@@ -1,8 +1,8 @@
 package indi.yume.tools.dsladapter.datatype
 
-import android.support.v7.util.AdapterListUpdateCallback
-import android.support.v7.util.ListUpdateCallback
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.AdapterListUpdateCallback
+import androidx.recyclerview.widget.ListUpdateCallback
+import androidx.recyclerview.widget.RecyclerView
 
 
 sealed class UpdateActions

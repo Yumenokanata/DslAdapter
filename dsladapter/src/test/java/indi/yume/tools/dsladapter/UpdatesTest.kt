@@ -1,6 +1,6 @@
 package indi.yume.tools.dsladapter
 
-import android.support.v7.util.ListUpdateCallback
+import androidx.recyclerview.widget.ListUpdateCallback
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some

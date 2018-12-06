@@ -1,7 +1,7 @@
 package indi.yume.tools.dsladapter.datatype
 
-import android.support.v7.util.DiffUtil
-import android.support.v7.util.ListUpdateCallback
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListUpdateCallback
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
 import kotlin.collections.ArrayList

@@ -1,10 +1,11 @@
 package indi.yume.tools.adapterdatabinding
 
-import android.databinding.DataBindingUtil
-import android.databinding.ViewDataBinding
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
-import indi.yume.tools.dsladapter.datatype.*
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import indi.yume.tools.dsladapter.datatype.UpdateActions
+import indi.yume.tools.dsladapter.datatype.toActionsWithRealIndex
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
