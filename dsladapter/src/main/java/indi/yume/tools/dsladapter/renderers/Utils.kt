@@ -2,10 +2,9 @@ package indi.yume.tools.dsladapter.renderers
 
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
+import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.datatype.ActionComposite
-import indi.yume.tools.dsladapter.datatype.FakeOnChanged
 import indi.yume.tools.dsladapter.datatype.UpdateActions
-import indi.yume.tools.dsladapter.datatype.toActionsWithRealIndex
 import indi.yume.tools.dsladapter.typeclass.Renderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
@@ -25,10 +24,16 @@ fun <T1, T2, T3, V> zip3(it1: Iterable<T1>, it2: Iterable<T2>, it3: Iterable<T3>
             }
         }
 
-fun <VD: ViewData> List<VD>.getEndsPonints(): IntArray =
+fun <VD: ViewData<*>> List<VD>.getEndsPonints(): IntArray =
         getEndsPonints { it.count }
 
 fun IntArray.getEndPoint(defaultV: Int = 0): Int = lastOrNull() ?: defaultV
+
+fun IntArray.getTargetStartPoint(index: Int): Int = when {
+    index < 0 -> 0
+    index > lastIndex -> get(lastIndex)
+    else -> get(index)
+}
 
 fun <T> List<T>.getEndsPonints(getter: (T) -> Int): IntArray {
     val ends = IntArray(size)
@@ -60,48 +65,6 @@ fun resolveIndices(position: Int, endPos: IntArray): Pair<Int, Int> {
     val resolvedItemIndex = if (arrayIndex == 0) position else position - endPos[arrayIndex - 1]
 
     return resolvedRepositoryIndex to resolvedItemIndex
-}
-
-fun <T, VD: ViewData> checkListUpdates(oldData: List<VD>, newData: List<VD>,
-                                       keyGetter: KeyGetter<VD>,
-                                       renderer: Renderer<T, VD>? = null): List<UpdateActions> {
-    val mapChanged: ((FakeOnChanged<VD>, List<Int>) -> UpdateActions)? =
-            if (renderer == null)
-                null
-            else
-                { act, indexData ->
-                    var startIndex = 0
-                    var index = 0
-                    val actionComposite = ArrayList<UpdateActions>()
-
-                    for (i in 0 until (act.pos + act.count)) {
-                        if (i == act.pos)
-                            startIndex = index
-                        if (i >= act.pos) {
-                            val actions = renderer.getUpdates(act.oldItems!![i - act.pos], act.newItems[i - act.pos])
-                            if (actions.isNotEmpty())
-                                actionComposite += ActionComposite(index, actions)
-                        }
-
-                        index += indexData[i]
-                    }
-
-                    ActionComposite(startIndex, actionComposite)
-                }
-
-    val realActions = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-        override fun getOldListSize(): Int = oldData.size
-
-        override fun getNewListSize(): Int = newData.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                keyGetter(oldData[oldItemPosition], oldItemPosition) == keyGetter(newData[newItemPosition], newItemPosition)
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                oldData[oldItemPosition] == newData[newItemPosition]
-    }, false).toActionsWithRealIndex(oldData, newData, mapChanged)
-
-    return realActions
 }
 
 fun List<UpdateActions>.filterUselessAction(): List<UpdateActions> =

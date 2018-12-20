@@ -3,29 +3,32 @@ package indi.yume.tools.dsladapter.renderers
 import android.support.annotation.LayoutRes
 import android.support.v7.widget.RecyclerView
 import android.view.View
+import indi.yume.tools.dsladapter.Action
+import indi.yume.tools.dsladapter.Updatable
+import indi.yume.tools.dsladapter.datatype.OnChanged
 import indi.yume.tools.dsladapter.datatype.OnInserted
 import indi.yume.tools.dsladapter.datatype.OnRemoved
 import indi.yume.tools.dsladapter.datatype.UpdateActions
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
-class ConstantItemRenderer<T : Any, I>(
+class ConstantItemRenderer<T, I>(
         val count: Int = 1,
         @LayoutRes val layout: Int,
         val data: I,
         val binder: (View, I, Int) -> Unit = { _, _, _ -> },
         val recycleFun: (View) -> Unit = { },
         val stableIdForItem: (I, Int) -> Long = { _, _ -> -1L }
-) : BaseRenderer<T, ConstantViewData<I>>() {
-    val viewData = ConstantViewData(count, data)
+) : BaseRenderer<T, ConstantViewData<T, I>, ConstantUpdater<T, I>>() {
+    override val updater: ConstantUpdater<T, I> = ConstantUpdater(this)
 
-    override fun getData(content: T): ConstantViewData<I> = viewData
+    override fun getData(content: T): ConstantViewData<T, I> = ConstantViewData(content, count, data)
 
-    override fun getItemId(data: ConstantViewData<I>, index: Int): Long = stableIdForItem(data.data, index)
+    override fun getItemId(data: ConstantViewData<T, I>, index: Int): Long = stableIdForItem(data.data, index)
 
-    override fun getLayoutResId(data: ConstantViewData<I>, index: Int): Int = layout
+    override fun getLayoutResId(data: ConstantViewData<T, I>, index: Int): Int = layout
 
-    override fun bind(data: ConstantViewData<I>, index: Int, holder: RecyclerView.ViewHolder) {
+    override fun bind(data: ConstantViewData<T, I>, index: Int, holder: RecyclerView.ViewHolder) {
         binder(holder.itemView, data.data, index)
     }
 
@@ -33,18 +36,15 @@ class ConstantItemRenderer<T : Any, I>(
         recycleFun(holder.itemView)
     }
 
-    override fun getUpdates(oldData: ConstantViewData<I>, newData: ConstantViewData<I>): List<UpdateActions> {
-        val oldSize = oldData.count
-        val newSize = newData.count
-
-        return when {
-            oldSize < newSize -> listOf(OnInserted(oldSize - 1, newSize - oldSize))
-            oldSize > newSize -> listOf(OnRemoved(newSize, oldSize - newSize))
-            else -> emptyList()
-        }
-    }
-
     companion object
 }
 
-data class ConstantViewData<I>(override val count: Int, val data: I) : ViewData
+data class ConstantViewData<T, I>(override val originData: T, override val count: Int, val data: I) : ViewData<T>
+
+class ConstantUpdater<T, I>(
+        val renderer: ConstantItemRenderer<T, I>
+) : Updatable<T, ConstantViewData<T, I>> {
+    fun forceUpdate(payload: Any? = null): Action<ConstantViewData<T, I>> = { oldVD ->
+        OnChanged(0, oldVD.count, payload) to oldVD
+    }
+}

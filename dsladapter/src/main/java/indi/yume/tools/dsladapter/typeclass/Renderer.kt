@@ -2,9 +2,12 @@ package indi.yume.tools.dsladapter.typeclass
 
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
+import arrow.Kind
+import arrow.Kind2
+import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.datatype.UpdateActions
 
-interface Renderer<Data, VD: ViewData> {
+interface Renderer<Data, VD : ViewData<Data>, UP : Updatable<Data, VD>> {
     fun getData(content: Data): VD
 
     fun getItemId(data: VD, index: Int): Long = RecyclerView.NO_ID
@@ -17,9 +20,23 @@ interface Renderer<Data, VD: ViewData> {
 
     fun recycle(holder: RecyclerView.ViewHolder)
 
-    fun getUpdates(oldData: VD, newData: VD): List<UpdateActions>
+    val updater: UP
 }
 
-interface ViewData {
+interface ViewData<OriD> : ViewDataOf<OriD> {
     val count: Int
+
+    val originData: OriD
 }
+
+class ForViewData private constructor() { companion object }
+typealias ViewDataOf<T> = Kind<ForViewData, T>
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <T> ViewDataOf<T>.fix(): ViewData<T> =
+        this as ViewData<T>
+
+
+/**
+ * Use for demapper, if you update mapper target is not affect the Original Data
+ */
+fun <T, D> doNotAffectOriData(): (T, D) -> T = { oldOriData, newMapData -> oldOriData }

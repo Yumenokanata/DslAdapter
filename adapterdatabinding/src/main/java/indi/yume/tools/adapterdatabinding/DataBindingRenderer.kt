@@ -2,33 +2,36 @@ package indi.yume.tools.adapterdatabinding
 
 import android.databinding.DataBindingUtil
 import android.databinding.ViewDataBinding
-import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
-import indi.yume.tools.dsladapter.datatype.*
+import indi.yume.tools.dsladapter.Action
+import indi.yume.tools.dsladapter.Updatable
+import indi.yume.tools.dsladapter.UpdatableOf
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updateVD
 import java.util.*
 
-class DataBindingRenderer<T, I: Any>(
+class DataBindingRenderer<T, I>(
         val layout: (I) -> Int,
         val converte: (T) -> List<I>,
         val itemIds: List<Pair<(I) -> Int, (I) -> Any?>>,
         val handlers: List<Pair<Int, Any?>>,
         @RecycleConfig val recycleConfig: Int = DO_NOTHING,
         val stableIdForItem: (I) -> Long,
-        val collectionId: Int = BR_NO_ID,
-        val keyGetter: (I, Int) -> Any? = { i, index -> i }
-): BaseRenderer<T, DataBindingViewData<I>>() {
-    override fun getData(content: T): DataBindingViewData<I> =
-            DataBindingViewData(converte(content))
+        val collectionId: Int = BR_NO_ID
+): BaseRenderer<T, DataBindingViewData<T, I>, DataBindingUpdater<T, I>>() {
+    override val updater: DataBindingUpdater<T, I> = DataBindingUpdater(this)
 
-    override fun getItemId(data: DataBindingViewData<I>, index: Int): Long =
+    override fun getData(content: T): DataBindingViewData<T, I> =
+            DataBindingViewData(content, converte(content))
+
+    override fun getItemId(data: DataBindingViewData<T, I>, index: Int): Long =
             stableIdForItem(data.data[index])
 
-    override fun getLayoutResId(data: DataBindingViewData<I>, position: Int): Int =
+    override fun getLayoutResId(data: DataBindingViewData<T, I>, position: Int): Int =
             layout(data.data[position])
 
-    override fun bind(data: DataBindingViewData<I>, index: Int, holder: RecyclerView.ViewHolder) {
+    override fun bind(data: DataBindingViewData<T, I>, index: Int, holder: RecyclerView.ViewHolder) {
         val item = data.data[index]
         val view = holder.itemView
         val viewDataBinding = DataBindingUtil.bind<ViewDataBinding>(view)!!
@@ -82,28 +85,28 @@ class DataBindingRenderer<T, I: Any>(
         }
     }
 
-    override fun getUpdates(oldData: DataBindingViewData<I>, newData: DataBindingViewData<I>): List<UpdateActions> {
-        val realActions = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-            override fun getOldListSize(): Int = oldData.data.size
-
-            override fun getNewListSize(): Int = newData.data.size
-
-            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                    keyGetter(oldData.data[oldItemPosition], oldItemPosition) == keyGetter(newData.data[newItemPosition], newItemPosition)
-
-            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                    oldData.data[oldItemPosition] == newData.data[newItemPosition]
-        }, false).toActionsWithRealIndex(oldData.data, newData.data, null, { 1 })
-
-        return realActions
-    }
-
     companion object {
         internal const val BR_NO_ID = -1
     }
 }
 
 
-data class DataBindingViewData<T>(val data: List<T>) : ViewData {
+data class DataBindingViewData<T, I>(override val originData: T, val data: List<I>) : ViewData<T> {
     override val count: Int = data.size
 }
+
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <T, I> BaseRenderer<T, DataBindingViewData<T, I>, DataBindingUpdater<T, I>>.fix(): DataBindingRenderer<T, I> =
+        this as DataBindingRenderer<T, I>
+
+class DataBindingUpdater<T, I>(val renderer: DataBindingRenderer<T, I>) : Updatable<T, DataBindingViewData<T, I>> {
+    fun update(newData: T, payload: Any? = null): Action<DataBindingViewData<T, I>> {
+        val newVD = renderer.getData(newData)
+
+        return { oldVD -> updateVD(oldVD, newVD, payload) to newVD }
+    }
+}
+
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <T, I> UpdatableOf<T, DataBindingViewData<T, I>>.value(): DataBindingUpdater<T, I> =
+        this as DataBindingUpdater<T, I>

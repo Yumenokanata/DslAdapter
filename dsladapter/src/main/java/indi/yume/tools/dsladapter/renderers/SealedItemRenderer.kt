@@ -1,19 +1,67 @@
 package indi.yume.tools.dsladapter.renderers
 
 import android.support.v7.widget.RecyclerView
-import indi.yume.tools.dsladapter.datatype.OnInserted
-import indi.yume.tools.dsladapter.datatype.OnRemoved
-import indi.yume.tools.dsladapter.datatype.UpdateActions
+import arrow.Kind
+import arrow.Kind2
+import indi.yume.tools.dsladapter.*
+import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 import kotlin.reflect.KClass
 
-class SealedItemRenderer<T : Any>(
-        val sealedList: List<SealedItem<T>>
-) : BaseRenderer<T, SealedViewData<T>>() {
+/**
+ *
+ * fun test() {
+ *     val renderer: SealedItemRenderer<List<String>, HConsK<Kind<ForSealedItem, List<String>>, Pair<Int, LayoutRenderer<Int>>, HConsK<Kind<ForSealedItem, List<String>>, Pair<String, LayoutRenderer<String>>, HNilK<Kind<ForSealedItem, List<String>>>>>> =
+ *             SealedItemRenderer(hlistKOf(
+ *                     SealedItem<List<String>, String, LayoutViewData<String>, LayoutUpdater<String>, LayoutRenderer<String>>(
+ *                             checker = { it.size == 1 },
+ *                             mapper = { it.first() },
+ *                             renderer = LayoutRenderer(R.layout.abc_action_menu_item_layout)
+ *                     ),
+ *                     SealedItem<List<String>, Int, LayoutViewData<Int>, LayoutUpdater<Int>, LayoutRenderer<Int>>(
+ *                             checker = { it.size == 2 },
+ *                             mapper = { it.first().length },
+ *                             renderer = LayoutRenderer(R.layout.abc_action_menu_item_layout)
+ *                     )
+ *             ))
+ *
+ *     val renderer1 =
+ *             SealedItemRenderer(hlistKOf(
+ *                     item(type = type<List<String>>(),
+ *                             checker = { it.size == 1 },
+ *                             mapper = { it.first() },
+ *                             renderer = LayoutRenderer<String>(R.layout.abc_action_menu_item_layout)
+ *                     ),
+ *                     item(
+ *                             checker = { it.size == 2 },
+ *                             mapper = { it.first().length },
+ *                             renderer = LayoutRenderer<Int>(R.layout.abc_action_menu_item_layout)
+ *                     ),
+ *                     item(
+ *                             checker = { it.size == 2 },
+ *                             mapper = { it.first().length },
+ *                             renderer = LayoutRenderer<Int>(R.layout.abc_action_menu_item_layout))
+ *             ))
+ *
+ *     val u = renderer.updater
+ *
+ *     u.sealedItem({ tail.head.fix() }) {
+ *         update("ss")
+ *     }
+ * }
+ */
+class SealedItemRenderer<T, L : HListK<Kind<ForSealedItem, T>, L>>(
+        val sealedList: L
+) : BaseRenderer<T, SealedViewData<T>, SealedItemUpdater<T, L>>() {
+    override val updater: SealedItemUpdater<T, L> = SealedItemUpdater(this)
+
     override fun getData(content: T): SealedViewData<T> {
-        val item = sealedList.first { it.checker(content) }
-        return SealedViewData(item.renderer.getData(item.mapper(content)), item)
+        val item = sealedList.find {
+            it.fixAny().checker(content)
+        }!!.fixAny()
+        return SealedViewData<T>(content, item.renderer.getData(item.mapper(content)), item)
     }
 
     override fun getItemId(data: SealedViewData<T>, index: Int): Long =
@@ -31,38 +79,94 @@ class SealedItemRenderer<T : Any>(
     override fun recycle(holder: RecyclerView.ViewHolder) {
         holder.doRecycle(this)
     }
+}
 
-    override fun getUpdates(oldData: SealedViewData<T>, newData: SealedViewData<T>): List<UpdateActions> {
-        return if(oldData.item != newData.item) {
-            listOf(
-                    OnRemoved(0, oldData.count),
-                    OnInserted(0, newData.count)
-            )
-        } else {
-            newData.item.renderer.getUpdates(oldData.data, newData.data)
+
+class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
+        val renderer: SealedItemRenderer<T, L>)
+    : Updatable<T, SealedViewData<T>> {
+    @Suppress("UNCHECKED_CAST")
+    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>
+            sealedItem(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.() -> Action<VD>): Action<SealedViewData<T>> {
+        val sealedItem = renderer.sealedList.f()
+
+        return { oldVD ->
+            if (sealedItem == oldVD.item) {
+                val subAction = sealedItem.renderer.updater.act()
+//                val newData = sealedItem.mapper(oldVD.pData)
+//                val (actions, subVD) = subAction(sealedItem.renderer.getData(newData))
+                val (actions, subVD) = subAction(oldVD.data as VD)
+
+                val newOriData = sealedItem.demapper(oldVD.originData, subVD.originData)
+                val newVD = renderer.getData(newOriData)
+
+                actions to if (newVD.item == sealedItem) {
+                    newVD.copy(data = subVD as ViewData<Any?>)
+                } else newVD
+            } else EmptyAction to oldVD
         }
+    }
+
+    fun update(data: T, payload: Any? = null): Action<SealedViewData<T>> = { oldVD ->
+        val newVD = renderer.getData(data)
+        updateVD(oldVD, newVD, payload) to newVD
     }
 }
 
-operator fun <T> SealedItem<T>.plus(si2: SealedItem<T>) : List<SealedItem<T>> = listOf(this, si2)
 
-fun <T, V, VD : ViewData> item(checker: (T) -> Boolean,
-                               mapper: (T) -> V,
-                               renderer: BaseRenderer<V, VD>): SealedItem<T> =
-        SealedItem(checker, { mapper(it) as Any }, renderer as BaseRenderer<Any, ViewData>)
+operator fun <T, D1, VD1 : ViewData<D1>, UP1 : Updatable<D1, VD1>, BR1 : BaseRenderer<D1, VD1, UP1>, D2, VD2 : ViewData<D2>, UP2 : Updatable<D2, VD2>, BR2 : BaseRenderer<D2, VD2, UP2>>
+        SealedItem<T, D1, VD1, UP1, BR1>.plus(si2: SealedItem<T, D2, VD2, UP2, BR2>)
+        : HConsK<Kind<ForSealedItem, T>, Pair<D1, BR1>, HConsK<Kind<ForSealedItem, T>, Pair<D2, BR2>, HNilK<Kind<ForSealedItem, T>>>> =
+        HListK.cons(this, HListK.cons(si2, HListK.nil<Kind<ForSealedItem, T>>()))
 
-fun <T : Any, K : T, V, VD : ViewData> item(clazz: KClass<K>,
-                                            mapper: (K) -> V,
-                                            renderer: BaseRenderer<V, VD>): SealedItem<T> =
-        SealedItem({ clazz.isInstance(it) }, { mapper(it as K) as Any }, renderer as BaseRenderer<Any, ViewData>)
+fun <T, V, VD : ViewData<V>, UP : Updatable<V, VD>, BR : BaseRenderer<V, VD, UP>>
+        item(type: TypeCheck<T>,
+             checker: (T) -> Boolean,
+             mapper: (T) -> V,
+             demapper: (oldData: T, newMapData: V) -> T = doNotAffectOriData(),
+             renderer: BR)
+        : SealedItem<T, V, VD, UP, BR> =
+        item(checker, mapper, demapper, renderer)
 
-data class SealedItem<T>(
+fun <T, V, VD : ViewData<V>, UP : Updatable<V, VD>, BR : BaseRenderer<V, VD, UP>>
+        item(checker: (T) -> Boolean,
+             mapper: (T) -> V,
+             demapper: (oldData: T, newMapData: V) -> T = doNotAffectOriData(),
+             renderer: BR)
+        : SealedItem<T, V, VD, UP, BR> =
+        SealedItem(checker, mapper, demapper, renderer)
+
+fun <T : Any, K : T, V, VD : ViewData<V>, UP : Updatable<V, VD>, BR : BaseRenderer<V, VD, UP>>
+        item(clazz: KClass<K>,
+             mapper: (K) -> V,
+             demapper: (oldData: T, newMapData: V) -> T = doNotAffectOriData(),
+             renderer: BR)
+        : SealedItem<T, V, VD, UP, BR> =
+        SealedItem({ clazz.isInstance(it) }, { mapper(it as K) }, demapper, renderer)
+
+data class SealedItem<T, D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>(
         val checker: (T) -> Boolean,
-        val mapper: (T) -> Any,
-        val renderer: BaseRenderer<Any, ViewData>
-)
+        val mapper: (T) -> D,
+        val demapper: (oldData: T, newMapData: D) -> T = doNotAffectOriData(),
+        val renderer: BR
+) : SealedItemOf<T, D, BR>
 
-data class SealedViewData<T>(val data: ViewData, val item: SealedItem<T>) : ViewData {
+class ForSealedItem private constructor() {
+    companion object
+}
+typealias SealedItemOf<T, D, BR> = Kind2<ForSealedItem, T, Pair<D, BR>>
+
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <T> Kind<Kind<ForSealedItem, T>, Any?>.fixAny(): SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>, BaseRenderer<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>> =
+        this as SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>, BaseRenderer<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>>
+
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <T, D, VD, UP, BR> SealedItemOf<T, D, BR>.fix(): SealedItem<T, D, VD, UP, BR> where VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP> =
+        this as SealedItem<T, D, VD, UP, BR>
+
+data class SealedViewData<T>(override val originData: T,
+                             val data: ViewData<Any?>,
+                             val item: SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>, BaseRenderer<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>>) : ViewData<T> {
     override val count: Int
         get() = data.count
 }

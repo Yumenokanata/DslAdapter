@@ -10,7 +10,6 @@ class DataBindingBuilder<I: Any>(val layout: (I) -> Int) {
     @RecycleConfig private var recycleConfig: Int = DO_NOTHING
     private var stableIdForItem: (I) -> Long = { RecyclerView.NO_ID }
     private var collectionId: Int = DataBindingRenderer.BR_NO_ID
-    private var keyGetter: (I, Int) -> Any? = { i, index -> i }
 
     fun itemId(itemId: Int): DataBindingBuilder<I> {
         itemIds.add({ _: I -> itemId } to { i: I -> i })
@@ -57,11 +56,6 @@ class DataBindingBuilder<I: Any>(val layout: (I) -> Int) {
         return this
     }
 
-    fun checkKey(keyGetter: (I, Int) -> Any?): DataBindingBuilder<I> {
-        this.keyGetter = keyGetter
-        return this
-    }
-
     fun forItem(): DataBindingRenderer<I, I> =
             forCollection { Collections.singletonList(it) }
 
@@ -76,7 +70,6 @@ class DataBindingBuilder<I: Any>(val layout: (I) -> Int) {
                     recycleConfig = recycleConfig,
                     stableIdForItem = stableIdForItem,
                     collectionId = collectionId,
-                    keyGetter = keyGetter,
                     converte = converter)
 
     fun forList(): DataBindingRenderer<List<I>, I> =

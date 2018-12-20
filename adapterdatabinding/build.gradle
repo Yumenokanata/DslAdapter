@@ -30,11 +30,13 @@ dependencies {
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "com.android.support:appcompat-v7:${library_support_version}"
     implementation "com.android.support:recyclerview-v7:${library_support_version}"
-    compile project(":dsladapter")
+    implementation project(":dsladapter")
+
+    implementation "io.arrow-kt:arrow-annotations:0.8.1"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
 
-//apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

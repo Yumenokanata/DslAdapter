@@ -5,200 +5,143 @@ import android.support.annotation.MainThread
 import android.support.v7.widget.RecyclerView
 import android.util.SparseIntArray
 import android.view.ViewGroup
-import indi.yume.tools.dsladapter.datatype.ActionComposite
-import indi.yume.tools.dsladapter.datatype.UpdateActions
-import indi.yume.tools.dsladapter.datatype.dispatchUpdatesTo
-import indi.yume.tools.dsladapter.renderers.filterUselessAction
-import indi.yume.tools.dsladapter.renderers.getEndsPonints
-import indi.yume.tools.dsladapter.renderers.resolveIndices
-import indi.yume.tools.dsladapter.typeclass.Renderer
-import indi.yume.tools.dsladapter.typeclass.ViewData
+import arrow.Kind
+import indi.yume.tools.dsladapter.datatype.*
+import indi.yume.tools.dsladapter.renderers.*
+import indi.yume.tools.dsladapter.typeclass.*
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
-typealias Supplier<T> = () -> T
 
-class RendererAdapter(builder: Builder) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
+        val initData: T,
+        val renderer: Renderer<T, VD, UP>
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val dataLock = Any()
 
-    private val repositoryCount: Int
-    internal val repositories: List<Repo<Any>>
+    private var adapterViewData: VD = renderer.getData(initData)
 
-    private var data: List<ViewData> = emptyList()
-        set(value) {
-            field = value
-            endPositions = value.getEndsPonints()
-        }
-    private var endPositions: IntArray = intArrayOf()
+    fun getOriData(): T = adapterViewData.originData
 
-    /**
-     * Because the order of function [.getItemViewType] and
-     * [.onCreateViewHolder] calls is uncertain,
-     * only the last Position will be saved for same type.
-     */
-    private val typeToPositionMap = SparseIntArray()
-    private val presenterForViewHolder: WeakHashMap<RecyclerView.ViewHolder, Repo<Any>> = WeakHashMap()
+    fun getViewData(): VD = adapterViewData
 
-    init {
-        repositories = builder.repositories
-        repositoryCount = repositories.size
-
-        data = getCurrentViewData()
-    }
-
-    fun getCurrentViewData(): List<ViewData> =
-            repositories.map {
-                it.renderer.getData(it.supplier())
-            }
-
-    fun getUpdates(oldData: List<ViewData>, newData: List<ViewData>): List<UpdateActions> {
-        val iter1 = repositories.iterator()
-        val iter2 = oldData.iterator()
-        val iter3 = newData.iterator()
-
-        var offset = 0
-        val actionList = ArrayList<UpdateActions>(repositories.size)
-        while (iter1.hasNext() && iter2.hasNext() && iter3.hasNext()) {
-            val repo = iter1.next()
-            val oldItem = iter2.next()
-            val newItem = iter3.next()
-
-            val actions = repo.renderer.getUpdates(oldItem, newItem).filterUselessAction()
-            if (actions.isNotEmpty())
-                actionList += ActionComposite(offset, actions)
-
-            offset += newItem.count
-        }
-
-        return actionList
-    }
-
-    fun getViewData(): List<ViewData> = synchronized(dataLock) { data }
-
-    @CheckResult
-    fun autoUpdateAdapter(): UpdateData {
-        val oldData = synchronized(dataLock) { data }
-        val newData = getCurrentViewData()
-
-        return UpdateData(
-                oldData = oldData,
-                newData = newData,
-                actions = getUpdates(oldData, newData))
+    @MainThread
+    fun setData(newData: T) {
+        adapterViewData = renderer.getData(initData)
+        notifyDataSetChanged()
     }
 
     @MainThread
-    fun updateData(updates: UpdateData) {
+    fun reduceData(f: (T) -> T) {
+        val newData = f(adapterViewData.originData)
+        setData(newData)
+    }
+
+    fun getUpdater(): UP = renderer.updater
+
+    @CheckResult
+    fun update(f: UP.() -> Action<VD>): UpdateData<T, VD> {
+        val data = adapterViewData
+        val (actions, newVD) = getUpdater().f()(data)
+
+        return UpdateData(data, newVD, listOf(actions))
+    }
+
+    fun updateNow(f: UP.() -> Action<VD>) {
+        update(f).dispatchUpdatesTo(this)
+    }
+
+    @MainThread
+    fun updateData(actions: Action<VD>) {
+        val data = adapterViewData
+        val (update, newVD) = actions(data)
+
+        synchronized(dataLock) {
+            adapterViewData = newVD
+        }
+
+        listOf(update).dispatchUpdatesTo(this)
+    }
+
+    @MainThread
+    fun updateData(updates: UpdateData<T, VD>) {
         val dataHasChanged = synchronized(dataLock) {
-            if (data != updates.oldData) {
+            if (adapterViewData != updates.oldData) {
                 true
             } else {
-                data = updates.newData
+                adapterViewData = updates.newData
                 false
             }
         }
 
         if (dataHasChanged)
-            forceUpdateAdapter()
+            notifyDataSetChanged()
         else
             updates.actions.dispatchUpdatesTo(this)
     }
 
-    @MainThread
-    fun forceUpdateAdapter() {
-        val newData = getCurrentViewData()
-        synchronized(dataLock) {
-            data = newData
-        }
-        notifyDataSetChanged()
-    }
+    override fun getItemCount(): Int = adapterViewData.count
 
-    override fun getItemCount(): Int =
-            getViewData().sumBy { it.count }
+    override fun getItemViewType(position: Int): Int =
+            renderer.getItemViewType(adapterViewData, position)
 
-    override fun getItemViewType(position: Int): Int {
-        val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(position, endPositions)
-        val type = repositories[resolvedRepositoryIndex].renderer.getItemViewType(
-                data[resolvedRepositoryIndex], resolvedItemIndex)
-        typeToPositionMap.put(type, position)
-        return type
-    }
-
-    override fun getItemId(position: Int): Long {
-        val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(position, endPositions)
-        val repo = repositories[resolvedRepositoryIndex]
-        return repo.renderer.getItemId(data[resolvedRepositoryIndex], resolvedItemIndex)
-    }
+    override fun getItemId(position: Int): Long =
+            renderer.getItemId(adapterViewData, position)
 
     override fun onCreateViewHolder(parent: ViewGroup,
-                                    viewType: Int): RecyclerView.ViewHolder {
-        val typeLastPosition = typeToPositionMap.get(viewType)
+                                    viewType: Int): RecyclerView.ViewHolder =
+            renderer.onCreateViewHolder(parent, viewType)
 
-        val (resolvedRepositoryIndex, _) = resolveIndices(typeLastPosition, endPositions)
-        return repositories[resolvedRepositoryIndex].renderer.onCreateViewHolder(parent, viewType)
-    }
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val (resolvedRepositoryIndex, resolvedItemIndex) = resolveIndices(position, endPositions)
-        val repo = repositories[resolvedRepositoryIndex]
-        presenterForViewHolder[holder] = repo
-        repo.renderer.bind(data[resolvedRepositoryIndex], resolvedItemIndex, holder)
-    }
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) =
+            renderer.bind(adapterViewData, position, holder)
 
     override fun onFailedToRecycleView(holder: RecyclerView.ViewHolder): Boolean {
-        recycle(holder)
+        renderer.recycle(holder)
         return super.onFailedToRecycleView(holder)
     }
 
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
-        recycle(holder)
-    }
-
-    private fun recycle(holder: RecyclerView.ViewHolder) {
-        val repo = presenterForViewHolder.remove(holder)
-        if (repo != null) {
-            repo.renderer.recycle(holder)
-        }
+        renderer.recycle(holder)
     }
 
     companion object {
-        fun repositoryAdapter(): Builder {
-            return Builder()
-        }
+        fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
+                singleRenderer(initData: T, renderer: BR): RendererAdapter<T, VD, UP> =
+                RendererAdapter(initData, renderer)
+
+        fun <DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : HListK<ForComposeItemData, VDL>>
+                multiple(initData: DL,
+                         f: ComposeBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>>.() -> ComposeBuilder<DL, IL, VDL>)
+                : RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>> =
+                RendererAdapter(initData, ComposeRenderer.startBuild.f().build())
+
+        fun multipleBuild(): AdapterBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
+                AdapterBuilder(HListK.nil(), ComposeRenderer.startBuild)
     }
 }
 
-class Builder internal constructor() {
-    internal val repositories: MutableList<Repo<Any>> = ArrayList()
 
-    fun <T, VD : ViewData> add(supplier: Supplier<T>,
-                               renderer: Renderer<T, VD>): Builder {
-        val untypedRepository = supplier as Supplier<Any>
-        repositories.add(Repo(untypedRepository, renderer as Renderer<Any, ViewData>, false))
-        return this
-    }
-
-    fun <T, VD : ViewData> addItem(item: T,
-                                   renderer: Renderer<T, VD>): Builder {
-        repositories.add(Repo({ item as Any }, renderer as Renderer<Any, ViewData>, true))
-        return this
-    }
-
-    fun <VD : ViewData> addStaticItem(renderer: Renderer<Unit, VD>): Builder {
-        repositories.add(Repo({ Unit }, renderer as Renderer<Any, ViewData>, true))
-        return this
-    }
-
-    fun build(): RendererAdapter {
-        return RendererAdapter(this)
-    }
-}
-
-data class Repo<T>(val supplier: Supplier<T>, val renderer: Renderer<T, ViewData>, val isStatic: Boolean)
-
-data class UpdateData(val oldData: List<ViewData>,
-                      val newData: List<ViewData>,
-                      val actions: List<UpdateActions>) {
-    fun dispatchUpdatesTo(adapter: RendererAdapter) =
+data class UpdateData<T, VD : ViewData<T>>(val oldData: VD,
+                                           val newData: VD,
+                                           val actions: List<UpdateActions>) {
+    fun <UP : Updatable<T, VD>> dispatchUpdatesTo(adapter: RendererAdapter<T, VD, UP>) =
             adapter.updateData(this)
+}
+
+
+class AdapterBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : HListK<ForComposeItemData, VDL>>(
+        val initSumData: DL,
+        val composeBuilder: ComposeBuilder<DL, IL, VDL>
+) {
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
+            add(initData: T, renderer: BR)
+            : AdapterBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+            AdapterBuilder(initSumData.extend(IdT(initData)), composeBuilder.add(renderer))
+
+    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>, BR : BaseRenderer<Unit, VD, UP>>
+            add(renderer: BR)
+            : AdapterBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, BR>, IL>, HConsK<ForComposeItemData, Pair<Unit, BR>, VDL>> =
+            AdapterBuilder(initSumData.extend(IdT(Unit)), composeBuilder.add(renderer))
+
+    fun build(): RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>> =
+            RendererAdapter(initSumData, composeBuilder.build())
 }

@@ -18,10 +18,10 @@ class UpdatesTest {
     fun testUpdate() {
         val oldData: List<Pair<String, List<String>>> =
                 listOf(
-                        "sub1" to listOf("Sub 11", "Sub 12", "Sub 13"),
-                        "sub2" to listOf("Sub 21", "Sub 22", "Sub 23"),
-                        "sub3" to listOf("Sub 31", "Sub 32", "Sub 33"),
-                        "sub4" to listOf("Sub 41", "Sub 42", "Sub 43")
+                        "sub1" to listOf(),
+                        "sub2" to listOf(),
+                        "sub3" to listOf(),
+                        "sub4" to listOf()
                 )
         val newData: List<Pair<String, List<String>>> =
                 listOf(
@@ -37,10 +37,10 @@ class UpdatesTest {
                         Pair<String, List<String>>,
                         GroupViewData<LayoutViewData<String>, LayoutViewData<String>>>(
                         { it },
-                        GroupItemRenderer(
+                        TitleItemRenderer(
                                 { it.first },
                                 { it.second },
-                                LayoutRenderer<String>(count = 1, layout = 3),
+                                LayoutRenderer<String>(count = 3, layout = 3),
                                 LayoutRenderer<String>(count = 2, layout = 4)
                         ),
                         keyGetter = { item, _ -> item.titleItem.data }
@@ -85,10 +85,10 @@ fun <T, VD : ViewData> Renderer<T, VD>.typeList(data: T): List<Int> {
     return (0 until vd.count).map { getItemViewType(vd, it) }
 }
 
-fun List<UpdateActions>.flatten(): List<String> =
+fun List<UpdateDataActions>.flatten(): List<String> =
         flatMap { it.string() }
 
-fun UpdateActions.string(): List<String> =
+fun UpdateDataActions.string(): List<String> =
         when(this) {
             is OnInserted -> listOf("onInserted: position=$pos, count=$count")
             is OnRemoved -> listOf("onRemoved: position=$pos, count=$count")
