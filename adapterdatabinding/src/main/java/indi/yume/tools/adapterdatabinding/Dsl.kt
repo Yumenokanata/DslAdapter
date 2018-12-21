@@ -1,9 +1,9 @@
 package indi.yume.tools.adapterdatabinding
 
-import android.databinding.DataBindingUtil
-import android.databinding.ViewDataBinding
-import android.support.annotation.LayoutRes
 import android.view.View
+import androidx.annotation.LayoutRes
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import indi.yume.tools.dsladapter.renderers.LayoutRenderer
 
 fun <T : Any, DB : ViewDataBinding> LayoutRenderer.Companion.dataBindingItem(

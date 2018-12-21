@@ -1,13 +1,14 @@
 package indi.yume.tools.adapterdatabinding
 
-import android.support.annotation.LayoutRes
-import android.support.v7.widget.RecyclerView
+import androidx.annotation.LayoutRes
+import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 
-class DataBindingBuilder<I: Any>(val layout: (I) -> Int) {
+class DataBindingBuilder<I : Any>(val layout: (I) -> Int) {
     private val itemIds: ArrayList<Pair<(I) -> Int, (I) -> Any?>> = ArrayList()
     private val handlers: ArrayList<Pair<Int, Any?>> = ArrayList()
-    @RecycleConfig private var recycleConfig: Int = DO_NOTHING
+    @RecycleConfig
+    private var recycleConfig: Int = DO_NOTHING
     private var stableIdForItem: (I) -> Long = { RecyclerView.NO_ID }
     private var collectionId: Int = DataBindingRenderer.BR_NO_ID
 
@@ -59,7 +60,7 @@ class DataBindingBuilder<I: Any>(val layout: (I) -> Int) {
     fun forItem(): DataBindingRenderer<I, I> =
             forCollection { Collections.singletonList(it) }
 
-    fun <T: Any> forItem(mapper: (T) -> I): DataBindingRenderer<T, I> =
+    fun <T : Any> forItem(mapper: (T) -> I): DataBindingRenderer<T, I> =
             forCollection { Collections.singletonList(mapper(it)) }
 
     fun <TCol> forCollection(converter: (TCol) -> List<I>): DataBindingRenderer<TCol, I> =
@@ -76,8 +77,8 @@ class DataBindingBuilder<I: Any>(val layout: (I) -> Int) {
             forCollection { it }
 }
 
-fun <I: Any> databindingOf(@LayoutRes layout: Int): DataBindingBuilder<I> =
+fun <I : Any> databindingOf(@LayoutRes layout: Int): DataBindingBuilder<I> =
         DataBindingBuilder { layout }
 
-fun <I: Any> databindingOf(layout: (I) -> Int): DataBindingBuilder<I> =
+fun <I : Any> databindingOf(layout: (I) -> Int): DataBindingBuilder<I> =
         DataBindingBuilder(layout)

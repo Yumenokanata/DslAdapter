@@ -1,11 +1,10 @@
 package indi.yume.tools.dsladapter
 
-import android.support.annotation.LayoutRes
+import androidx.annotation.LayoutRes
 import indi.yume.tools.dsladapter.renderers.KeyGetter
 import indi.yume.tools.dsladapter.renderers.LayoutRenderer
 import indi.yume.tools.dsladapter.renderers.ListRenderer
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
-import indi.yume.tools.dsladapter.typeclass.Renderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 fun <T: Any> layout(@LayoutRes layout: Int): LayoutRenderer<T> =
