@@ -28,6 +28,8 @@ dependencies {
 }
 ```
 
+[Sample](https://github.com/Yumenokanata/DslAdapter/blob/master/sample/src/main/java/indi/yume/tools/sample/MainActivity.kt)
+
 
 ---
 
