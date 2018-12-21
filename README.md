@@ -1,7 +1,7 @@
 # DslAdapter
 [![](https://jitpack.io/v/Yumenokanata/DslAdapter.svg)](https://jitpack.io/#Yumenokanata/DslAdapter)
 
-A RecyclerView Adapter builder by DSL. Easy to use, and all code written by kotlin.
+A RecyclerView Adapter builder by DSL. Easy to use, **strong typing**, and all code written by kotlin.
 
 ---
 
@@ -18,8 +18,9 @@ allprojects {
 Step 2. Add the dependency in your module's gradle file
 ```groovy
 dependencies {
-    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:0.8'
-    implementation 'com.github.Yumenokanata.DslAdapter:adapterdatabinding:0.8'
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:x.y.z'
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-rx2:x.y.z'
+    implementation 'com.github.Yumenokanata.DslAdapter:adapterdatabinding:x.y.z'
 }
 ```
 
@@ -29,9 +30,9 @@ dependencies {
 Now you can simply build a complex RecyclerView structure, just by:
 
 ```kotlin
-val adapter = RendererAdapter.repositoryAdapter()
-        .addStaticItem(layout<Unit>(R.layout.list_header))
-        .add({ none<List<ItemModel>>() },
+val adapter = RendererAdapter.multipleBuild()
+        .add(layout<Unit>(R.layout.list_header))
+        .add(none<List<Option<ItemModel>>>(),
                 optionRenderer(
                         noneItemRenderer = LayoutRenderer.dataBindingItem<Unit, ItemLayoutBinding>(
                                 count = 5,
@@ -41,29 +42,40 @@ val adapter = RendererAdapter.repositoryAdapter()
                                     bind.content = "this is empty item"
                                 },
                                 recycleFun = { it.model = null; it.content = null; it.click = null }),
-                        itemRenderer = databindingOf<ItemModel>(R.layout.item_layout)
-                                .itemId(BR.model)
-                                .stableIdForItem({ it.id })
-                                .handler(BR.click, { v: ItemModel ->
-                                    Toast.makeText(this, "Click: ${v.content}", LENGTH_SHORT).show()
-                                })
+                        itemRenderer = LayoutRenderer.dataBindingItem<Option<ItemModel>, ItemLayoutBinding>(
+                                count = 5,
+                                layout = R.layout.item_layout,
+                                bindBinding = { ItemLayoutBinding.bind(it) },
+                                binder = { bind, item, _ ->
+                                    bind.content = "this is some item"
+                                },
+                                recycleFun = { it.model = null; it.content = null; it.click = null })
                                 .forList()
                 ))
-        .add({ provideData(index) },
-                LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
+        .add(provideData(index).let { HListK.singleId(it).putF(it) },
+                ComposeRenderer.startBuild
+                        .add(LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
+                                stableIdForItem = { item, index -> item.id },
+                                binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = itemModel.title },
+                                recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
+                                .forList({ i, index -> index }))
+                        .add(databindingOf<ItemModel>(R.layout.item_layout)
+                                .onRecycle(CLEAR_ALL)
+                                .itemId(BR.model)
+                                .itemId(BR.content, { m -> m.content + "xxxx" })
+                                .stableIdForItem { it.id }
+                                .forList())
+                        .build())
+        .add(provideData(index),
+                LayoutRenderer<ItemModel>(
+                        count = 2,
+                        layout = R.layout.simple_item,
                         stableIdForItem = { item, index -> item.id },
                         binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = itemModel.title },
                         recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
                         .forList({ i, index -> index }))
-        .add({ provideData(index) },
-                databindingOf<ItemModel>(R.layout.item_layout)
-                        .onRecycle(CLEAR_ALL)
-                        .itemId(BR.model)
-                        .itemId(BR.content, { m -> m.content + "xxxx" })
-                        .stableIdForItem { it.id }
-                        .checkKey { i, index -> index }
-                        .forList())
-        .addItem(DateFormat.getInstance().format(Date()),
+        .add(provideData(index), renderer)
+        .add(DateFormat.getInstance().format(Date()),
                 databindingOf<String>(R.layout.list_footer)
                         .itemId(BR.text)
                         .forItem())
@@ -74,20 +86,14 @@ val adapter = RendererAdapter.repositoryAdapter()
 
 ### Base Renderer
 
-1. **LayoutRenderer**
-2. **ConstantItemRenderer**: like `LayoutRenderer`, but not check data update.
-3. **EmptyRenderer**
-4. **GroupItemRenderer** : A title item with list items, just like:   
-
-| Group title |
-| ----------- |
-| sub item 1  |
-| sub item 2  |
-| ...         |
-
-5. **ListRenderer** : Make list for other renderer:
-6. **SealedItemRenderer** : Choice different Renderer for different data.
-7. **DataBindingRenderer** : Bind with Android Databinding
+1. **EmptyRenderer**
+2. **LayoutRenderer**
+3. **ConstantItemRenderer**
+4. **MapperRenderer**
+5. **ListRenderer**: Make list for other renderer
+6. **SealedItemRenderer**: Choice different Renderer for different data.
+7. **ComposeRenderer**
+8. **DataBindingRenderer** : Bind with Android Databinding
 
 Use this Base Renderers, you can Make a complex RecyclerView structure:
 
@@ -115,110 +121,283 @@ Use this Base Renderers, you can Make a complex RecyclerView structure:
 |--DataBindingRenderer footer
 ```
 
-### Custom Renderer
+### Part1 Make Renderer
 
-Base Renderer is `Renderer<Data, VD: ViewData>`
+#### 1.1 LayoutRenderer
 ```kotlin
-interface Renderer<Data, VD: ViewData> {
-    fun getData(content: Data): VD
+val stringRenderer = LayoutRenderer<String>(layout = R.layout.simple_item,
+        count = 3,
+        binder = { view, title, index -> view.findViewById<TextView>(R.id.simple_text_view).text = title + index },
+        recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
+```
 
-    fun getItemId(data: VD, index: Int): Long = RecyclerView.NO_ID
+#### 1.2 DataBindingRenderer
+```kotlin
+val itemRenderer = databindingOf<ItemModel>(R.layout.item_layout)
+        .onRecycle(CLEAR_ALL)
+        .itemId(BR.model)
+        .itemId(BR.content, { m -> m.content + "xxxx" })
+        .stableIdForItem { it.id }
+        .forItem()
+```
 
-    fun getItemViewType(data: VD, position: Int): Int
+#### 1.3 TitleItemRenderer
+This Renderer will build a title with subs, like:
 
-    fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder
+```
+|-- Title  (eg: stringRenderer)
+|-- Sub1   (eg: itemRenderer)
+|-- Sub2
+|-- ...
+```
 
-    fun bind(data: VD, index: Int, holder: RecyclerView.ViewHolder)
+```kotlin
+val renderer = TitleItemRenderer(
+        itemType = type<List<ItemModel>>(),
+        titleGetter = { "title" },
+        subsGetter = { it },
+        title = stringRenderer,
+        subs = itemRenderer)
+```
 
-    fun recycle(holder: RecyclerView.ViewHolder)
+#### 1.4 SealedItemRenderer
+This Renderer will build a sealed Renderer, if checker is 'right' will show this renderer, eg:
 
-    fun getUpdates(oldData: VD, newData: VD): List<UpdateActions>
-}
-
-interface ViewData {
-    val count: Int
+```
+when {
+  list.isEmpty -> stringRenderer
+  list.isNotEmpty -> list of itemRenderer
 }
 ```
 
-Implement `Renderer`interface, you can make your own renderer.
-
-
-Or make Your Renderer Simpler with `BaseRenderer<T, VD: ViewData>`
 ```kotlin
-abstract class BaseRenderer<T, VD: ViewData> : Renderer<T, VD> {
+val rendererSealed = SealedItemRenderer(hlistKOf(
+        item(type = type<List<ItemModel>>(),
+                checker = { it.isEmpty() },
+                mapper = { "empty" },
+                demapper = doNotAffectOriData(),
+                renderer = stringRenderer
+        ),
+        item(type = type<List<ItemModel>>(),
+                checker = { it.isNotEmpty() },
+                mapper = { it },
+                demapper = { oldData, newSubData -> newSubData },
+                renderer = itemRenderer.forList()
+        )
+))
+```
 
-    override fun getItemViewType(data: VD, position: Int): Int = getLayoutResId(data, position)
+#### 1.5 ComposeRenderer
 
-    override fun getItemId(data: VD, index: Int): Long {
-        return -1L
+This Renderer will compose all item renderer, eg:
+
+```
+|-- item1 (eg: itemRenderer)
+|-- item2 (eg: stringRenderer)
+```
+
+```kotlin
+val composeRenderer = ComposeRenderer.startBuild
+        .add(itemRenderer)
+        .add(stringRenderer)
+        .build()
+```
+
+---
+
+### Part2 BuildAdapter
+
+> Tips: RendererAdapter only have one renderer
+
+1. constructor
+2. singleRenderer
+3. multiple
+4. multipleBuild
+5. singleSupplier
+6. supplierBuilder
+7. singleRxAutoUpdate
+8. rxBuild
+
+#### 2.1 By constructor
+
+```kotlin
+val adapterDemo1 = RendererAdapter(
+        initData = HListK.singleId(emptyList<ItemModel>()).putF("ss"),
+        renderer = ComposeRenderer.startBuild
+                .add(renderer)
+                .add(stringRenderer)
+                .build()
+)
+```
+
+#### 2.2 By singleRenderer func
+```kotlin
+val adapterDemo2 = RendererAdapter.singleRenderer(
+        initData = HListK.singleId(emptyList<ItemModel>()).putF("ss"),
+        renderer = ComposeRenderer.startBuild
+                .add(renderer)
+                .add(stringRenderer)
+                .build()
+)
+```
+
+#### 2.3 By multiple func
+
+```kotlin
+val adapterDemo3 = RendererAdapter.multiple(HListK.singleId(emptyList<ItemModel>()).putF("ss"))
+{
+    start
+            .add(rendererSealed)
+            .add(stringRenderer)
+}
+```
+
+#### 2.4 By multiple Builder
+
+```kotlin
+val adapterDemo4 = RendererAdapter.multipleBuild()
+        .add(emptyList<ItemModel>(), rendererSealed)
+        .add("ss", stringRenderer)
+        .build()
+```
+
+#### 2.5 By singleSupplier Builder
+
+```kotlin
+val (adapter3, controller1) = RendererAdapter
+        .singleSupplier({ provideData(index) }, renderer)
+```
+
+#### 2.6 By supplierBuilder Builder
+
+```kotlin
+val (adapter2, controller) = RendererAdapter.supplierBuilder()
+        .addStatic(layout<Unit>(R.layout.list_header))
+        .add({ provideData(index) }, renderer)
+        .build()
+```
+
+#### 2.7 By singleRxAutoUpdate Builder
+
+```kotlin
+RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
+{ adapter ->
+    recyclerView.adapter = adapter
+}.subscribe()
+```
+
+#### 2.8 By rxBuild Builder
+
+```kotlin
+RendererAdapter.rxBuild()
+        .addStatic(layout<Unit>(R.layout.list_header))
+        .add(dataProvider, renderer)
+        .buildAutoUpdate { adapter ->
+            recyclerView.adapter = adapter
+        }
+        .subscribe()
+```
+
+---
+
+## Part3 Update Data
+
+#### 3.1 Simple method is setData()
+
+```kotlin
+adapterDemo1.setData(HListK.singleId(listOf(ItemModel())).putF("ss2"))
+```
+
+#### 3.2 Or use reduce method
+
+```kotlin
+adapterDemo1.reduceData { oldData -> oldData.map1 { "ss3".toIdT() } }
+```
+
+### Two way to part update data:
+
+#### 3.3 By update() func
+
+This function will return a UpdateResult, this time not really update data for adapter.
+Please use [dispatchUpdatesTo()] to apply update action to adapter
+
+```kotlin
+adapterDemo1.update {
+    getLast2().up {
+        title {
+            update("new Title-${random.nextInt()}")
+        }
     }
+}.dispatchUpdatesTo(adapterDemo1)
+```
 
-    @LayoutRes
-    abstract fun getLayoutResId(data: VD, position: Int): Int
+#### 3.4 By updateNow() func
 
+Unlike the update method, this method will apply the update directly to the Adapter.
 
-    override fun recycle(holder: RecyclerView.ViewHolder) {}
-
-    override fun onCreateViewHolder(parent: ViewGroup, layoutResourceId: Int): RecyclerView.ViewHolder {
-        return object : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(layoutResourceId, parent, false)) {
-
+```kotlin
+adapterDemo1.updateNow {
+    getLast2().up {
+        title {
+            update("new Title-${random.nextInt()}")
         }
     }
 }
 ```
 
-### Data Updates
+### Auto Update
 
-A simple Adapter:
+#### 3.5 Bind Supplier
+
+Use supplierBuilder() or singleSupplier() to build adapter, and use controller to force update.
+
+Build Supplier Adapter:
 ```kotlin
-val adapter = RendererAdapter.repositoryAdapter()
-        .add({ provideData(index) },
-                databindingOf<ItemModel>(R.layout.item_layout)
-                        .onRecycle(CLEAR_ALL)
-                        .itemId(BR.model)
-                        .itemId(BR.content, { m -> m.content + "xxxx" })
-                        .stableIdForItem { it.id }
-                        .checkKey { i, index -> index }
-                        .forList())
-        .addItem(DateFormat.getInstance().format(Date()),
-                databindingOf<String>(R.layout.list_footer)
-                        .itemId(BR.text)
-                        .forItem())
+// 1
+val (adapter3, controller1) = RendererAdapter
+        .singleSupplier({ provideData(index) }, renderer)
+
+// 2
+val (adapter2, controller) = RendererAdapter.supplierBuilder()
+        .addStatic(layout<Unit>(R.layout.list_header))
+        .add({ provideData(index) }, renderer)
         .build()
 ```
 
-If your data has chenged, you want to update Adapter, You have two ways to update the Adapter:
-1. RendererAdapter.forceUpdateAdapter(): Unit
-  this method will calculate new ViewData, and call `notifyDataSetChanged()` force refresh all items
+Use controller to force update.
 ```kotlin
-adapter.forceUpdateAdapter()
+controller.updateAll()
 ```
 
-2. **RendererAdapter.autoUpdateAdapter(): UpdateData**
-  this method will update ViewData, and calculate the difference between old and new data, return Update Actions, and you can dispatch updates to Adapter.
-```kotlin
-adapter.autoUpdateAdapter()
-    .dispatchUpdatesTo(adapter)
-```
-**Tip**: method `autoUpdateAdapter()`calculation takes some time, so you can call `autoUpdateAdapter()` at computation thread, and call `dispatchUpdatesTo()` at android main thread. just like:
+#### 3.6 Bind RxJava(Observable)
+
+Use singleRxAutoUpdate() or rxBuild() to build adapter:
 
 ```kotlin
-Single.fromCallable { adapter.autoUpdateAdapter() }
-        .subscribeOn(Schedulers.computation())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(Consumer { adapter.updateData(it) })
+val dataProvider = PublishSubject.create<List<ItemModel>>()
+
+// 1
+RendererAdapter.rxBuild()
+        .addStatic(layout<Unit>(R.layout.list_header))
+        .add(dataProvider, renderer)
+        .buildAutoUpdate { adapter ->
+            recyclerView.adapter = adapter
+        }
+        .subscribe()
+
+// 2
+RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
+{ adapter ->
+    recyclerView.adapter = adapter
+}.subscribe()
 ```
 
-### Auto Updates
+Adapter updates automatically when Observable's data is updated.
 
-You can see `getUpdates()` method:
 ```kotlin
-fun getUpdates(oldData: VD, newData: VD): List<UpdateActions>
+dataProvider.onNext(newData)
 ```
 
-By this method, Adapter can auto calculate  the difference between two lists and output a list of update operations that converts the first list into the second one.
-
-You can also customize your own calculation method.
 
   
 

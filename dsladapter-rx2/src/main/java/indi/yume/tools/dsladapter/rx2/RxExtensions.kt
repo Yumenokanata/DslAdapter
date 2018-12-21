@@ -1,5 +1,6 @@
 package indi.yume.tools.dsladapter.rx2
 
+import androidx.annotation.CheckResult
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.HConsK
 import indi.yume.tools.dsladapter.datatype.HListK
@@ -66,6 +67,7 @@ class RxBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : 
             : RxBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, BR>, IL>, HConsK<ForComposeItemData, Pair<Unit, BR>, VDL>> =
             RxBuilder(adapterLife, dataProvider.map { it.extend(Unit.toIdT()) }, composeBuilder.add(renderer))
 
+    @CheckResult
     fun build(): Observable<RxAdapterEvent<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>>> {
         val renderer = composeBuilder.build()
         return dataProvider
@@ -78,9 +80,9 @@ class RxBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : 
                 }.filter { it is Option.None }.map { (it as Option.Some).t }
     }
 
-
-    fun buildAutoUpdate(f: (RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>>) -> Unit,
-                        computation: Scheduler = Schedulers.computation())
+    @CheckResult
+    fun buildAutoUpdate(computation: Scheduler = Schedulers.computation(),
+                        f: (RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>>) -> Unit)
             : Completable =
             build().flatMap { event ->
                 when (event) {
@@ -97,12 +99,12 @@ class RxBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : 
     }
 }
 
-
+@CheckResult
 fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
         RendererAdapter.Companion.singleRxAutoUpdate(
         obs: Observable<T>, renderer: BR,
-        f: (RendererAdapter<T, VD, UP>) -> Unit,
-        computation: Scheduler = Schedulers.computation()): Completable =
+        computation: Scheduler = Schedulers.computation(),
+        f: (RendererAdapter<T, VD, UP>) -> Unit): Completable =
         obs
                 .scan<Option<RxAdapterEvent<T, VD, UP>>>(Option.None)
                 { result, item ->
