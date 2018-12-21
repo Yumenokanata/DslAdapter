@@ -6,6 +6,8 @@ import indi.yume.tools.dsladapter.IdT
 import java.util.*
 
 /**
+ * An Heterogeneous list of values that preserves type information
+ *
  * LIFO (Last In, First out)
  */
 sealed class HListK<F, A: HListK<F, A>> {

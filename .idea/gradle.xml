@@ -10,6 +10,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/adapterdatabinding" />
             <option value="$PROJECT_DIR$/dsladapter" />
+            <option value="$PROJECT_DIR$/dsladapter-rx2" />
             <option value="$PROJECT_DIR$/sample" />
           </set>
         </option>

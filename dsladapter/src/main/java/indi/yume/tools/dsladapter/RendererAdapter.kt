@@ -1,15 +1,15 @@
 package indi.yume.tools.dsladapter
 
-import android.support.annotation.CheckResult
-import android.support.annotation.MainThread
-import android.support.v7.widget.RecyclerView
-import android.util.SparseIntArray
 import android.view.ViewGroup
+import androidx.annotation.CheckResult
+import androidx.annotation.MainThread
+import androidx.recyclerview.widget.RecyclerView
 import arrow.Kind
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
-import indi.yume.tools.dsladapter.typeclass.*
-import java.util.*
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
+import indi.yume.tools.dsladapter.typeclass.Renderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 
 
 class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
@@ -26,7 +26,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
 
     @MainThread
     fun setData(newData: T) {
-        adapterViewData = renderer.getData(initData)
+        adapterViewData = renderer.getData(newData)
         notifyDataSetChanged()
     }
 
@@ -59,7 +59,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
             adapterViewData = newVD
         }
 
-        listOf(update).dispatchUpdatesTo(this)
+        listOf(update).filterUselessAction().dispatchUpdatesTo(this)
     }
 
     @MainThread
@@ -76,7 +76,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
         if (dataHasChanged)
             notifyDataSetChanged()
         else
-            updates.actions.dispatchUpdatesTo(this)
+            updates.actions.filterUselessAction().dispatchUpdatesTo(this)
     }
 
     override fun getItemCount(): Int = adapterViewData.count
@@ -116,6 +116,13 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
 
         fun multipleBuild(): AdapterBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
                 AdapterBuilder(HListK.nil(), ComposeRenderer.startBuild)
+
+        fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
+                singleSupplier(supplier: Supplier<T>, renderer: BR): Pair<RendererAdapter<T, VD, UP>, SupplierController<T, VD, UP>> =
+                singleSupplier(supplier, renderer)
+
+        fun supplierBuilder(): SupplierBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
+                SupplierBuilder.start
     }
 }
 

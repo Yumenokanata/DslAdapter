@@ -28,6 +28,7 @@ import indi.yume.tools.dsladapter.typeclass.ViewData
 
 typealias Action<VD> = (VD) -> Pair<UpdateActions, VD>
 
+@UpdaterDslMarker
 interface Updatable<P, VD : ViewData<P>> : UpdatableOf<P, VD>
 
 typealias UpdateBuilder<D, VD, UP, U> = BaseRenderer<D, VD, UP>.() -> U
@@ -70,7 +71,7 @@ interface Movable<P, D: ViewData<P>> : Updatable<P, D> {
 }
 
 interface Changeable<P, D: ViewData<P>, I> : Updatable<P, D> {
-    fun change(pos: Int, payload: Any?, newItems: I): Action<D>
+    fun change(pos: Int, newItems: I, payload: Any?): Action<D>
 }
 
 interface ListChangeable<P, D: ViewData<P>, I>
@@ -103,65 +104,15 @@ inline fun <P, VD> UpdatableOf<P, VD>.fix(): Updatable<P, VD> where VD : ViewDat
         this as Updatable<P, VD>
 
 
+fun <T> List<T>.move(from: Int, to: Int): List<T>? {
+    if (from !in 0 until size || to !in 0 until size || from == to)
+        return null
 
-//fun <T, I, IV : ViewData, U : Updatable<IV>> listUpdate(subsUpdaterF: BaseRenderer<I, IV>.() -> U)
-//        : UpdateBuilder<T, ListViewData<IV>, ListUpdater<T, I, IV, U>> =
-//        { listUpdater(subsUpdaterF) }
-//
-//fun <T, I, IV : ViewData, U : Updatable<IV>> BaseRenderer<T, ListViewData<IV>>
-//        .listUpdater(type: TypeCheck<I>, subsUpdaterF: BaseRenderer<I, IV>.() -> U): ListUpdater<T, I, IV, U> =
-//        listUpdater(subsUpdaterF)
-//
-//fun <T, I, IV : ViewData, U : Updatable<IV>> BaseRenderer<T, ListViewData<IV>>
-//        .listUpdater(subsUpdaterF: BaseRenderer<I, IV>.() -> U): ListUpdater<T, I, IV, U> {
-//    val renderer = this.fix<T, I, IV>()
-//    return ListUpdater(renderer, subsUpdaterF(renderer.subs))
-//}
-//
-//fun <T, I, IV : ViewData, U : Updatable<IV>> BaseRenderer<T, ListViewData<IV>>
-//        .list(subsUpdater: U): ListUpdater<T, I, IV, U> =
-//        ListUpdater(this.fix(), subsUpdater)
+    val result = toMutableList()
+    val target = get(from)
 
+    result.removeAt(from)
+    result.add(to, target)
 
-
-
-//
-//fun <T, G, GData: ViewData, I, IData: ViewData, UG : Updatable<GData>, UI : Updatable<IData>> groupItemUpdate(
-//        groupUpdater: UG,
-//        itemUpdater: UI)
-//        : UpdateBuilder<T, GroupViewData<GData, IData>, GroupItemUpdater<T, G, GData, I, IData, UG, UI>> =
-//        { groupItemUpdater(groupUpdater, itemUpdater) }
-//
-//fun <T, G, GData: ViewData, I, IData: ViewData, UG : Updatable<GData>, UI : Updatable<IData>> BaseRenderer<T, GroupViewData<GData, IData>>.groupItemUpdater(
-//        groupUpdater: UG,
-//        itemUpdater: UI)
-//        : GroupItemUpdater<T, G, GData, I, IData, UG, UI> =
-//        GroupItemUpdater(this.fix(), groupUpdater, itemUpdater)
-//
-//class GroupItemUpdater<T, G, GData: ViewData, I, IData: ViewData, UG : Updatable<GData>, UI : Updatable<IData>>(
-//        val renderer: TitleItemRenderer<T, G, GData, I, IData>,
-//        val groupUpdater: UG,
-//        val itemUpdater: UI)
-//    : Updatable<GroupViewData<GData, IData>> {
-//    fun title(updater: UG.() -> Action<GData>): Action<GroupViewData<GData, IData>> = { oldVD ->
-//        val (titleActions, titleVD) = groupUpdater.updater()(oldVD.titleItem)
-//
-//        ActionComposite(0, listOf(titleActions)) to GroupViewData(titleVD, oldVD.subsData)
-//    }
-//
-//    fun sub(pos: Int, updater: UI.() -> Action<IData>): Action<GroupViewData<GData, IData>> = subs@{ oldVD ->
-//        val subsData = oldVD.subsData
-//        val targetItem = subsData.getOrNull(pos) ?: return@subs EmptyAction to oldVD
-//
-//        val (targetActions, targetNewVD) = itemUpdater.updater()(targetItem)
-//        val targetRealPos = oldVD.titleSize + oldVD.subEndPoints.getTargetStartPoint(pos)
-//        val newItemsVD = oldVD.subsData.toMutableList().apply { set(pos, targetNewVD) }.toList()
-//
-//        ActionComposite(targetRealPos, listOf(targetActions)) to GroupViewData(oldVD.titleItem, newItemsVD)
-//    }
-//
-//    fun updateTitle(newGroupData: G): Action<GroupViewData<GData, IData>> = { oldVD ->
-//        val newGroupVD = renderer.group.getData(newGroupData)
-//        updateVD(oldVD.titleItem, newGroupVD) to GroupViewData(newGroupVD, oldVD.subsData)
-//    }
-//}
+    return result.toList()
+}

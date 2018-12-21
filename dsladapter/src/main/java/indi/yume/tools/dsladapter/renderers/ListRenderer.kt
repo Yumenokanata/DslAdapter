@@ -1,14 +1,11 @@
 package indi.yume.tools.dsladapter.renderers
 
-import android.support.v7.widget.RecyclerView
-import indi.yume.tools.dsladapter.Action
-import indi.yume.tools.dsladapter.ListChangeable
-import indi.yume.tools.dsladapter.Updatable
+import androidx.recyclerview.widget.RecyclerView
+import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
-import indi.yume.tools.dsladapter.updateVD
 
 /**
  * Created by xuemaotang on 2017/11/16.
@@ -86,27 +83,102 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
     }
 
     override fun insert(pos: Int, insertedItems: List<I>): Action<ListViewData<T, I, IV>> =
-            { oldVD ->
+            result@{ oldVD ->
+                if (pos !in 0 until oldVD.data.size)
+                    return@result EmptyAction to oldVD
+
                 val newData = oldVD.data.toMutableList().apply {
                     addAll(pos, insertedItems)
                 }.toList()
+                val insertVD = insertedItems.map { renderer.subs.getData(it) }
                 val newVD = oldVD.list.toMutableList().apply {
-                    addAll(pos, insertedItems.map { renderer.subs.getData(it) })
+                    addAll(pos, insertVD)
                 }.toList()
                 val newOriData = renderer.demapper(oldVD.originData, newData)
 
-                OnInserted(pos, insertedItems.size) to ListViewData(newOriData, newData, newVD)
+                val realPos = oldVD.endsPoint.getTargetStartPoint(pos)
+                val realCount = insertVD.sumBy { it.count }
+
+                OnInserted(realPos, realCount) to ListViewData(newOriData, newData, newVD)
             }
 
-    override fun remove(pos: Int, count: Int): Action<ListViewData<T, I, IV>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun remove(pos: Int, count: Int): Action<ListViewData<T, I, IV>> =
+            result@{ oldVD ->
+                if (pos !in 0 until oldVD.data.size
+                        || pos + count !in 0 until oldVD.data.size)
+                    return@result EmptyAction to oldVD
 
-    override fun move(fromPosition: Int, toPosition: Int): Action<ListViewData<T, I, IV>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+                val newData = oldVD.data.toMutableList().apply {
+                    for (i in 1..count) removeAt(pos)
+                }.toList()
+                val newVD = oldVD.list.toMutableList().apply {
+                    for (i in 1..count) removeAt(pos)
+                }.toList()
+                val newOriData = renderer.demapper(oldVD.originData, newData)
 
-    override fun change(pos: Int, payload: Any?, newItems: List<I>): Action<ListViewData<T, I, IV>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+                val realPos = oldVD.endsPoint.getTargetStartPoint(pos)
+                val realCount = oldVD.list.subList(pos, pos + count).sumBy { it.count }
+
+                OnRemoved(realPos, realCount) to ListViewData(newOriData, newData, newVD)
+            }
+
+    override fun move(fromPosition: Int, toPosition: Int): Action<ListViewData<T, I, IV>> =
+            result@{ oldVD ->
+                val emptyResult = EmptyAction to oldVD
+                if (fromPosition !in 0 until oldVD.data.size
+                        || toPosition !in 0 until oldVD.data.size)
+                    return@result emptyResult
+
+                if (fromPosition == toPosition)
+                    return@result OnChanged(fromPosition, 0, null) to oldVD
+
+                val targetVD = oldVD.list.get(fromPosition)
+                val newData = oldVD.data.move(fromPosition, toPosition) ?: return@result emptyResult
+                val newVD = oldVD.list.move(fromPosition, toPosition) ?: return@result emptyResult
+                val newOriData = renderer.demapper(oldVD.originData, newData)
+
+                val realFromPos = oldVD.endsPoint.getTargetStartPoint(fromPosition)
+                val realToPos = oldVD.endsPoint.getTargetStartPoint(toPosition)
+                val realCount = targetVD.count
+
+                (if (realCount == 1)
+                    OnMoved(realFromPos, realToPos)
+                else
+                    ActionComposite(0, listOf(
+                            OnRemoved(realFromPos, realCount),
+                            OnInserted(realToPos, realCount)
+                    ))) to ListViewData(newOriData, newData, newVD)
+            }
+
+    override fun change(pos: Int, newItems: List<I>, payload: Any?): Action<ListViewData<T, I, IV>> =
+            result@{ oldVD ->
+                val count = newItems.size
+                if (pos !in 0 until oldVD.data.size
+                        || pos + count !in 0 until oldVD.data.size)
+                    return@result EmptyAction to oldVD
+
+                val oldSubData = oldVD.list.subList(pos, pos + count)
+                val newSubVD = newItems.map { renderer.subs.getData(it) }
+
+                val newData = oldVD.data.toMutableList().apply {
+                    for ((index, i) in newItems.withIndex()) set(pos + index, i)
+                }.toList()
+                val newVD = oldVD.list.toMutableList().apply {
+                    for ((index, i) in newItems.withIndex()) set(pos + index, renderer.subs.getData(i))
+                }.toList()
+                val newOriData = renderer.demapper(oldVD.originData, newData)
+
+                val realOldCount = oldSubData.sumBy { it.count }
+                val realNewCount = newSubVD.sumBy { it.count }
+
+                val realPos = oldVD.endsPoint.getTargetStartPoint(pos)
+
+                (if (realOldCount == realNewCount)
+                    OnChanged(pos, count, payload)
+                else
+                    ActionComposite(0, listOf(
+                            OnRemoved(realPos, realOldCount),
+                            OnInserted(realPos, realNewCount)
+                    ))) to ListViewData(newOriData, newData, newVD)
+            }
 }

@@ -1,6 +1,7 @@
 package indi.yume.tools.dsladapter
 
 import androidx.recyclerview.widget.ListUpdateCallback
+import arrow.Kind
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
@@ -32,76 +33,53 @@ class UpdatesTest {
                 )
 
         val renderer = optionRenderer(
-                noneItemRenderer = ConstantItemRenderer(count = 3, layout = 1, data = Unit),
-                itemRenderer = ListRenderer<List<Pair<String, List<String>>>,
-                        Pair<String, List<String>>,
-                        GroupViewData<LayoutViewData<String>, LayoutViewData<String>>>(
-                        { it },
-                        TitleItemRenderer(
-                                { it.first },
-                                { it.second },
-                                LayoutRenderer<String>(count = 3, layout = 3),
-                                LayoutRenderer<String>(count = 2, layout = 4)
-                        ),
-                        keyGetter = { item, _ -> item.titleItem.data }
-                )
+                noneItemRenderer = ConstantItemRenderer(type = type<Unit>(), count = 3, layout = 1, data = Unit),
+                itemRenderer = TitleItemRenderer(
+                        itemType = type<Pair<String, List<String>>>(),
+                        titleGetter = { it.first },
+                        subsGetter = { it.second },
+                        title = LayoutRenderer(count = 3, layout = 3),
+                        subs = LayoutRenderer(count = 2, layout = 4)
+                ).forList()
+        )
+    }
+
+    data class MoveTestModel<T>(val ori: List<T>, val from: Int, val to: Int, val target: List<T>?)
+
+    @Test
+    fun testMove() {
+        val sample = listOf(
+                MoveTestModel(listOf(1, 2, 3, 4), 0, 3, listOf(2, 3, 4, 1)),
+                MoveTestModel(listOf(1, 2, 3, 4), 3, 0, listOf(4, 1, 2, 3)),
+                MoveTestModel(listOf(1, 2, 3, 4), 1, 2, listOf(1, 3, 2, 4)),
+                MoveTestModel(listOf(1, 2, 3, 4), 2, 1, listOf(1, 3, 2, 4)),
+                MoveTestModel(listOf(1, 2, 3, 4), 0, 0, null),
+                MoveTestModel(listOf(1, 2, 3, 4), 3, 3, null),
+                MoveTestModel(listOf(1, 2, 3, 4), -1, 3, null),
+                MoveTestModel(listOf(1, 2, 3, 4), 4, 3, null),
+                MoveTestModel(listOf(1, 2, 3, 4), 0, 4, null),
+                MoveTestModel(listOf(1, 2, 3, 4), 0, Int.MAX_VALUE, null)
         )
 
-        val result = renderer.getUpdates(renderer.getData(oldData.some()), renderer.getData(newData.some())).filterUselessAction()
-
-        result.flatten().forEach { println(it) }
-
-        println("================")
-
-        result.dispatchUpdatesTo(object : ListUpdateCallback {
-            override fun onInserted(position: Int, count: Int) {
-                println("onInserted: position=$position, count=$count")
-            }
-
-            override fun onRemoved(position: Int, count: Int) {
-                println("onRemoved: position=$position, count=$count")
-            }
-
-            override fun onMoved(fromPosition: Int, toPosition: Int) {
-                println("onMoved: fromPosition=$fromPosition, toPosition=$toPosition")
-            }
-
-            override fun onChanged(position: Int, count: Int, payload: Any?) {
-                println("onChanged: position=$position, count=$count, payload=$payload")
-            }
-        })
-
-
-        val oldList = renderer.typeList(oldData.some())
-        val newList = renderer.typeList(newData.some())
-
-        println("oldList: ${oldList.joinToString()}")
-        println("newList: ${newList.joinToString()}")
+        for (t in sample)
+            assert(t.ori.move(t.from, t.to) == t.target) { t.toString() + " result: ${t.ori.move(t.from, t.to)}" }
     }
 }
 
-fun <T, VD : ViewData> Renderer<T, VD>.typeList(data: T): List<Int> {
-    val vd = getData(data)
-    return (0 until vd.count).map { getItemViewType(vd, it) }
-}
 
-fun List<UpdateDataActions>.flatten(): List<String> =
-        flatMap { it.string() }
-
-fun UpdateDataActions.string(): List<String> =
-        when(this) {
-            is OnInserted -> listOf("onInserted: position=$pos, count=$count")
-            is OnRemoved -> listOf("onRemoved: position=$pos, count=$count")
-            is OnMoved -> listOf("onMoved: fromPosition=$fromPosition, toPosition=$toPosition")
-            is OnChanged -> listOf("onChanged: position=$pos, count=$count, payload=$payload")
-            is ActionComposite -> listOf("Composite: offset:$offset") + actions.flatMap { it.string() }.map { "  |--$it" }
-        }
-
-
-fun <T, NVD : ViewData, SVD : ViewData> optionRenderer(noneItemRenderer: BaseRenderer<Unit, NVD>,
-                                                       itemRenderer: BaseRenderer<T, SVD>): BaseRenderer<Option<T>, SealedViewData<Option<T>>> =
-        SealedItemRenderer<Option<T>>(listOf(
-                item({ it is None }, { Unit }, noneItemRenderer),
-
-                item({ it is Some }, { it.orNull()!! }, itemRenderer))
-        )
+fun <T, NVD : ViewData<Unit>, NUP : Updatable<Unit, NVD>, NBR : BaseRenderer<Unit, NVD, NUP>,
+        SVD : ViewData<T>, SUP : Updatable<T, SVD>, SBR : BaseRenderer<T, SVD, SUP>> optionRenderer(noneItemRenderer: NBR,
+                                                                                                    itemRenderer: SBR)
+        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SBR>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NBR>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
+        SealedItemRenderer(hlistKOf(
+                item(type = type<Option<T>>(),
+                        checker = { it is None },
+                        mapper = { Unit },
+                        renderer = noneItemRenderer
+                ),
+                item(type = type<Option<T>>(),
+                        checker = { it is Some },
+                        mapper = { it.orNull()!! },
+                        renderer = itemRenderer
+                )
+        ))

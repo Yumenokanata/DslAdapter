@@ -1,6 +1,6 @@
 package indi.yume.tools.dsladapter.typeclass
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import arrow.Kind
 import arrow.Kind2

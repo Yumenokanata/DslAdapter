@@ -1,6 +1,6 @@
 package indi.yume.tools.dsladapter.renderers
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import arrow.Kind
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
@@ -218,7 +218,6 @@ fun <T0, VD0 : ViewData<T0>, UP0 : Updatable<T0, VD0>, BR0 : BaseRenderer<T0, VD
         ComposeGetter(get = { it.get2() },
                 put = { dl, t -> dl.map2 { IdT(t) } },
                 putVD = { vdl, vd -> vdl.map2 { it.fix().copy(viewData = vd) } })
-
 
 fun <T0, VD0 : ViewData<T0>, UP0 : Updatable<T0, VD0>, BR0 : BaseRenderer<T0, VD0, UP0>,
         T1, VD1 : ViewData<T1>, UP1 : Updatable<T1, VD1>, BR1 : BaseRenderer<T1, VD1, UP1>,

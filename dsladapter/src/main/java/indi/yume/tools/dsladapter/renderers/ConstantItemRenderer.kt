@@ -1,9 +1,10 @@
 package indi.yume.tools.dsladapter.renderers
 
-import android.support.annotation.LayoutRes
-import android.support.v7.widget.RecyclerView
+import androidx.annotation.LayoutRes
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import indi.yume.tools.dsladapter.Action
+import indi.yume.tools.dsladapter.TypeCheck
 import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.datatype.OnChanged
 import indi.yume.tools.dsladapter.datatype.OnInserted
@@ -20,6 +21,16 @@ class ConstantItemRenderer<T, I>(
         val recycleFun: (View) -> Unit = { },
         val stableIdForItem: (I, Int) -> Long = { _, _ -> -1L }
 ) : BaseRenderer<T, ConstantViewData<T, I>, ConstantUpdater<T, I>>() {
+    constructor(
+            type: TypeCheck<T>,
+            count: Int = 1,
+            @LayoutRes layout: Int,
+            data: I,
+            binder: (View, I, Int) -> Unit = { _, _, _ -> },
+            recycleFun: (View) -> Unit = { },
+            stableIdForItem: (I, Int) -> Long = { _, _ -> -1L }
+    ) : this(count, layout, data, binder, recycleFun, stableIdForItem)
+
     override val updater: ConstantUpdater<T, I> = ConstantUpdater(this)
 
     override fun getData(content: T): ConstantViewData<T, I> = ConstantViewData(content, count, data)

@@ -1,14 +1,10 @@
 package indi.yume.tools.dsladapter.renderers
 
-import android.support.annotation.LayoutRes
-import android.support.v7.widget.RecyclerView
 import android.view.View
+import androidx.annotation.LayoutRes
+import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.Action
 import indi.yume.tools.dsladapter.Updatable
-import indi.yume.tools.dsladapter.datatype.OnChanged
-import indi.yume.tools.dsladapter.datatype.OnInserted
-import indi.yume.tools.dsladapter.datatype.OnRemoved
-import indi.yume.tools.dsladapter.datatype.UpdateActions
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.updateVD
@@ -18,8 +14,7 @@ class LayoutRenderer<T>(
         val count: Int = 1,
         val binder: (View, T, Int) -> Unit = { _, _, _ -> },
         val recycleFun: (View) -> Unit = { },
-        val stableIdForItem: (T, Int) -> Long = { _, _ -> -1L },
-        val keyGetter: (T) -> Any? = { it }
+        val stableIdForItem: (T, Int) -> Long = { _, _ -> -1L }
 ) : BaseRenderer<T, LayoutViewData<T>, LayoutUpdater<T>>() {
     override val updater: LayoutUpdater<T> = LayoutUpdater(this)
 

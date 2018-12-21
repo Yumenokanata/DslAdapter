@@ -1,18 +1,16 @@
 package indi.yume.tools.sample
 
-import android.content.Intent
-import android.net.Uri
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.View
-import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import arrow.Kind
 import arrow.core.*
-import indi.yume.tools.adapterdatabinding.*
+import indi.yume.tools.adapterdatabinding.CLEAR_ALL
+import indi.yume.tools.adapterdatabinding.dataBindingItem
+import indi.yume.tools.adapterdatabinding.databindingOf
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
@@ -20,7 +18,6 @@ import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 import indi.yume.tools.sample.databinding.ItemLayoutBinding
-import indi.yume.tools.sample.databinding.UrlSchemeItemLayoutBinding
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
@@ -214,7 +211,7 @@ class MainActivity : AppCompatActivity() {
                                         layout = R.layout.item_layout,
                                         bindBinding = { ItemLayoutBinding.bind(it) },
                                         binder = { bind, item, _ ->
-                                            bind.content = "this is empty item"
+                                            bind.content = "this is some item"
                                         },
                                         recycleFun = { it.model = null; it.content = null; it.click = null })
                                         .forList()
@@ -256,7 +253,7 @@ class MainActivity : AppCompatActivity() {
                     getLast2().up {
                         update(provideData(index))
                     } + getLast3().up {
-                        update(provideData(index))
+                        insert(3, listOf(ItemModel()))
                     } + getLast4().up {
                         getLast1().up {
                             update(provideData(index))
