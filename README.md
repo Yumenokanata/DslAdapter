@@ -3,6 +3,10 @@
 
 A RecyclerView Adapter builder by DSL. Easy to use, **strong typing**, and all code written by kotlin.
 
+* All strong typing by HList (Heterogeneous lists)
+* Build DSL
+* Update DSL
+
 ---
 
 Add this in your root build.gradle at the end of repositories:
