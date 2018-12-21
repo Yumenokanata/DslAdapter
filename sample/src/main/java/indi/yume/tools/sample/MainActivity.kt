@@ -231,7 +231,9 @@ class MainActivity : AppCompatActivity() {
                                         .forList())
                                 .build())
                 .add(provideData(index),
-                        LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
+                        LayoutRenderer<ItemModel>(
+                                count = 2,
+                                layout = R.layout.simple_item,
                                 stableIdForItem = { item, index -> item.id },
                                 binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = itemModel.title },
                                 recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
@@ -253,7 +255,11 @@ class MainActivity : AppCompatActivity() {
                     getLast2().up {
                         update(provideData(index))
                     } + getLast3().up {
-                        insert(3, listOf(ItemModel()))
+//                        insert(3, listOf(ItemModel(199, "insert Title ${index}", "insert Content")))
+                        move(2, 4) +
+                        subs(3) {
+                            update(ItemModel(189, "Subs Title $index", "subs Content"))
+                        }
                     } + getLast4().up {
                         getLast1().up {
                             update(provideData(index))

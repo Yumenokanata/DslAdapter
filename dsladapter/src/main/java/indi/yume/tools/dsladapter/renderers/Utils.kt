@@ -32,7 +32,7 @@ fun IntArray.getEndPoint(defaultV: Int = 0): Int = lastOrNull() ?: defaultV
 fun IntArray.getTargetStartPoint(index: Int): Int = when {
     index < 0 -> 0
     index > lastIndex -> get(lastIndex)
-    else -> get(index)
+    else -> get(index - 1)
 }
 
 fun <T> List<T>.getEndsPonints(getter: (T) -> Int): IntArray {

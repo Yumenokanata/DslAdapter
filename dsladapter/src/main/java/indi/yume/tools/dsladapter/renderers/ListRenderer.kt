@@ -78,7 +78,9 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
 
             val newOriData = renderer.demapper(oldVD.originData, newData)
 
-            ActionComposite(pos, listOf(subActions)) to ListViewData(newOriData, newData, newVD)
+            val realPos = oldVD.endsPoint.getTargetStartPoint(pos)
+
+            ActionComposite(realPos, listOf(subActions)) to ListViewData(newOriData, newData, newVD)
         }
     }
 
@@ -105,7 +107,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
     override fun remove(pos: Int, count: Int): Action<ListViewData<T, I, IV>> =
             result@{ oldVD ->
                 if (pos !in 0 until oldVD.data.size
-                        || pos + count !in 0 until oldVD.data.size)
+                        || pos + count - 1 !in 0 until oldVD.data.size)
                     return@result EmptyAction to oldVD
 
                 val newData = oldVD.data.toMutableList().apply {
@@ -122,7 +124,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
                 OnRemoved(realPos, realCount) to ListViewData(newOriData, newData, newVD)
             }
 
-    override fun move(fromPosition: Int, toPosition: Int): Action<ListViewData<T, I, IV>> =
+    override fun  move(fromPosition: Int, toPosition: Int): Action<ListViewData<T, I, IV>> =
             result@{ oldVD ->
                 val emptyResult = EmptyAction to oldVD
                 if (fromPosition !in 0 until oldVD.data.size
@@ -154,7 +156,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
             result@{ oldVD ->
                 val count = newItems.size
                 if (pos !in 0 until oldVD.data.size
-                        || pos + count !in 0 until oldVD.data.size)
+                        || pos + count - 1 !in 0 until oldVD.data.size)
                     return@result EmptyAction to oldVD
 
                 val oldSubData = oldVD.list.subList(pos, pos + count)
