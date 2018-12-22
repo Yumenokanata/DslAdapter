@@ -14,6 +14,8 @@ import indi.yume.tools.adapterdatabinding.databindingOf
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
+import indi.yume.tools.dsladapter.rx2.rxBuild
+import indi.yume.tools.dsladapter.rx2.singleRxAutoUpdate
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
@@ -22,6 +24,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import java.text.DateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -194,6 +197,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Part 4 Part Update DSL
         val adapter = RendererAdapter.multipleBuild()
                 .add(layout<Unit>(R.layout.list_header))
                 .add(none<List<Option<ItemModel>>>(),
@@ -273,6 +277,51 @@ class MainActivity : AppCompatActivity() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(Consumer { adapter.updateData(it) })
         }
+
+        // Part 5 Supplier update
+        val (adapter3, controller1) = RendererAdapter
+                .singleSupplier({ provideData(index) }, renderer)
+
+        val (adapter2, controller) = RendererAdapter.supplierBuilder()
+                .addStatic(layout<Unit>(R.layout.list_header))
+                .add({ provideData(index) }, renderer)
+                .build()
+
+//        recyclerView.adapter = adapter2
+//        recyclerView.layoutManager = LinearLayoutManager(this)
+
+//        findViewById<View>(R.id.load_next_button).setOnClickListener { v ->
+//            index++
+//            controller.updateAll()
+//        }
+
+
+        // Part 6 Rx auto update
+        val dataProvider = PublishSubject.create<List<ItemModel>>()
+        val dataProvider2 = PublishSubject.create<List<ItemModel>>()
+
+        RendererAdapter.rxBuild()
+                .addStatic(layout<Unit>(R.layout.list_header))
+                .add(provideData(index), dataProvider2, renderer)
+                .add(dataProvider, rendererSealed)
+                .buildAutoUpdate { adapter ->
+//                    recyclerView.adapter = adapter
+//                    recyclerView.layoutManager = LinearLayoutManager(this)
+                }
+                .subscribe()
+
+        dataProvider.onNext(provideData(index))
+
+        RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
+        { adapter ->
+//            recyclerView.adapter = adapter
+//            recyclerView.layoutManager = LinearLayoutManager(this)
+        }.subscribe()
+
+//        findViewById<View>(R.id.load_next_button).setOnClickListener { v ->
+//            index++
+//            dataProvider.onNext(provideData(index))
+//        }
     }
 
     private fun provideData(pageIndex: Int): List<ItemModel> {
@@ -282,7 +331,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun dataSupplier(pageIndex: Int): Single<List<ItemModel>> {
         return Single.just(genList(pageIndex * 10, 10 - pageIndex % 10))
-                .delay(300, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.io())
     }
 }

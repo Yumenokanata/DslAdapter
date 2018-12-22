@@ -116,13 +116,6 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
 
         fun multipleBuild(): AdapterBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
                 AdapterBuilder(HListK.nil(), ComposeRenderer.startBuild)
-
-        fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-                singleSupplier(supplier: Supplier<T>, renderer: BR): Pair<RendererAdapter<T, VD, UP>, SupplierController<T, VD, UP>> =
-                singleSupplier(supplier, renderer)
-
-        fun supplierBuilder(): SupplierBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
-                SupplierBuilder.start
     }
 }
 

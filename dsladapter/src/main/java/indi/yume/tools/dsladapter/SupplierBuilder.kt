@@ -11,10 +11,14 @@ import indi.yume.tools.dsladapter.typeclass.ViewData
 
 typealias Supplier<T> = () -> T
 
-internal fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-        singleSupplier(supplier: Supplier<T>, renderer: BR):
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
+        RendererAdapter.Companion.singleSupplier(supplier: Supplier<T>, renderer: BR):
         Pair<RendererAdapter<T, VD, UP>, SupplierController<T, VD, UP>> =
         RendererAdapter.singleRenderer(supplier(), renderer).let { it to SupplierController(it, supplier) }
+
+fun RendererAdapter.Companion.supplierBuilder()
+        : SupplierBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
+        SupplierBuilder.start
 
 class SupplierController<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
         val adapter: RendererAdapter<T, VD, UP>,
