@@ -1,9 +1,9 @@
 # DslAdapter
 [![](https://jitpack.io/v/Yumenokanata/DslAdapter.svg)](https://jitpack.io/#Yumenokanata/DslAdapter)
 
-A RecyclerView Adapter builder by DSL. Easy to use, **strong typing**, and all code written by kotlin.
+A RecyclerView Adapter builder by DSL. Easy to use, **type safety**, and all code written by kotlin.
 
-* All strong typing by HList (Heterogeneous lists)
+* Type safety by HList (Heterogeneous lists)
 * Build DSL
 * Update DSL
 
