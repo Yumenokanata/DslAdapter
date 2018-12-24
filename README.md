@@ -88,6 +88,25 @@ val adapter = RendererAdapter.multipleBuild()
         .build()
 ```
 
+Part Update by DSL:
+
+```kotlin
+adapter.updateNow {
+    getLast2().up {
+        update(provideData(index))
+    } + getLast3().up {
+        move(2, 4) +
+        subs(3) {
+            update(ItemModel(189, "Subs Title $index", "subs Content"))
+        }
+    } + getLast4().up {
+        getLast1().up {
+            update(provideData(index))
+        }
+    }
+}
+```
+
 ---
 
 ### Base Renderer
