@@ -4,6 +4,7 @@ import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.Action
+import indi.yume.tools.dsladapter.ChangedData
 import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
@@ -47,5 +48,10 @@ class LayoutUpdater<T>(val renderer: LayoutRenderer<T>) : Updatable<T, LayoutVie
         val newVD = renderer.getData(newData)
 
         return { oldVD -> updateVD(oldVD, newVD, payload) to newVD }
+    }
+
+    fun reduce(f: (oldData: T) -> ChangedData<T>): Action<LayoutViewData<T>> = { oldVD ->
+        val (newData, payload) = f(oldVD.originData)
+        update(newData, payload)(oldVD)
     }
 }

@@ -43,7 +43,7 @@ class ListRenderer<T, I, IV : ViewData<I>, UP : Updatable<I, IV>>(
     }
 }
 
-class ListViewData<T, I, VD : ViewData<I>>(override val originData: T, val data: List<I>, val list: List<VD>) : ViewData<T>, List<VD> by list {
+data class ListViewData<T, I, VD : ViewData<I>>(override val originData: T, val data: List<I>, val list: List<VD>) : ViewData<T>, List<VD> by list {
     init {
         assert(list.size == data.size)
     }
@@ -65,6 +65,46 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
         val newVD = renderer.getData(data)
         updateVD(oldVD, newVD, payload) to newVD
     }
+
+    fun reduce(f: (oldData: T) -> ChangedData<T>): Action<ListViewData<T, I, IV>> = { oldVD ->
+        val (newData, payload) = f(oldVD.originData)
+        update(newData, payload)(oldVD)
+    }
+
+    fun updateAuto(data: T,
+                   f: (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> = diffUtilCheck()): Action<ListViewData<T, I, IV>> =
+            { oldVD ->
+                val newVD = renderer.getData(data)
+                val actionList = f(oldVD.data, newVD.data)
+
+                fun getRealPos(pos: Int): Int = oldVD.endsPoint.getTargetStartPoint(pos)
+
+                fun getRealCount(pos: Int, count: Int): Int =
+                        oldVD.endsPoint.getTargetStartPoint(pos + count) -
+                                oldVD.endsPoint.getTargetStartPoint(pos)
+
+                val realActions = actionList.map {
+                    when (it) {
+                        is EmptyAction -> EmptyAction
+                        is OnInserted -> OnInserted(getRealPos(it.pos), getRealCount(it.pos, it.count))
+                        is OnRemoved -> OnRemoved(getRealPos(it.pos), getRealCount(it.pos, it.count))
+                        is OnMoved -> {
+                            val targetItemVD = oldVD[it.fromPosition]
+                            if (targetItemVD.count == 1)
+                                OnMoved(getRealPos(it.fromPosition), getRealPos(it.toPosition))
+                            else
+                                ActionComposite(0, listOf(
+                                        OnRemoved(getRealPos(it.fromPosition), targetItemVD.count),
+                                        OnInserted(getRealPos(it.toPosition), targetItemVD.count)
+                                ))
+                        }
+                        is OnChanged -> OnChanged(getRealPos(it.pos), getRealCount(it.pos, it.count), it.payload)
+                        is ActionComposite -> throw UnsupportedOperationException("updateAuto do not support ActionComposite.")
+                    }
+                }
+
+                ActionComposite(0, realActions) to newVD
+            }
 
     fun subs(pos: Int, updater: U.() -> Action<IV>): Action<ListViewData<T, I, IV>> {
         val subAction = subsUpdater.updater()

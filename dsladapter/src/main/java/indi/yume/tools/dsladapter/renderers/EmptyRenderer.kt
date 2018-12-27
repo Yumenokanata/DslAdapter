@@ -30,7 +30,7 @@ class EmptyRenderer<T> : BaseRenderer<T, EmptyViewData<T>, EmptyUpdater<T>>() {
             throw UnsupportedOperationException("EmptyRenderer do not support recycle.")
 }
 
-class EmptyViewData<T>(override val originData: T) : ViewData<T> {
+data class EmptyViewData<T>(override val originData: T) : ViewData<T> {
     override val count: Int = 0
 }
 

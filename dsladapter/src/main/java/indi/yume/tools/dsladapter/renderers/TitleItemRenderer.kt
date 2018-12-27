@@ -1,5 +1,6 @@
 package indi.yume.tools.dsladapter.renderers
 
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
@@ -109,9 +110,18 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, GUP : Updatable<G, GData>, I, 
         updateVD(oldVD, newVD, payload) to newVD
     }
 
+    fun reduce(f: (oldData: T) -> ChangedData<T>): Action<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
+        val (newData, payload) = f(oldVD.originData)
+        update(newData, payload)(oldVD)
+    }
+
     fun title(updater: GUP.() -> Action<GData>)
+            : Action<TitleViewData<T, G, GData, I, IData>> =
+            titleReduce { updater() }
+
+    fun titleReduce(updater: GUP.(G) -> Action<GData>)
             : Action<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
-        val (titleActions, titleVD) = renderer.title.updater.updater()(oldVD.titleItem)
+        val (titleActions, titleVD) = renderer.title.updater.updater(oldVD.titleItem.originData)(oldVD.titleItem)
 
         val newOriData = renderer.titleDemapper(oldVD.originData, titleVD.originData)
 
@@ -126,11 +136,19 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, GUP : Updatable<G, GData>, I, 
         updateVD(oldVD.titleItem, newTitleVD, payload) to TitleViewData(newOriData, newTitleVD, oldVD.subsData)
     }
 
-    fun sub(pos: Int, updater: IUP.() -> Action<IData>): Action<TitleViewData<T, G, GData, I, IData>> = subs@{ oldVD ->
+    fun reduceTitle(f: (oldData: G) -> ChangedData<G>): Action<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
+        val (newData, payload) = f(oldVD.titleItem.originData)
+        updateTitle(newData, payload)(oldVD)
+    }
+
+    fun sub(pos: Int, updater: IUP.() -> Action<IData>): Action<TitleViewData<T, G, GData, I, IData>> =
+            subReduce(pos) { updater() }
+
+    fun subReduce(pos: Int, updater: IUP.(I) -> Action<IData>): Action<TitleViewData<T, G, GData, I, IData>> = subs@{ oldVD ->
         val subsData = oldVD.subsData
         val targetItem = subsData.getOrNull(pos) ?: return@subs EmptyAction to oldVD
 
-        val (targetActions, targetNewVD) = renderer.subs.updater.updater()(targetItem)
+        val (targetActions, targetNewVD) = renderer.subs.updater.updater(targetItem.originData)(targetItem)
         val targetRealPos = oldVD.titleSize + oldVD.subEndPoints.getTargetStartPoint(pos)
         val newItemsVD = oldVD.subsData.toMutableList().apply { set(pos, targetNewVD) }.toList()
         val newItemsData = renderer.subsGetter(oldVD.originData).toMutableList().apply { set(pos, targetNewVD.originData) }.toList()
@@ -139,15 +157,6 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, GUP : Updatable<G, GData>, I, 
 
         ActionComposite(targetRealPos, listOf(targetActions)) to TitleViewData(newOriData, oldVD.titleItem, newItemsVD)
     }
-
-    fun updateSubs(f: (oldSubs: List<I>, newSubs: List<I>) -> Action<List<IData>>, newSubs: List<I>): Action<TitleViewData<T, G, GData, I, IData>> =
-            { oldVD ->
-                val (actions, newSubsVD) = f(renderer.subsGetter(oldVD.originData), newSubs)(oldVD.subsData)
-
-                val newOriData = renderer.subsDemapper(oldVD.originData, newSubs)
-
-                actions to TitleViewData(newOriData, oldVD.titleItem, newSubsVD)
-            }
 }
 
 

@@ -107,6 +107,14 @@ adapter.updateNow {
 }
 ```
 
+`DiffUtil` support:
+
+```kotlin
+adapter.updateNow { // ListUpdater
+    updateAuto(newData, diffUtilCheck { it.id })
+}
+```
+
 ---
 
 ### Base Renderer

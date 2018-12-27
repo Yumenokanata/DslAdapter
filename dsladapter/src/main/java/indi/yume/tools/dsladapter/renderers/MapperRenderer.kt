@@ -2,6 +2,7 @@ package indi.yume.tools.dsladapter.renderers
 
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.Action
+import indi.yume.tools.dsladapter.ChangedData
 import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
@@ -42,16 +43,25 @@ inline fun <T, D, VD : ViewData<D>, UP : Updatable<D, VD>> BaseRenderer<T, Mappe
 class MapperUpdater<T, D, VD : ViewData<D>, UP : Updatable<D, VD>>(
         val renderer: MapperRenderer<T, D, VD, UP>
 ) : Updatable<T, MapperViewData<T, D, VD>> {
-    fun mapper(f: UP.() -> Action<VD>): Action<MapperViewData<T, D, VD>> = { oldVD ->
-        val mapperAction = renderer.targetRenderer.updater.f()
+
+    fun mapWithOld(f: UP.(oldData: T) -> Action<VD>): Action<MapperViewData<T, D, VD>> = { oldVD ->
+        val mapperAction = renderer.targetRenderer.updater.f(oldVD.originData)
         val (actions, newMapVD) = mapperAction(oldVD.mapVD)
 
         actions to MapperViewData(renderer.demapper(oldVD.originData, newMapVD.originData), newMapVD)
     }
 
+    fun mapper(f: UP.() -> Action<VD>): Action<MapperViewData<T, D, VD>> =
+            mapWithOld { f() }
+
     fun update(newData: T, payload: Any? = null): Action<MapperViewData<T, D, VD>> {
         val newVD = renderer.getData(newData)
 
         return { oldVD -> updateVD(oldVD, newVD, payload) to newVD }
+    }
+
+    fun reduce(f: (oldData: T) -> ChangedData<T>): Action<MapperViewData<T, D, VD>> = { oldVD ->
+        val (newData, payload) = f(oldVD.originData)
+        update(newData, payload)(oldVD)
     }
 }

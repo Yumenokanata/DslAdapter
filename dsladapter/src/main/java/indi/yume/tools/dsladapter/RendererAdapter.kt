@@ -4,7 +4,6 @@ import android.view.ViewGroup
 import androidx.annotation.CheckResult
 import androidx.annotation.MainThread
 import androidx.recyclerview.widget.RecyclerView
-import arrow.Kind
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
@@ -39,11 +38,19 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
     fun getUpdater(): UP = renderer.updater
 
     @CheckResult
-    fun update(f: UP.() -> Action<VD>): UpdateData<T, VD> {
+    fun reduce(f: UP.(T) -> Action<VD>): UpdateResult<T, VD> {
+        val data = adapterViewData
+        val (actions, newVD) = getUpdater().f(data.originData)(data)
+
+        return UpdateResult(data, newVD, listOf(actions))
+    }
+
+    @CheckResult
+    fun update(f: UP.() -> Action<VD>): UpdateResult<T, VD> {
         val data = adapterViewData
         val (actions, newVD) = getUpdater().f()(data)
 
-        return UpdateData(data, newVD, listOf(actions))
+        return UpdateResult(data, newVD, listOf(actions))
     }
 
     fun updateNow(f: UP.() -> Action<VD>) {
@@ -63,7 +70,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
     }
 
     @MainThread
-    fun updateData(updates: UpdateData<T, VD>) {
+    fun updateData(updates: UpdateResult<T, VD>) {
         val dataHasChanged = synchronized(dataLock) {
             if (adapterViewData != updates.oldData) {
                 true
@@ -120,9 +127,9 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
 }
 
 
-data class UpdateData<T, VD : ViewData<T>>(val oldData: VD,
-                                           val newData: VD,
-                                           val actions: List<UpdateActions>) {
+data class UpdateResult<T, VD : ViewData<T>>(val oldData: VD,
+                                             val newData: VD,
+                                             val actions: List<UpdateActions>) {
     fun <UP : Updatable<T, VD>> dispatchUpdatesTo(adapter: RendererAdapter<T, VD, UP>) =
             adapter.updateData(this)
 }

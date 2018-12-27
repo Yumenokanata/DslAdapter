@@ -9,29 +9,8 @@ import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 
-//sealed class UpdateDataActions<T>
-//
-//data class OnInserted<T, I>(val pos: Int, val count: Int, val insertedItems: List<T>) : UpdateDataActions<T>()
-//
-//data class OnRemoved<T>(val pos: Int, val count: Int, val removedItems: List<T>) : UpdateDataActions<T>()
-//
-//data class OnMoved<T>(val fromPosition: Int, val toPosition: Int, val item: T) : UpdateDataActions<T>()
-//
-//data class OnChanged<T>(val pos: Int, val count: Int, val payload: Any?, val oldItems: List<T>, val newItems: List<T>) : UpdateDataActions<T>()
-//
-//data class ActionComposite<T>(val offset: Int, val actions: List<UpdateDataActions<T>>) : UpdateDataActions<T>()
-
-
-//typealias Checker<D, VD> = (oldData: D, oldVD: VD, newData: D, newVD: VD) -> List<UpdateDataActions<D>>
-
-//typealias Updater<D, VD> = BaseRenderer<D, VD>.(oldData: D, oldVD: VD, actions: List<UpdateActions>) -> VD
-
 typealias Action<VD> = (VD) -> Pair<UpdateActions, VD>
 
-@UpdaterDslMarker
-interface Updatable<P, VD : ViewData<P>> : UpdatableOf<P, VD>
-
-typealias UpdateBuilder<D, VD, UP, U> = BaseRenderer<D, VD, UP>.() -> U
 
 class TypeCheck<T>
 
@@ -39,6 +18,7 @@ private val typeFake = TypeCheck<Nothing>()
 
 @Suppress("UNCHECKED_CAST")
 fun <T> type(): TypeCheck<T> = typeFake as TypeCheck<T>
+
 
 data class IdT<T>(val a: T) : IdTOf<T>
 
@@ -57,6 +37,9 @@ fun <E> HListK.Companion.singleId(e: E): HConsK<ForIdT, E, HNilK<ForIdT>> = HCon
 // put item to First
 fun <E, L : HListK<ForIdT, L>> L.putF(e: E): HConsK<ForIdT, E, L> = extend(IdT(e))
 
+
+@UpdaterDslMarker
+interface Updatable<P, VD : ViewData<P>> : UpdatableOf<P, VD>
 
 interface Insertable<P, D : ViewData<P>, I> : Updatable<P, D> {
     fun insert(pos: Int, insertedItems: I): Action<D>
@@ -79,6 +62,11 @@ interface ListChangeable<P, D: ViewData<P>, I>
         Removable<P, D>,
         Movable<P, D>,
         Changeable<P, D, List<I>>
+
+data class ChangedData<T>(val newData: T, val payload: Any? = null)
+
+fun <T> changed(newData: T, payload: Any? = null): ChangedData<T> = ChangedData(newData, payload)
+
 
 fun <P, VD : ViewData<P>> updateVD(oldVD: VD, newVD: VD, payload: Any? = null): UpdateActions = when {
         newVD == oldVD -> EmptyAction

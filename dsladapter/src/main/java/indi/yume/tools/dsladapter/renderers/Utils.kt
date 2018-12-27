@@ -1,11 +1,9 @@
 package indi.yume.tools.dsladapter.renderers
 
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
-import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.datatype.ActionComposite
 import indi.yume.tools.dsladapter.datatype.UpdateActions
-import indi.yume.tools.dsladapter.typeclass.Renderer
+import indi.yume.tools.dsladapter.datatype.toUpdateActions
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
 import kotlin.coroutines.experimental.buildSequence
@@ -30,7 +28,7 @@ fun <VD: ViewData<*>> List<VD>.getEndsPonints(): IntArray =
 fun IntArray.getEndPoint(defaultV: Int = 0): Int = lastOrNull() ?: defaultV
 
 fun IntArray.getTargetStartPoint(index: Int): Int = when {
-    index < 0 -> 0
+    index <= 0 -> 0
     index > lastIndex -> get(lastIndex)
     else -> get(index - 1)
 }
@@ -82,3 +80,19 @@ fun List<UpdateActions>.filterUselessAction(): List<UpdateActions> =
             else
                 it
         }.filterNotNull()
+
+
+fun <I> diffUtilCheck(keyGetter: (I) -> Any? = { it }): (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> =
+        { oldSubs, newSubs ->
+            DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+                        keyGetter(oldSubs[oldItemPosition]) == keyGetter(newSubs[newItemPosition])
+
+                override fun getOldListSize(): Int = oldSubs.size
+
+                override fun getNewListSize(): Int = newSubs.size
+
+                override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+                        oldSubs[oldItemPosition] == newSubs[newItemPosition]
+            }).toUpdateActions()
+        }

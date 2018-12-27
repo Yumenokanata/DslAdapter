@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
          */
         val renderer = TitleItemRenderer(
                 itemType = type<List<ItemModel>>(),
-                titleGetter = { "title" },
+                titleGetter = { "TitleItemRenderer: title" },
                 subsGetter = { it },
                 title = stringRenderer,
                 subs = itemRenderer)
@@ -200,14 +200,14 @@ class MainActivity : AppCompatActivity() {
         // Part 4 Part Update DSL
         val adapter = RendererAdapter.multipleBuild()
                 .add(layout<Unit>(R.layout.list_header))
-                .add(none<List<Option<ItemModel>>>(),
+                .add(listOf(ItemModel().some()).some(),
                         optionRenderer(
                                 noneItemRenderer = LayoutRenderer.dataBindingItem<Unit, ItemLayoutBinding>(
                                         count = 5,
                                         layout = R.layout.item_layout,
                                         bindBinding = { ItemLayoutBinding.bind(it) },
                                         binder = { bind, item, _ ->
-                                            bind.content = "this is empty item"
+                                            bind.content = "Last5 this is empty item"
                                         },
                                         recycleFun = { it.model = null; it.content = null; it.click = null }),
                                 itemRenderer = LayoutRenderer.dataBindingItem<Option<ItemModel>, ItemLayoutBinding>(
@@ -215,7 +215,7 @@ class MainActivity : AppCompatActivity() {
                                         layout = R.layout.item_layout,
                                         bindBinding = { ItemLayoutBinding.bind(it) },
                                         binder = { bind, item, _ ->
-                                            bind.content = "this is some item"
+                                            bind.content = "Last5 this is some item"
                                         },
                                         recycleFun = { it.model = null; it.content = null; it.click = null })
                                         .forList()
@@ -224,13 +224,13 @@ class MainActivity : AppCompatActivity() {
                         ComposeRenderer.startBuild
                                 .add(LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
                                         stableIdForItem = { item, index -> item.id },
-                                        binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = itemModel.title },
+                                        binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = "Last4 ${itemModel.title}" },
                                         recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
                                         .forList({ i, index -> index }))
                                 .add(databindingOf<ItemModel>(R.layout.item_layout)
                                         .onRecycle(CLEAR_ALL)
                                         .itemId(BR.model)
-                                        .itemId(BR.content, { m -> m.content + "xxxx" })
+                                        .itemId(BR.content, { m -> "Last4 " + m.content + "xxxx" })
                                         .stableIdForItem { it.id }
                                         .forList())
                                 .build())
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
                                 count = 2,
                                 layout = R.layout.simple_item,
                                 stableIdForItem = { item, index -> item.id },
-                                binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = itemModel.title },
+                                binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = "Last3 ${itemModel.title}" },
                                 recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
                                 .forList({ i, index -> index }))
                 .add(provideData(index), renderer)
@@ -254,22 +254,25 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.load_next_button).setOnClickListener { v ->
             index++
+            val newData = provideData(index)
             Single.fromCallable {
                 adapter.update {
                     getLast2().up {
-                        update(provideData(index))
+                        update(newData)
                     } + getLast3().up {
-//                        insert(3, listOf(ItemModel(199, "insert Title ${index}", "insert Content")))
-                        move(2, 4) +
-                        subs(3) {
-                            update(ItemModel(189, "Subs Title $index", "subs Content"))
-                        }
+//                        move(2, 4) +
+//                        subs(3) {
+//                            update(ItemModel(189, "Subs Title $index", "subs Content"))
+//                        }
+                        updateAuto(newData.shuffled(), diffUtilCheck { it.id })
                     } + getLast4().up {
-                        getLast1().up {
-                            update(provideData(index))
+                        getLast1().reduce { oldData ->
+                            update(oldData + ItemModel())
                         }
                     } + getLast5().up {
-                        update(listOf(ItemModel().some(), none<ItemModel>()).some())
+                        sealedItem({ get1().fix() }) {
+                            update(listOf(ItemModel().some(), none<ItemModel>()))
+                        }
                     }
                 }
             }
@@ -330,7 +333,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun dataSupplier(pageIndex: Int): Single<List<ItemModel>> {
-        return Single.just(genList(pageIndex * 10, 10 - pageIndex % 10))
+        return Single.just(genList(0, 10 - pageIndex % 10))
                 .subscribeOn(Schedulers.io())
     }
 }

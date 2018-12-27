@@ -85,17 +85,23 @@ class SealedItemRenderer<T, L : HListK<Kind<ForSealedItem, T>, L>>(
 class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
         val renderer: SealedItemRenderer<T, L>)
     : Updatable<T, SealedViewData<T>> {
+
+    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>
+            sealedItem(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.() -> Action<VD>): Action<SealedViewData<T>> =
+            sealedItemReduce(f) { act() }
+
     @Suppress("UNCHECKED_CAST")
     fun <D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>
-            sealedItem(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.() -> Action<VD>): Action<SealedViewData<T>> {
+            sealedItemReduce(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.(D) -> Action<VD>): Action<SealedViewData<T>> {
         val sealedItem = renderer.sealedList.f()
 
         return { oldVD ->
             if (sealedItem == oldVD.item) {
-                val subAction = sealedItem.renderer.updater.act()
+                val targetVD = oldVD.data as VD
+                val subAction = sealedItem.renderer.updater.act(targetVD.originData)
 //                val newData = sealedItem.mapper(oldVD.pData)
 //                val (actions, subVD) = subAction(sealedItem.renderer.getData(newData))
-                val (actions, subVD) = subAction(oldVD.data as VD)
+                val (actions, subVD) = subAction(targetVD)
 
                 val newOriData = sealedItem.demapper(oldVD.originData, subVD.originData)
                 val newVD = renderer.getData(newOriData)
@@ -110,6 +116,11 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
     fun update(data: T, payload: Any? = null): Action<SealedViewData<T>> = { oldVD ->
         val newVD = renderer.getData(data)
         updateVD(oldVD, newVD, payload) to newVD
+    }
+
+    fun reduce(f: (oldData: T) -> ChangedData<T>): Action<SealedViewData<T>> = { oldVD ->
+        val (newData, payload) = f(oldVD.originData)
+        update(newData, payload)(oldVD)
     }
 }
 
