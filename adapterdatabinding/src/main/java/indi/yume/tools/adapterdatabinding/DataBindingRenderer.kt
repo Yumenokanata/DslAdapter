@@ -3,7 +3,7 @@ package indi.yume.tools.adapterdatabinding
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
-import indi.yume.tools.dsladapter.Action
+import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.UpdatableOf
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
@@ -100,7 +100,7 @@ inline fun <T, I> BaseRenderer<T, DataBindingViewData<T, I>, DataBindingUpdater<
         this as DataBindingRenderer<T, I>
 
 class DataBindingUpdater<T, I>(val renderer: DataBindingRenderer<T, I>) : Updatable<T, DataBindingViewData<T, I>> {
-    fun update(newData: T, payload: Any? = null): Action<DataBindingViewData<T, I>> {
+    fun update(newData: T, payload: Any? = null): ActionU<DataBindingViewData<T, I>> {
         val newVD = renderer.getData(newData)
 
         return { oldVD -> updateVD(oldVD, newVD, payload) to newVD }

@@ -87,12 +87,12 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
     : Updatable<T, SealedViewData<T>> {
 
     fun <D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>
-            sealedItem(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.() -> Action<VD>): Action<SealedViewData<T>> =
+            sealedItem(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.() -> ActionU<VD>): ActionU<SealedViewData<T>> =
             sealedItemReduce(f) { act() }
 
     @Suppress("UNCHECKED_CAST")
     fun <D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>
-            sealedItemReduce(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.(D) -> Action<VD>): Action<SealedViewData<T>> {
+            sealedItemReduce(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.(D) -> ActionU<VD>): ActionU<SealedViewData<T>> {
         val sealedItem = renderer.sealedList.f()
 
         return { oldVD ->
@@ -113,12 +113,12 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
         }
     }
 
-    fun update(data: T, payload: Any? = null): Action<SealedViewData<T>> = { oldVD ->
+    fun update(data: T, payload: Any? = null): ActionU<SealedViewData<T>> = { oldVD ->
         val newVD = renderer.getData(data)
         updateVD(oldVD, newVD, payload) to newVD
     }
 
-    fun reduce(f: (oldData: T) -> ChangedData<T>): Action<SealedViewData<T>> = { oldVD ->
+    fun reduce(f: (oldData: T) -> ChangedData<T>): ActionU<SealedViewData<T>> = { oldVD ->
         val (newData, payload) = f(oldVD.originData)
         update(newData, payload)(oldVD)
     }

@@ -33,7 +33,7 @@ abstract class BaseRenderer<T, VD : ViewData<T>, UP : Updatable<T, VD>> : Render
         private class RecyclerMap(map: Map<Int, Recycler> = emptyMap()): Map<Int, Recycler> by map
 
         fun RecyclerView.ViewHolder.bindRecycle(any: Any, f: (RecyclerView.ViewHolder) -> Unit) {
-            itemView?.apply {
+            itemView.apply {
                 val tag = tag
                 if (tag != null && tag is RecyclerMap)
                     setTag(RecyclerMap(tag + (any.hashCode() to Recycler(f))))
@@ -43,9 +43,9 @@ abstract class BaseRenderer<T, VD : ViewData<T>, UP : Updatable<T, VD>> : Render
         }
 
         fun RecyclerView.ViewHolder.doRecycle(any: Any) {
-            val tag = itemView?.tag
+            val tag = itemView.tag
             val key = any.hashCode()
-            itemView?.tag = if(tag is RecyclerMap)
+            itemView.tag = if(tag is RecyclerMap)
                 tag.get(key)?.let {
                     it.f(this)
                     RecyclerMap(tag - key)

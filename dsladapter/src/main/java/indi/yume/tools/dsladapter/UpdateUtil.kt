@@ -2,14 +2,11 @@ package indi.yume.tools.dsladapter
 
 import arrow.Kind
 import indi.yume.tools.dsladapter.datatype.*
-import indi.yume.tools.dsladapter.datatype.HListK.Companion.nil
 import indi.yume.tools.dsladapter.datatype.UpdateActions
-import indi.yume.tools.dsladapter.renderers.*
-import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 
-typealias Action<VD> = (VD) -> Pair<UpdateActions, VD>
+typealias ActionU<VD> = (VD) -> Pair<UpdateActions, VD>
 
 
 class TypeCheck<T>
@@ -42,19 +39,19 @@ fun <E, L : HListK<ForIdT, L>> L.putF(e: E): HConsK<ForIdT, E, L> = extend(IdT(e
 interface Updatable<P, VD : ViewData<P>> : UpdatableOf<P, VD>
 
 interface Insertable<P, D : ViewData<P>, I> : Updatable<P, D> {
-    fun insert(pos: Int, insertedItems: I): Action<D>
+    fun insert(pos: Int, insertedItems: I): ActionU<D>
 }
 
 interface Removable<P, D: ViewData<P>> : Updatable<P, D> {
-    fun remove(pos: Int, count: Int): Action<D>
+    fun remove(pos: Int, count: Int): ActionU<D>
 }
 
 interface Movable<P, D: ViewData<P>> : Updatable<P, D> {
-    fun move(fromPosition: Int, toPosition: Int): Action<D>
+    fun move(fromPosition: Int, toPosition: Int): ActionU<D>
 }
 
 interface Changeable<P, D: ViewData<P>, I> : Updatable<P, D> {
-    fun change(pos: Int, newItems: I, payload: Any?): Action<D>
+    fun change(pos: Int, newItems: I, payload: Any?): ActionU<D>
 }
 
 interface ListChangeable<P, D: ViewData<P>, I>
@@ -77,7 +74,7 @@ fun <P, VD : ViewData<P>> updateVD(oldVD: VD, newVD: VD, payload: Any? = null): 
         ))
     }
 
-operator fun <T, VD : ViewData<T>> Action<VD>.plus(a2: Action<VD>): Action<VD> =
+operator fun <T, VD : ViewData<T>> ActionU<VD>.plus(a2: ActionU<VD>): ActionU<VD> =
         { oldVD ->
             val (firstAct, firstVD) = this@plus(oldVD)
             val (secondAct, secondVD) = a2(firstVD)

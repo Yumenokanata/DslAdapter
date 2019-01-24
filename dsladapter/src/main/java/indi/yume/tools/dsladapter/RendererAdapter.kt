@@ -38,7 +38,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
     fun getUpdater(): UP = renderer.updater
 
     @CheckResult
-    fun reduce(f: UP.(T) -> Action<VD>): UpdateResult<T, VD> {
+    fun reduce(f: UP.(T) -> ActionU<VD>): UpdateResult<T, VD> {
         val data = adapterViewData
         val (actions, newVD) = getUpdater().f(data.originData)(data)
 
@@ -46,19 +46,19 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
     }
 
     @CheckResult
-    fun update(f: UP.() -> Action<VD>): UpdateResult<T, VD> {
+    fun update(f: UP.() -> ActionU<VD>): UpdateResult<T, VD> {
         val data = adapterViewData
         val (actions, newVD) = getUpdater().f()(data)
 
         return UpdateResult(data, newVD, listOf(actions))
     }
 
-    fun updateNow(f: UP.() -> Action<VD>) {
+    fun updateNow(f: UP.() -> ActionU<VD>) {
         update(f).dispatchUpdatesTo(this)
     }
 
     @MainThread
-    fun updateData(actions: Action<VD>) {
+    fun updateData(actions: ActionU<VD>) {
         val data = adapterViewData
         val (update, newVD) = actions(data)
 

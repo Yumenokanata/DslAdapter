@@ -3,13 +3,10 @@ package indi.yume.tools.dsladapter.renderers
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
-import indi.yume.tools.dsladapter.Action
+import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.TypeCheck
 import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.datatype.OnChanged
-import indi.yume.tools.dsladapter.datatype.OnInserted
-import indi.yume.tools.dsladapter.datatype.OnRemoved
-import indi.yume.tools.dsladapter.datatype.UpdateActions
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
@@ -55,7 +52,7 @@ data class ConstantViewData<T, I>(override val originData: T, override val count
 class ConstantUpdater<T, I>(
         val renderer: ConstantItemRenderer<T, I>
 ) : Updatable<T, ConstantViewData<T, I>> {
-    fun forceUpdate(payload: Any? = null): Action<ConstantViewData<T, I>> = { oldVD ->
+    fun forceUpdate(payload: Any? = null): ActionU<ConstantViewData<T, I>> = { oldVD ->
         OnChanged(0, oldVD.count, payload) to oldVD
     }
 }

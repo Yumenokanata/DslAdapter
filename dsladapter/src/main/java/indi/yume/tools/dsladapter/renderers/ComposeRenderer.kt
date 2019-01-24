@@ -76,16 +76,16 @@ class ComposeUpdater<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, V
             val get: (IL) -> ComposeOf<T, BR>,
             val put: (DL, T) -> DL,
             val putVD: (VDL, VD) -> VDL) {
-        fun up(act: UP.() -> Action<VD>): Action<ComposeViewData<DL, VDL>> =
+        fun up(act: UP.() -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> =
                 updateItem(this) { act() }
 
-        fun reduce(act: UP.(oldData: T) -> Action<VD>): Action<ComposeViewData<DL, VDL>> =
+        fun reduce(act: UP.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> =
                 updateItem(this, act)
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            updateItem(getter: ComposeGetter<T, VD, UP, BR>, act: UP.(oldData: T) -> Action<VD>): Action<ComposeViewData<DL, VDL>> {
+            updateItem(getter: ComposeGetter<T, VD, UP, BR>, act: UP.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> {
         val composeItem = getter.get(renderer.composeList).fix()
 
         return result@{ oldVD ->
@@ -108,15 +108,15 @@ class ComposeUpdater<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, V
         }
     }
 
-    fun updateBy(act: ComposeUpdater<DL, IL, VDL>.() -> Action<ComposeViewData<DL, VDL>>): Action<ComposeViewData<DL, VDL>> =
+    fun updateBy(act: ComposeUpdater<DL, IL, VDL>.() -> ActionU<ComposeViewData<DL, VDL>>): ActionU<ComposeViewData<DL, VDL>> =
             act()
 
-    fun update(data: DL, payload: Any? = null): Action<ComposeViewData<DL, VDL>> = { oldVD ->
+    fun update(data: DL, payload: Any? = null): ActionU<ComposeViewData<DL, VDL>> = { oldVD ->
         val newVD = renderer.getData(data)
         updateVD(oldVD, newVD, payload) to newVD
     }
 
-    fun reduce(f: (oldData: DL) -> ChangedData<DL>): Action<ComposeViewData<DL, VDL>> = { oldVD ->
+    fun reduce(f: (oldData: DL) -> ChangedData<DL>): ActionU<ComposeViewData<DL, VDL>> = { oldVD ->
         val (newData, payload) = f(oldVD.originData)
         update(newData, payload)(oldVD)
     }

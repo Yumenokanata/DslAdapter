@@ -5,7 +5,6 @@ import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
-import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 
 /**
  * Created by xuemaotang on 2017/11/16.
@@ -14,7 +13,8 @@ import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 class ListRenderer<T, I, IV : ViewData<I>, UP : Updatable<I, IV>>(
         val converter: (T) -> List<I>,
         val demapper: (oldData: T, newMapData: List<I>) -> T,
-        val subs: BaseRenderer<I, IV, UP>
+        val subs: BaseRenderer<I, IV, UP>,
+        val keyGetter: KeyGetter<I>?
 ) : BaseRenderer<T, ListViewData<T, I, IV>, ListUpdater<T, I, IV, UP>>() {
     override val updater: ListUpdater<T, I, IV, UP> = ListUpdater(this, subs.updater)
 
@@ -61,18 +61,22 @@ inline fun <T, I, IV : ViewData<I>, UP : Updatable<I, IV>> BaseRenderer<T, ListV
 class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
         val renderer: ListRenderer<T, I, IV, U>,
         val subsUpdater: U) : ListChangeable<T, ListViewData<T, I, IV>, I> {
-    fun update(data: T, payload: Any? = null): Action<ListViewData<T, I, IV>> = { oldVD ->
+    fun update(data: T, payload: Any? = null): ActionU<ListViewData<T, I, IV>> = { oldVD ->
         val newVD = renderer.getData(data)
-        updateVD(oldVD, newVD, payload) to newVD
+
+        if (renderer.keyGetter != null)
+            updateAuto(data, diffUtilCheck(renderer.keyGetter))(oldVD)
+        else
+            updateVD(oldVD, newVD, payload) to newVD
     }
 
-    fun reduce(f: (oldData: T) -> ChangedData<T>): Action<ListViewData<T, I, IV>> = { oldVD ->
+    fun reduce(f: (oldData: T) -> ChangedData<T>): ActionU<ListViewData<T, I, IV>> = { oldVD ->
         val (newData, payload) = f(oldVD.originData)
         update(newData, payload)(oldVD)
     }
 
     fun updateAuto(data: T,
-                   f: (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> = diffUtilCheck()): Action<ListViewData<T, I, IV>> =
+                   f: (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> = diffUtilCheck()): ActionU<ListViewData<T, I, IV>> =
             { oldVD ->
                 val newVD = renderer.getData(data)
                 val actionList = f(oldVD.data, newVD.data)
@@ -106,7 +110,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
                 ActionComposite(0, realActions) to newVD
             }
 
-    fun subs(pos: Int, updater: U.() -> Action<IV>): Action<ListViewData<T, I, IV>> {
+    fun subs(pos: Int, updater: U.() -> ActionU<IV>): ActionU<ListViewData<T, I, IV>> {
         val subAction = subsUpdater.updater()
 
         return subsAct@{ oldVD ->
@@ -124,7 +128,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
         }
     }
 
-    override fun insert(pos: Int, insertedItems: List<I>): Action<ListViewData<T, I, IV>> =
+    override fun insert(pos: Int, insertedItems: List<I>): ActionU<ListViewData<T, I, IV>> =
             result@{ oldVD ->
                 if (pos !in 0 until oldVD.data.size)
                     return@result EmptyAction to oldVD
@@ -144,7 +148,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
                 OnInserted(realPos, realCount) to ListViewData(newOriData, newData, newVD)
             }
 
-    override fun remove(pos: Int, count: Int): Action<ListViewData<T, I, IV>> =
+    override fun remove(pos: Int, count: Int): ActionU<ListViewData<T, I, IV>> =
             result@{ oldVD ->
                 if (pos !in 0 until oldVD.data.size
                         || pos + count - 1 !in 0 until oldVD.data.size)
@@ -164,7 +168,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
                 OnRemoved(realPos, realCount) to ListViewData(newOriData, newData, newVD)
             }
 
-    override fun  move(fromPosition: Int, toPosition: Int): Action<ListViewData<T, I, IV>> =
+    override fun  move(fromPosition: Int, toPosition: Int): ActionU<ListViewData<T, I, IV>> =
             result@{ oldVD ->
                 val emptyResult = EmptyAction to oldVD
                 if (fromPosition !in 0 until oldVD.data.size
@@ -192,7 +196,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
                     ))) to ListViewData(newOriData, newData, newVD)
             }
 
-    override fun change(pos: Int, newItems: List<I>, payload: Any?): Action<ListViewData<T, I, IV>> =
+    override fun change(pos: Int, newItems: List<I>, payload: Any?): ActionU<ListViewData<T, I, IV>> =
             result@{ oldVD ->
                 val count = newItems.size
                 if (pos !in 0 until oldVD.data.size
