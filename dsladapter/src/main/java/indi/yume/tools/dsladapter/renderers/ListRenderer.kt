@@ -76,7 +76,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
     }
 
     fun updateAuto(data: T,
-                   f: (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> = diffUtilCheck()): ActionU<ListViewData<T, I, IV>> =
+                   f: (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> = diffUtilCheck(renderer.keyGetter ?: { it })): ActionU<ListViewData<T, I, IV>> =
             { oldVD ->
                 val newVD = renderer.getData(data)
                 val actionList = f(oldVD.data, newVD.data)
