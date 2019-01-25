@@ -18,13 +18,13 @@ class IgnoreRenderer<T> private constructor(
             IgnoreViewData(renderer.getData(content))
 
     override fun getItemId(data: IgnoreViewData<T>, index: Int): Long =
-            renderer.getItemId(data, index)
+            renderer.getItemId(data.originVD, index)
 
     override fun getLayoutResId(data: IgnoreViewData<T>, index: Int): Int =
-            renderer.getLayoutResId(data, index)
+            renderer.getLayoutResId(data.originVD, index)
 
     override fun bind(data: IgnoreViewData<T>, index: Int, holder: RecyclerView.ViewHolder) =
-            renderer.bind(data, index, holder)
+            renderer.bind(data.originVD, index, holder)
 
     override fun recycle(holder: RecyclerView.ViewHolder) =
             renderer.recycle(holder)
