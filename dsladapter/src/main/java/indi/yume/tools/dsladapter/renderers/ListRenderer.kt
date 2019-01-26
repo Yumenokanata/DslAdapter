@@ -14,7 +14,8 @@ class ListRenderer<T, I, IV : ViewData<I>, UP : Updatable<I, IV>>(
         val converter: (T) -> List<I>,
         val demapper: (oldData: T, newMapData: List<I>) -> T,
         val subs: BaseRenderer<I, IV, UP>,
-        val keyGetter: KeyGetter<I>?
+        val keyGetter: KeyGetter<I>?,
+        val itemIsSingle: Boolean = false
 ) : BaseRenderer<T, ListViewData<T, I, IV>, ListUpdater<T, I, IV, UP>>() {
     override val updater: ListUpdater<T, I, IV, UP> = ListUpdater(this, subs.updater)
 
@@ -75,36 +76,33 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
         update(newData, payload)(oldVD)
     }
 
+    fun updateDiffUtil(data: T, keyGetter: KeyGetter<I> = renderer.keyGetter ?: keyMe()): ActionU<ListViewData<T, I, IV>> =
+            { oldVD ->
+                val newVD = renderer.getData(data)
+                val actionList = diffUtil(oldVD.data, newVD.data, keyGetter)
+
+                val realActions = if (renderer.itemIsSingle
+                        && oldVD.count == oldVD.list.size && newVD.count == newVD.list.size) {
+                    actionList.toUpdateActions()
+                } else {
+                    actionList.toActionsWithRealIndex(oldVD.list, newVD.list)
+                }
+
+                ActionComposite(0, realActions) to newVD
+            }
+
     fun updateAuto(data: T,
-                   f: (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> = diffUtilCheck(renderer.keyGetter ?: { it })): ActionU<ListViewData<T, I, IV>> =
+                   f: (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> = diffUtilCheck(renderer.keyGetter ?: keyMe())): ActionU<ListViewData<T, I, IV>> =
             { oldVD ->
                 val newVD = renderer.getData(data)
                 val actionList = f(oldVD.data, newVD.data)
 
-                fun getRealPos(pos: Int): Int = oldVD.endsPoint.getTargetStartPoint(pos)
-
-                fun getRealCount(pos: Int, count: Int): Int =
-                        oldVD.endsPoint.getTargetStartPoint(pos + count) -
-                                oldVD.endsPoint.getTargetStartPoint(pos)
-
-                val realActions = actionList.map {
-                    when (it) {
-                        is EmptyAction -> EmptyAction
-                        is OnInserted -> OnInserted(getRealPos(it.pos), getRealCount(it.pos, it.count))
-                        is OnRemoved -> OnRemoved(getRealPos(it.pos), getRealCount(it.pos, it.count))
-                        is OnMoved -> {
-                            val targetItemVD = oldVD[it.fromPosition]
-                            if (targetItemVD.count == 1)
-                                OnMoved(getRealPos(it.fromPosition), getRealPos(it.toPosition))
-                            else
-                                ActionComposite(0, listOf(
-                                        OnRemoved(getRealPos(it.fromPosition), targetItemVD.count),
-                                        OnInserted(getRealPos(it.toPosition), targetItemVD.count)
-                                ))
-                        }
-                        is OnChanged -> OnChanged(getRealPos(it.pos), getRealCount(it.pos, it.count), it.payload)
-                        is ActionComposite -> throw UnsupportedOperationException("updateAuto do not support ActionComposite.")
-                    }
+                val realActions = if (renderer.itemIsSingle
+                        && oldVD.count == oldVD.list.size && newVD.count == newVD.list.size) {
+                    actionList
+                } else {
+                    actionList.toFakeActions<IV>()
+                            .toActionsWithRealIndex(oldVD.list, newVD.list) { it.count }
                 }
 
                 ActionComposite(0, realActions) to newVD
@@ -168,7 +166,7 @@ class ListUpdater<T, I, IV : ViewData<I>, U : Updatable<I, IV>>(
                 OnRemoved(realPos, realCount) to ListViewData(newOriData, newData, newVD)
             }
 
-    override fun  move(fromPosition: Int, toPosition: Int): ActionU<ListViewData<T, I, IV>> =
+    override fun move(fromPosition: Int, toPosition: Int): ActionU<ListViewData<T, I, IV>> =
             result@{ oldVD ->
                 val emptyResult = EmptyAction to oldVD
                 if (fromPosition !in 0 until oldVD.data.size

@@ -4,11 +4,12 @@ import androidx.recyclerview.widget.DiffUtil
 import indi.yume.tools.dsladapter.datatype.ActionComposite
 import indi.yume.tools.dsladapter.datatype.UpdateActions
 import indi.yume.tools.dsladapter.datatype.toUpdateActions
+import indi.yume.tools.dsladapter.keyMe
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
 import kotlin.coroutines.experimental.buildSequence
 
-typealias KeyGetter<T> = (T) -> Any?
+typealias KeyGetter<T> = (T, Int) -> Any?
 
 fun <T1, T2, T3, V> zip3(it1: Iterable<T1>, it2: Iterable<T2>, it3: Iterable<T3>,
                          zipper: (T1, T2, T3) -> V): Sequence<V> =
@@ -82,18 +83,19 @@ fun List<UpdateActions>.filterUselessAction(): List<UpdateActions> =
                 it
         }.filterNotNull()
 
+fun <I> diffUtil(oldSubs: List<I>, newSubs: List<I>, keyGetter: KeyGetter<I> = keyMe()): DiffUtil.DiffResult =
+        DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+                    keyGetter(oldSubs[oldItemPosition], oldItemPosition) == keyGetter(newSubs[newItemPosition], newItemPosition)
 
-fun <I> diffUtilCheck(keyGetter: (I) -> Any? = { it }): (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> =
-        { oldSubs, newSubs ->
-            DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-                override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                        keyGetter(oldSubs[oldItemPosition]) == keyGetter(newSubs[newItemPosition])
+            override fun getOldListSize(): Int = oldSubs.size
 
-                override fun getOldListSize(): Int = oldSubs.size
+            override fun getNewListSize(): Int = newSubs.size
 
-                override fun getNewListSize(): Int = newSubs.size
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+                    oldSubs[oldItemPosition] == newSubs[newItemPosition]
+        })
 
-                override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                        oldSubs[oldItemPosition] == newSubs[newItemPosition]
-            }).toUpdateActions()
-        }
+
+fun <I> diffUtilCheck(keyGetter: KeyGetter<I> = keyMe()): (oldSubs: List<I>, newSubs: List<I>) -> List<UpdateActions> =
+        { oldSubs, newSubs -> diffUtil(oldSubs, newSubs, keyGetter).toUpdateActions() }
