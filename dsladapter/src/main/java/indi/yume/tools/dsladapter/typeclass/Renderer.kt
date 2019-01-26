@@ -23,7 +23,7 @@ interface Renderer<Data, VD : ViewData<Data>, UP : Updatable<Data, VD>> {
     val updater: UP
 }
 
-interface ViewData<OriD> : ViewDataOf<OriD> {
+interface ViewData<out OriD> : ViewDataOf<OriD> {
     val count: Int
 
     val originData: OriD

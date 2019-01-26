@@ -89,7 +89,7 @@ data class TitleViewData<T, G, GVD: ViewData<G>, I, IVD : ViewData<I>>(override 
                                                                        val subsData: List<IVD>) : ViewData<T> {
     val titleSize: Int = titleItem.count
 
-    val subEndPoints: IntArray = subsData.getEndsPonints()
+    val subEndPoints: IntArray = subsData.getEndsPoints()
 
     override val count: Int = titleSize + subEndPoints.getEndPoint()
 }

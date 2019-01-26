@@ -22,18 +22,19 @@ fun <T1, T2, T3, V> zip3(it1: Iterable<T1>, it2: Iterable<T2>, it3: Iterable<T3>
             }
         }
 
-fun <VD: ViewData<*>> List<VD>.getEndsPonints(): IntArray =
-        getEndsPonints { it.count }
+fun <VD: ViewData<*>> List<VD>.getEndsPoints(): IntArray =
+        getEndsPoints { it.count }
 
 fun IntArray.getEndPoint(defaultV: Int = 0): Int = lastOrNull() ?: defaultV
 
 fun IntArray.getTargetStartPoint(index: Int): Int = when {
+    size == 0 -> 0
     index <= 0 -> 0
-    index > lastIndex -> get(lastIndex)
+    index >= size -> get(size - 1)
     else -> get(index - 1)
 }
 
-fun <T> List<T>.getEndsPonints(getter: (T) -> Int): IntArray {
+fun <T> List<T>.getEndsPoints(getter: (T) -> Int): IntArray {
     val ends = IntArray(size)
     var lastEndPosition = 0
     for ((i, vd) in withIndex()) {

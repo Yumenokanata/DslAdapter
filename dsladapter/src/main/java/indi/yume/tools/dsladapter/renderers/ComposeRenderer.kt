@@ -171,7 +171,7 @@ data class ComposeViewData<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemD
     val vdNormalList: List<ComposeItemData<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>, BaseRenderer<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>>> =
             vdList.toList().map { it.fixAny() }
 
-    val endsPoint: IntArray = vdNormalList.getEndsPonints { it.viewData.count }
+    val endsPoint: IntArray = vdNormalList.getEndsPoints { it.viewData.count }
 
     override val count: Int = endsPoint.getEndPoint()
 }

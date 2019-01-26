@@ -34,3 +34,8 @@ fun <T, D, VD: ViewData<D>, UP : Updatable<D, VD>> BaseRenderer<D, VD, UP>.mapT(
 fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> BaseRenderer<T, VD, UP>.ignoreType(
         reduceFun: UP.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
         IgnoreRenderer.ignoreType(this, reduceFun)
+
+
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, TUP : Updatable<T, VD>>
+        BaseRenderer<T, VD, UP>.replaceUpdate(reduceFun: (UP) -> TUP): ReplaceRenderer<T, VD, TUP> =
+        ReplaceRenderer.replaceUpdate(this, reduceFun)

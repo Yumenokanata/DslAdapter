@@ -48,7 +48,7 @@ data class ListViewData<T, I, VD : ViewData<I>>(override val originData: T, val 
         assert(list.size == data.size)
     }
 
-    val endsPoint: IntArray = list.getEndsPonints()
+    val endsPoint: IntArray = list.getEndsPoints()
 
     override val count: Int
         get() = endsPoint.getEndPoint()
