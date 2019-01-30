@@ -35,19 +35,19 @@ class SupplierBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, 
         val initSumData: DL,
         val composeBuilder: ComposeBuilder<DL, IL, VDL>
 ) {
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            addStatic(initData: T, renderer: BR)
-            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+            addStatic(initData: T, renderer: BaseRenderer<T, VD, UP>)
+            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
             SupplierBuilder({ supplierSum().extend(initData.toIdT()) }, initSumData.extend(IdT(initData)), composeBuilder.add(renderer))
 
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            add(supplier: Supplier<T>, renderer: BR)
-            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+            add(supplier: Supplier<T>, renderer: BaseRenderer<T, VD, UP>)
+            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
             SupplierBuilder({ supplierSum().extend(supplier().toIdT()) }, initSumData.extend(IdT(supplier())), composeBuilder.add(renderer))
 
-    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>, BR : BaseRenderer<Unit, VD, UP>>
-            addStatic(renderer: BR)
-            : SupplierBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, BR>, IL>, HConsK<ForComposeItemData, Pair<Unit, BR>, VDL>> =
+    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>>
+            addStatic(renderer: BaseRenderer<Unit, VD, UP>)
+            : SupplierBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, UP>, IL>, HConsK<ForComposeItemData, Pair<Unit, UP>, VDL>> =
             SupplierBuilder({ supplierSum().extend(Unit.toIdT()) }, initSumData.extend(IdT(Unit)), composeBuilder.add(renderer))
 
     fun build(): Pair<RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>>,

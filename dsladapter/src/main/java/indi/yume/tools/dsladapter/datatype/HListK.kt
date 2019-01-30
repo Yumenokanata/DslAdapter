@@ -76,44 +76,48 @@ private tailrec fun <F, T> foldRec(data: FoldData<F, T>, f: (Kind<F, *>, T) -> T
 /**
  * Mustache:
  *
- * data: {"sum": 5, "list":["1", "2", "3", "4", "5"]}
+ * data: {"index": 4, "sum": 5, "list":["1", "2", "3", "4", "5"]}
  *
  * template:
  * fun <F, {{#list}}T{{.}}, {{/list}}L : HListK<F, L>> {{#list}}HConsK<F, T{{.}}, {{/list}}L{{#list}}>{{/list}}
- *         .get{{sum}}(): Kind<F, T{{sum}}> = {{#list}}{{^-last}}tail.{{/-last}}{{/list}}head
+ *         .get{{index}}(): Kind<F, T{{sum}}> = {{#list}}{{^-last}}tail.{{/-last}}{{/list}}head
  */
-fun <F, T, L : HListK<F, L>> HConsK<F, T, L>.get1(): Kind<F, T> = head
+fun <F, T, L : HListK<F, L>> HConsK<F, T, L>.get0(): Kind<F, T> = head
 
-fun <F, T1, T2, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, L>>.get2(): Kind<F, T2> = tail.head
+fun <F, T1, T2, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, L>>.get1(): Kind<F, T2> = tail.head
 
-fun <F, T1, T2, T3, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, L>>>.get3(): Kind<F, T3> = tail.tail.head
+fun <F, T1, T2, T3, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, L>>>.get2(): Kind<F, T3> = tail.tail.head
 
-fun <F, T1, T2, T3, T4, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, L>>>>.get4(): Kind<F, T4> = tail.tail.tail.head
+fun <F, T1, T2, T3, T4, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, L>>>>.get3(): Kind<F, T4> = tail.tail.tail.head
 
 fun <F, T1, T2, T3, T4, T5, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, L>>>>>
-        .get5(): Kind<F, T5> = tail.tail.tail.tail.head
+        .get4(): Kind<F, T5> = tail.tail.tail.tail.head
 
 fun <F, T1, T2, T3, T4, T5, T6, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, L>>>>>>
-        .get6(): Kind<F, T6> = tail.tail.tail.tail.tail.head
+        .get5(): Kind<F, T6> = tail.tail.tail.tail.tail.head
 
 fun <F, T1, T2, T3, T4, T5, T6, T7, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, L>>>>>>>
-        .get7(): Kind<F, T7> = tail.tail.tail.tail.tail.tail.head
+        .get6(): Kind<F, T7> = tail.tail.tail.tail.tail.tail.head
 
 fun <F, T1, T2, T3, T4, T5, T6, T7, T8, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, L>>>>>>>>
-        .get8(): Kind<F, T8> = tail.tail.tail.tail.tail.tail.tail.head
+        .get7(): Kind<F, T8> = tail.tail.tail.tail.tail.tail.tail.head
 
 fun <F, T1, T2, T3, T4, T5, T6, T7, T8, T9, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, L>>>>>>>>>
-        .get9(): Kind<F, T9> = tail.tail.tail.tail.tail.tail.tail.tail.head
+        .get8(): Kind<F, T9> = tail.tail.tail.tail.tail.tail.tail.tail.head
 
+fun <F, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, L : HListK<F, L>> HConsK<F, T0, HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, L>>>>>>>>>>
+        .get9(): Kind<F, T9> = tail.tail.tail.tail.tail.tail.tail.tail.tail.head
 
+fun <F, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, L : HListK<F, L>> HConsK<F, T0, HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, HConsK<F, T10, L>>>>>>>>>>>
+        .get10(): Kind<F, T10> = tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.head
 
 /**
  * Mustache:
  *
- * data: {"sum": 5, "list":["1", "2", "3", "4", "5"]}
+ * data: {"index": 4, "sum": 5, "list":["1", "2", "3", "4", "5"]}
  *
  * template:
- * fun <F, R, {{#list}}T{{.}}, {{/list}}L : HListK<F, L>> {{#list}}HConsK<F, T{{.}}, {{/list}}L{{#list}}>{{/list}}.map{{sum}}(f: (Kind<F, T{{sum}}>) -> Kind<F, R>)
+ * fun <F, R, {{#list}}T{{.}}, {{/list}}L : HListK<F, L>> {{#list}}HConsK<F, T{{.}}, {{/list}}L{{#list}}>{{/list}}.map{{index}}(f: (Kind<F, T{{sum}}>) -> Kind<F, R>)
  *         : {{#list}}{{^-last}}HConsK<F, T{{.}}, {{/-last}}{{/list}}HConsK<F, R, L{{#list}}>{{/list}} =
  *         {{#list}}{{^-last}}tail.{{/-last}}{{/list}}tail
  *                 .extend(f({{#list}}{{^-last}}tail.{{/-last}}{{/list}}head))
@@ -121,20 +125,20 @@ fun <F, T1, T2, T3, T4, T5, T6, T7, T8, T9, L : HListK<F, L>> HConsK<F, T1, HCon
  *                 .extend({{#list}}{{^-last}}tail.{{/-last}}{{/list}}head)
  * {{/list}}
  */
-fun <F, R, T, L : HListK<F, L>> HConsK<F, T, L>.map1(f: (Kind<F, T>) -> Kind<F, R>): HConsK<F, R, L> = tail.extend(f(head))
+fun <F, R, T, L : HListK<F, L>> HConsK<F, T, L>.map0(f: (Kind<F, T>) -> Kind<F, R>): HConsK<F, R, L> = tail.extend(f(head))
 
-fun <F, R, T1, T2, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, L>>.map2(f: (Kind<F, T2>) -> Kind<F, R>)
+fun <F, R, T1, T2, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, L>>.map1(f: (Kind<F, T2>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, R, L>> =
         tail.tail.extend(f(tail.head)).extend(head)
 
-fun <F, R, T1, T2, T3, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, L>>>.map3(f: (Kind<F, T3>) -> Kind<F, R>)
+fun <F, R, T1, T2, T3, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, L>>>.map2(f: (Kind<F, T3>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, T2, HConsK<F, R, L>>> =
         tail.tail.tail
                 .extend(f(tail.tail.head))
                 .extend(tail.head)
                 .extend(head)
 
-fun <F, R, T1, T2, T3, T4, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, L>>>>.map4(f: (Kind<F, T4>) -> Kind<F, R>)
+fun <F, R, T1, T2, T3, T4, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, L>>>>.map3(f: (Kind<F, T4>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, R, L>>>> =
         tail.tail.tail.tail
                 .extend(f(tail.tail.tail.head))
@@ -143,7 +147,7 @@ fun <F, R, T1, T2, T3, T4, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<
                 .extend(head)
 
 fun <F, R, T1, T2, T3, T4, T5, L : HListK<F, L>>
-        HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, L>>>>>.map5(f: (Kind<F, T5>) -> Kind<F, R>)
+        HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, L>>>>>.map4(f: (Kind<F, T5>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, R, L>>>>> =
         tail.tail.tail.tail.tail
                 .extend(f(tail.tail.tail.tail.head))
@@ -153,7 +157,7 @@ fun <F, R, T1, T2, T3, T4, T5, L : HListK<F, L>>
                 .extend(head)
 
 fun <F, R, T1, T2, T3, T4, T5, T6, L : HListK<F, L>>
-        HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, L>>>>>>.map6(f: (Kind<F, T6>) -> Kind<F, R>)
+        HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, L>>>>>>.map5(f: (Kind<F, T6>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, R, L>>>>>> =
         tail.tail.tail.tail.tail.tail
                 .extend(f(tail.tail.tail.tail.tail.head))
@@ -163,7 +167,7 @@ fun <F, R, T1, T2, T3, T4, T5, T6, L : HListK<F, L>>
                 .extend(tail.head)
                 .extend(head)
 
-fun <F, R, T1, T2, T3, T4, T5, T6, T7, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, L>>>>>>>.map7(f: (Kind<F, T7>) -> Kind<F, R>)
+fun <F, R, T1, T2, T3, T4, T5, T6, T7, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, L>>>>>>>.map6(f: (Kind<F, T7>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, R, L>>>>>>> =
         tail.tail.tail.tail.tail.tail.tail
                 .extend(f(tail.tail.tail.tail.tail.tail.head))
@@ -174,7 +178,7 @@ fun <F, R, T1, T2, T3, T4, T5, T6, T7, L : HListK<F, L>> HConsK<F, T1, HConsK<F,
                 .extend(tail.head)
                 .extend(head)
 
-fun <F, R, T1, T2, T3, T4, T5, T6, T7, T8, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, L>>>>>>>>.map8(f: (Kind<F, T8>) -> Kind<F, R>)
+fun <F, R, T1, T2, T3, T4, T5, T6, T7, T8, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, L>>>>>>>>.map7(f: (Kind<F, T8>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, R, L>>>>>>>> =
         tail.tail.tail.tail.tail.tail.tail.tail
                 .extend(f(tail.tail.tail.tail.tail.tail.tail.head))
@@ -186,10 +190,39 @@ fun <F, R, T1, T2, T3, T4, T5, T6, T7, T8, L : HListK<F, L>> HConsK<F, T1, HCons
                 .extend(tail.head)
                 .extend(head)
 
-fun <F, R, T1, T2, T3, T4, T5, T6, T7, T8, T9, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, L>>>>>>>>>.map9(f: (Kind<F, T9>) -> Kind<F, R>)
+fun <F, R, T1, T2, T3, T4, T5, T6, T7, T8, T9, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, L>>>>>>>>>.map8(f: (Kind<F, T9>) -> Kind<F, R>)
         : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, R, L>>>>>>>>> =
         tail.tail.tail.tail.tail.tail.tail.tail.tail
                 .extend(f(tail.tail.tail.tail.tail.tail.tail.tail.head))
+                .extend(tail.tail.tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.head)
+                .extend(tail.tail.head)
+                .extend(tail.head)
+                .extend(head)
+
+fun <F, R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, HConsK<F, T10, L>>>>>>>>>>.map9(f: (Kind<F, T10>) -> Kind<F, R>)
+        : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, HConsK<F, R, L>>>>>>>>>> =
+        tail.tail.tail.tail.tail.tail.tail.tail.tail.tail
+                .extend(f(tail.tail.tail.tail.tail.tail.tail.tail.tail.head))
+                .extend(tail.tail.tail.tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.head)
+                .extend(tail.tail.head)
+                .extend(tail.head)
+                .extend(head)
+
+fun <F, R, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, L : HListK<F, L>> HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, HConsK<F, T10, HConsK<F, T11, L>>>>>>>>>>>.map10(f: (Kind<F, T11>) -> Kind<F, R>)
+        : HConsK<F, T1, HConsK<F, T2, HConsK<F, T3, HConsK<F, T4, HConsK<F, T5, HConsK<F, T6, HConsK<F, T7, HConsK<F, T8, HConsK<F, T9, HConsK<F, T10, HConsK<F, R, L>>>>>>>>>>> =
+        tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.tail
+                .extend(f(tail.tail.tail.tail.tail.tail.tail.tail.tail.tail.head))
+                .extend(tail.tail.tail.tail.tail.tail.tail.tail.tail.head)
+                .extend(tail.tail.tail.tail.tail.tail.tail.tail.head)
                 .extend(tail.tail.tail.tail.tail.tail.tail.head)
                 .extend(tail.tail.tail.tail.tail.tail.head)
                 .extend(tail.tail.tail.tail.tail.head)

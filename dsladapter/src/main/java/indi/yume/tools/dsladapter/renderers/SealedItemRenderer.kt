@@ -86,13 +86,13 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
         val renderer: SealedItemRenderer<T, L>)
     : Updatable<T, SealedViewData<T>> {
 
-    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>
-            sealedItem(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.() -> ActionU<VD>): ActionU<SealedViewData<T>> =
+    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>>
+            sealedItem(f: L.() -> SealedItem<T, D, VD, UP>, act: UP.() -> ActionU<VD>): ActionU<SealedViewData<T>> =
             sealedItemReduce(f) { act() }
 
     @Suppress("UNCHECKED_CAST")
-    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>
-            sealedItemReduce(f: L.() -> SealedItem<T, D, VD, UP, BR>, act: UP.(D) -> ActionU<VD>): ActionU<SealedViewData<T>> {
+    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>>
+            sealedItemReduce(f: L.() -> SealedItem<T, D, VD, UP>, act: UP.(D) -> ActionU<VD>): ActionU<SealedViewData<T>> {
         val sealedItem = renderer.sealedList.f()
 
         return { oldVD ->
@@ -125,59 +125,59 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
 }
 
 
-operator fun <T, D1, VD1 : ViewData<D1>, UP1 : Updatable<D1, VD1>, BR1 : BaseRenderer<D1, VD1, UP1>, D2, VD2 : ViewData<D2>, UP2 : Updatable<D2, VD2>, BR2 : BaseRenderer<D2, VD2, UP2>>
-        SealedItem<T, D1, VD1, UP1, BR1>.plus(si2: SealedItem<T, D2, VD2, UP2, BR2>)
-        : HConsK<Kind<ForSealedItem, T>, Pair<D1, BR1>, HConsK<Kind<ForSealedItem, T>, Pair<D2, BR2>, HNilK<Kind<ForSealedItem, T>>>> =
+operator fun <T, D1, VD1 : ViewData<D1>, UP1 : Updatable<D1, VD1>, D2, VD2 : ViewData<D2>, UP2 : Updatable<D2, VD2>>
+        SealedItem<T, D1, VD1, UP1>.plus(si2: SealedItem<T, D2, VD2, UP2>)
+        : HConsK<Kind<ForSealedItem, T>, Pair<D1, UP1>, HConsK<Kind<ForSealedItem, T>, Pair<D2, UP2>, HNilK<Kind<ForSealedItem, T>>>> =
         HListK.cons(this, HListK.cons(si2, HListK.nil<Kind<ForSealedItem, T>>()))
 
-fun <T, V, VD : ViewData<V>, UP : Updatable<V, VD>, BR : BaseRenderer<V, VD, UP>>
+fun <T, V, VD : ViewData<V>, UP : Updatable<V, VD>>
         item(type: TypeCheck<T>,
              checker: (T) -> Boolean,
              mapper: (T) -> V,
              demapper: (oldData: T, newMapData: V) -> T = doNotAffectOriData(),
-             renderer: BR)
-        : SealedItem<T, V, VD, UP, BR> =
+             renderer: BaseRenderer<V, VD, UP>)
+        : SealedItem<T, V, VD, UP> =
         item(checker, mapper, demapper, renderer)
 
-fun <T, V, VD : ViewData<V>, UP : Updatable<V, VD>, BR : BaseRenderer<V, VD, UP>>
+fun <T, V, VD : ViewData<V>, UP : Updatable<V, VD>>
         item(checker: (T) -> Boolean,
              mapper: (T) -> V,
              demapper: (oldData: T, newMapData: V) -> T = doNotAffectOriData(),
-             renderer: BR)
-        : SealedItem<T, V, VD, UP, BR> =
+             renderer: BaseRenderer<V, VD, UP>)
+        : SealedItem<T, V, VD, UP> =
         SealedItem(checker, mapper, demapper, renderer)
 
-fun <T : Any, K : T, V, VD : ViewData<V>, UP : Updatable<V, VD>, BR : BaseRenderer<V, VD, UP>>
+fun <T : Any, K : T, V, VD : ViewData<V>, UP : Updatable<V, VD>>
         item(clazz: KClass<K>,
              mapper: (K) -> V,
              demapper: (oldData: T, newMapData: V) -> T = doNotAffectOriData(),
-             renderer: BR)
-        : SealedItem<T, V, VD, UP, BR> =
+             renderer: BaseRenderer<V, VD, UP>)
+        : SealedItem<T, V, VD, UP> =
         SealedItem({ clazz.isInstance(it) }, { mapper(it as K) }, demapper, renderer)
 
-data class SealedItem<T, D, VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP>>(
+data class SealedItem<T, D, VD : ViewData<D>, UP : Updatable<D, VD>>(
         val checker: (T) -> Boolean,
         val mapper: (T) -> D,
         val demapper: (oldData: T, newMapData: D) -> T = doNotAffectOriData(),
-        val renderer: BR
-) : SealedItemOf<T, D, BR>
+        val renderer: BaseRenderer<D, VD, UP>
+) : SealedItemOf<T, D, UP>
 
 class ForSealedItem private constructor() {
     companion object
 }
-typealias SealedItemOf<T, D, BR> = Kind2<ForSealedItem, T, Pair<D, BR>>
+typealias SealedItemOf<T, D, UP> = Kind2<ForSealedItem, T, Pair<D, UP>>
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T> Kind<Kind<ForSealedItem, T>, Any?>.fixAny(): SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>, BaseRenderer<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>> =
-        this as SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>, BaseRenderer<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>>
+inline fun <T> Kind<Kind<ForSealedItem, T>, Any?>.fixAny(): SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>> =
+        this as SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, D, VD, UP, BR> SealedItemOf<T, D, BR>.fix(): SealedItem<T, D, VD, UP, BR> where VD : ViewData<D>, UP : Updatable<D, VD>, BR : BaseRenderer<D, VD, UP> =
-        this as SealedItem<T, D, VD, UP, BR>
+inline fun <T, D, VD, UP> SealedItemOf<T, D, UP>.fix(): SealedItem<T, D, VD, UP> where VD : ViewData<D>, UP : Updatable<D, VD> =
+        this as SealedItem<T, D, VD, UP>
 
 data class SealedViewData<T>(override val originData: T,
                              val data: ViewData<Any?>,
-                             val item: SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>, BaseRenderer<Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>>) : ViewData<T> {
+                             val item: SealedItem<T, Any?, ViewData<Any?>, Updatable<Any?, ViewData<Any?>>>) : ViewData<T> {
     override val count: Int
         get() = data.count
 }

@@ -1,5 +1,7 @@
 package indi.yume.tools.sample
 
+import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import java.util.ArrayList
 
 /**
@@ -25,4 +27,15 @@ internal fun genList(startIndex: Int, count: Int): List<ItemModel> {
     }
 
     return list
+}
+
+
+fun provideData(pageIndex: Int): List<ItemModel> {
+    return dataSupplier(pageIndex)
+            .blockingGet()
+}
+
+fun dataSupplier(pageIndex: Int): Single<List<ItemModel>> {
+    return Single.just(genList(0, 10 - pageIndex % 10))
+            .subscribeOn(Schedulers.io())
 }

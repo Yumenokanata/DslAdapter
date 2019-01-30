@@ -111,8 +111,8 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
     }
 
     companion object {
-        fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-                singleRenderer(initData: T, renderer: BR): RendererAdapter<T, VD, UP> =
+        fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+                singleRenderer(initData: T, renderer: BaseRenderer<T, VD, UP>): RendererAdapter<T, VD, UP> =
                 RendererAdapter(initData, renderer)
 
         fun <DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : HListK<ForComposeItemData, VDL>>
@@ -139,14 +139,14 @@ class AdapterBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, V
         val initSumData: DL,
         val composeBuilder: ComposeBuilder<DL, IL, VDL>
 ) {
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            add(initData: T, renderer: BR)
-            : AdapterBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+            add(initData: T, renderer: BaseRenderer<T, VD, UP>)
+            : AdapterBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
             AdapterBuilder(initSumData.extend(IdT(initData)), composeBuilder.add(renderer))
 
-    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>, BR : BaseRenderer<Unit, VD, UP>>
-            add(renderer: BR)
-            : AdapterBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, BR>, IL>, HConsK<ForComposeItemData, Pair<Unit, BR>, VDL>> =
+    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>>
+            add(renderer: BaseRenderer<Unit, VD, UP>)
+            : AdapterBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, UP>, IL>, HConsK<ForComposeItemData, Pair<Unit, UP>, VDL>> =
             AdapterBuilder(initSumData.extend(IdT(Unit)), composeBuilder.add(renderer))
 
     fun build(): RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>> =

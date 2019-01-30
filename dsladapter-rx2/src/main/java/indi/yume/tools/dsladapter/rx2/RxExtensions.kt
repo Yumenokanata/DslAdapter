@@ -35,14 +35,14 @@ class RxBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : 
         val dataProvider: Observable<DL>,
         val composeBuilder: ComposeBuilder<DL, IL, VDL>
 ) {
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            add(supplier: Supplier<T>, renderer: BR)
-            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+            add(supplier: Supplier<T>, renderer: BaseRenderer<T, VD, UP>)
+            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
             add(Observable.fromCallable(supplier), renderer)
 
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            add(obs: Observable<T>, renderer: BR)
-            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+            add(obs: Observable<T>, renderer: BaseRenderer<T, VD, UP>)
+            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
             RxBuilder(
                     dataProvider = Observable.combineLatest(dataProvider, obs,
                             BiFunction<DL, T, HConsK<ForIdT, T, DL>> { otherData, data ->
@@ -50,21 +50,21 @@ class RxBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : 
                             }),
                     composeBuilder = composeBuilder.add(renderer))
 
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            add(initData: T, obs: Observable<T>, renderer: BR)
-            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+            add(initData: T, obs: Observable<T>, renderer: BaseRenderer<T, VD, UP>)
+            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
             add(Observable.concat(Observable.just(initData), obs), renderer)
 
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
-            addStatic(initData: T, renderer: BR)
-            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
+            addStatic(initData: T, renderer: BaseRenderer<T, VD, UP>)
+            : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
             RxBuilder(
                     dataProvider.map { it.extend(initData.toIdT()) },
                     composeBuilder.add(renderer))
 
-    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>, BR : BaseRenderer<Unit, VD, UP>>
-            addStatic(renderer: BR)
-            : RxBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, BR>, IL>, HConsK<ForComposeItemData, Pair<Unit, BR>, VDL>> =
+    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>>
+            addStatic(renderer: BaseRenderer<Unit, VD, UP>)
+            : RxBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, UP>, IL>, HConsK<ForComposeItemData, Pair<Unit, UP>, VDL>> =
             RxBuilder(dataProvider.map { it.extend(Unit.toIdT()) }, composeBuilder.add(renderer))
 
     @CheckResult
@@ -99,9 +99,9 @@ class RxBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : 
 }
 
 @CheckResult
-fun <T, VD : ViewData<T>, UP : Updatable<T, VD>, BR : BaseRenderer<T, VD, UP>>
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
         RendererAdapter.Companion.singleRxAutoUpdate(
-        obs: Observable<T>, renderer: BR,
+        obs: Observable<T>, renderer: BaseRenderer<T, VD, UP>,
         f: (RendererAdapter<T, VD, UP>) -> Unit): Completable =
         obs
                 .scan<Option<RxAdapterEvent<T, VD, UP>>>(Option.None)

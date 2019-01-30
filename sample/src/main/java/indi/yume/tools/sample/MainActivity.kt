@@ -1,12 +1,13 @@
 package indi.yume.tools.sample
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import arrow.Kind
 import arrow.core.*
 import indi.yume.tools.adapterdatabinding.CLEAR_ALL
 import indi.yume.tools.adapterdatabinding.dataBindingItem
@@ -16,8 +17,6 @@ import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.rx2.rxBuild
 import indi.yume.tools.dsladapter.rx2.singleRxAutoUpdate
-import indi.yume.tools.dsladapter.typeclass.BaseRenderer
-import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 import indi.yume.tools.sample.databinding.ItemLayoutBinding
 import io.reactivex.Single
@@ -27,7 +26,6 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.text.DateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -111,14 +109,14 @@ class MainActivity : AppCompatActivity() {
 
         val act1 = composeRenderer.updater
                 .updateBy {
-                    getLast1().up {
+                    getLast0().up {
                         update("")
                     }
                 }
 
         val act2 = composeRenderer.updater
                 .updateBy {
-                    getLast2().up {
+                    getLast1().up {
                         update(ItemModel())
                     }
                 }
@@ -170,7 +168,7 @@ class MainActivity : AppCompatActivity() {
         /**
          * 3.2 Or use reduce method
          */
-        adapterDemo1.reduceData { oldData -> oldData.map1 { "ss3".toIdT() } }
+        adapterDemo1.reduceData { oldData -> oldData.map0 { "ss3".toIdT() } }
 
         // Two way to part update data:
         /**
@@ -178,7 +176,7 @@ class MainActivity : AppCompatActivity() {
          *     please use [dispatchUpdatesTo()] to apply update action to adapter
          */
         adapterDemo1.update {
-            getLast2().up {
+            getLast1().up {
                 title {
                     update("new Title-${random.nextInt()}")
                 }
@@ -190,7 +188,7 @@ class MainActivity : AppCompatActivity() {
          *     Unlike the update method, this method will apply the update directly to the Adapter.
          */
         adapterDemo1.updateNow {
-            getLast2().up {
+            getLast1().up {
                 title {
                     update("new Title-${random.nextInt()}")
                 }
@@ -207,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                                         layout = R.layout.item_layout,
                                         bindBinding = { ItemLayoutBinding.bind(it) },
                                         binder = { bind, item, _ ->
-                                            bind.content = "Last5 this is empty item"
+                                            bind.content = "Last4 this is empty item"
                                         },
                                         recycleFun = { it.model = null; it.content = null; it.click = null }),
                                 itemRenderer = LayoutRenderer.dataBindingItem<Option<ItemModel>, ItemLayoutBinding>(
@@ -215,7 +213,7 @@ class MainActivity : AppCompatActivity() {
                                         layout = R.layout.item_layout,
                                         bindBinding = { ItemLayoutBinding.bind(it) },
                                         binder = { bind, item, _ ->
-                                            bind.content = "Last5 this is some item"
+                                            bind.content = "Last4 this is some item"
                                         },
                                         recycleFun = { it.model = null; it.content = null; it.click = null })
                                         .forList()
@@ -224,7 +222,7 @@ class MainActivity : AppCompatActivity() {
                         ComposeRenderer.startBuild
                                 .add(LayoutRenderer<ItemModel>(layout = R.layout.simple_item,
                                         stableIdForItem = { item, index -> item.id },
-                                        binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = "Last4 ${itemModel.title}" },
+                                        binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = "Last3 ${itemModel.title}" },
                                         recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
                                         .forList({ i, index -> index }))
                                 .add(databindingOf<ItemModel>(R.layout.item_layout)
@@ -239,7 +237,7 @@ class MainActivity : AppCompatActivity() {
                                 count = 2,
                                 layout = R.layout.simple_item,
                                 stableIdForItem = { item, index -> item.id },
-                                binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = "Last3 ${itemModel.title}" },
+                                binder = { view, itemModel, index -> view.findViewById<TextView>(R.id.simple_text_view).text = "Last2 ${itemModel.title}" },
                                 recycleFun = { view -> view.findViewById<TextView>(R.id.simple_text_view).text = "" })
                                 .forList({ i, index -> index }))
                 .add(provideData(index), renderer)
@@ -249,28 +247,25 @@ class MainActivity : AppCompatActivity() {
                                 .forItem())
                 .build()
 
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
         findViewById<View>(R.id.load_next_button).setOnClickListener { v ->
             index++
             val newData = provideData(index)
             Single.fromCallable {
                 adapter.update {
-                    getLast2().up {
+                    getLast1().up {
                         update(newData)
-                    } + getLast3().up {
-//                        move(2, 4) +
+                    } + getLast2().up {
+                        //                        move(2, 4) +
 //                        subs(3) {
 //                            update(ItemModel(189, "Subs Title $index", "subs Content"))
 //                        }
-                        updateAuto(newData.shuffled(), diffUtilCheck { it.id })
-                    } + getLast4().up {
+                        updateAuto(newData.shuffled(), diffUtilCheck { i, _ -> i.id })
+                    } + getLast3().up {
                         getLast1().reduce { oldData ->
                             update(oldData + ItemModel())
                         }
-                    } + getLast5().up {
-                        sealedItem({ get1().fix() }) {
+                    } + getLast4().up {
+                        sealedItem({ get0().fix() }) {
                             update(listOf(ItemModel().some(), none<ItemModel>()))
                         }
                     }
@@ -290,8 +285,8 @@ class MainActivity : AppCompatActivity() {
                 .add({ provideData(index) }, renderer)
                 .build()
 
-//        recyclerView.adapter = adapter2
-//        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
 //        findViewById<View>(R.id.load_next_button).setOnClickListener { v ->
 //            index++
@@ -308,7 +303,7 @@ class MainActivity : AppCompatActivity() {
                 .add(provideData(index), dataProvider2, renderer)
                 .add(dataProvider, rendererSealed)
                 .buildAutoUpdate { adapter ->
-//                    recyclerView.adapter = adapter
+                    //                    recyclerView.adapter = adapter
 //                    recyclerView.layoutManager = LinearLayoutManager(this)
                 }
                 .subscribe()
@@ -317,7 +312,7 @@ class MainActivity : AppCompatActivity() {
 
         RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
         { adapter ->
-//            recyclerView.adapter = adapter
+            //            recyclerView.adapter = adapter
 //            recyclerView.layoutManager = LinearLayoutManager(this)
         }.subscribe()
 
@@ -326,32 +321,4 @@ class MainActivity : AppCompatActivity() {
 //            dataProvider.onNext(provideData(index))
 //        }
     }
-
-    private fun provideData(pageIndex: Int): List<ItemModel> {
-        return dataSupplier(pageIndex)
-                .blockingGet()
-    }
-
-    private fun dataSupplier(pageIndex: Int): Single<List<ItemModel>> {
-        return Single.just(genList(0, 10 - pageIndex % 10))
-                .subscribeOn(Schedulers.io())
-    }
 }
-
-
-fun <T, NVD : ViewData<Unit>, NUP : Updatable<Unit, NVD>, NBR : BaseRenderer<Unit, NVD, NUP>,
-        SVD : ViewData<T>, SUP : Updatable<T, SVD>, SBR : BaseRenderer<T, SVD, SUP>> optionRenderer(noneItemRenderer: NBR,
-                                                                                                    itemRenderer: SBR)
-        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SBR>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NBR>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
-        SealedItemRenderer(hlistKOf(
-                item(type = type<Option<T>>(),
-                        checker = { it is None },
-                        mapper = { Unit },
-                        renderer = noneItemRenderer
-                ),
-                item(type = type<Option<T>>(),
-                        checker = { it is Some },
-                        mapper = { it.orNull()!! },
-                        renderer = itemRenderer
-                )
-        ))

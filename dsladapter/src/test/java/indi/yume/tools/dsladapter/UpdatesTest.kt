@@ -67,10 +67,10 @@ class UpdatesTest {
 }
 
 
-fun <T, NVD : ViewData<Unit>, NUP : Updatable<Unit, NVD>, NBR : BaseRenderer<Unit, NVD, NUP>,
-        SVD : ViewData<T>, SUP : Updatable<T, SVD>, SBR : BaseRenderer<T, SVD, SUP>> optionRenderer(noneItemRenderer: NBR,
-                                                                                                    itemRenderer: SBR)
-        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SBR>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NBR>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
+fun <T, NVD : ViewData<Unit>, NUP : Updatable<Unit, NVD>,
+        SVD : ViewData<T>, SUP : Updatable<T, SVD>> optionRenderer(noneItemRenderer: BaseRenderer<Unit, NVD, NUP>,
+                                                                                                    itemRenderer: BaseRenderer<T, SVD, SUP>)
+        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SUP>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NUP>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
         SealedItemRenderer(hlistKOf(
                 item(type = type<Option<T>>(),
                         checker = { it is None },
