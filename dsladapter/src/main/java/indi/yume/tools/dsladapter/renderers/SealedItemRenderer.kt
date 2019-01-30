@@ -55,10 +55,12 @@ import kotlin.reflect.KClass
 class SealedItemRenderer<T, L : HListK<Kind<ForSealedItem, T>, L>>(
         val sealedList: L
 ) : BaseRenderer<T, SealedViewData<T>, SealedItemUpdater<T, L>>() {
+    private val sealedRealList: List<Kind<Kind<ForSealedItem, T>, *>> by lazy { sealedList.toList() }
+
     override val updater: SealedItemUpdater<T, L> = SealedItemUpdater(this)
 
     override fun getData(content: T): SealedViewData<T> {
-        val item = sealedList.find {
+        val item = sealedRealList.find {
             it.fixAny().checker(content)
         }!!.fixAny()
         return SealedViewData<T>(content, item.renderer.getData(item.mapper(content)), item)
