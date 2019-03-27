@@ -3,11 +3,14 @@ package indi.yume.tools.sample
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Observable
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 import org.junit.Test
 
 import org.junit.Assert.*
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.experimental.buildSequence
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -15,6 +18,69 @@ import java.util.concurrent.TimeUnit
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
+    @Test
+    fun rxTest() {
+        val subjectS = PublishSubject.create<String>()
+        val subjectI = PublishSubject.create<Int>()
+
+        subjectS
+                .compose {
+                    Observable.combineLatest(subjectS, subjectI,
+                            BiFunction<String, Int, String> { t1, t2 -> "$t1 >> $t2" })
+                }
+                .subscribe { println(it) }
+
+        subjectS.onNext("-")
+        subjectI.onNext(1)
+        subjectI.onNext(2)
+        subjectS.onNext("+")
+        subjectS.onNext("=")
+        subjectI.onNext(6)
+        subjectI.onNext(7)
+
+        private var label = 0
+
+        override fun invokeSuspend(result: Result<Any?>): Any? {
+            when (label) {
+                0 -> {
+                    label = 1
+                    println("start")
+                    1
+                }
+                1 -> {
+                    label = 2
+                    println("end")
+                }
+                else -> error("This coroutine had already completed")
+            }
+        }
+    }
+
+    @Test
+    fun testSeq() {
+        val s = buildSequence<Int> {
+            println("start")
+            yield(1)
+            println("resume with 1")
+            yieldAll(listOf(2, 3))
+            println("resume with 3")
+            println("end")
+        }.iterator()
+        buildSequence<Int> {
+            println("start")
+            yield(1)
+            println("resume with 1")
+            yieldAll(listOf(2, 3))
+            println("resume with 3")
+            println("end")
+        }
+
+        println("get 1 result=${s.next()}")
+        println("get 2 result=${s.next()}")
+        println("get 3 result=${s.next()}")
+        println("get 4 result=${s.hasNext()}")
+    }
+
     @Test
     fun addition_isCorrect() {
 //        println(fibonacci(0))

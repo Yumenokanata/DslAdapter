@@ -4,8 +4,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.ActionU
-import indi.yume.tools.dsladapter.Updatable
-import indi.yume.tools.dsladapter.UpdatableOf
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.updateVD
@@ -19,9 +17,7 @@ class DataBindingRenderer<T, I>(
         @RecycleConfig val recycleConfig: Int = DO_NOTHING,
         val stableIdForItem: (I) -> Long,
         val collectionId: Int = BR_NO_ID
-): BaseRenderer<T, DataBindingViewData<T, I>, DataBindingUpdater<T, I>>() {
-    override val updater: DataBindingUpdater<T, I> = DataBindingUpdater(this)
-
+): BaseRenderer<T, DataBindingViewData<T, I>>() {
     override fun getData(content: T): DataBindingViewData<T, I> =
             DataBindingViewData(content, converte(content))
 
@@ -96,17 +92,5 @@ data class DataBindingViewData<T, I>(override val originData: T, val data: List<
 }
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, I> BaseRenderer<T, DataBindingViewData<T, I>, DataBindingUpdater<T, I>>.fix(): DataBindingRenderer<T, I> =
+inline fun <T, I> BaseRenderer<T, DataBindingViewData<T, I>>.fix(): DataBindingRenderer<T, I> =
         this as DataBindingRenderer<T, I>
-
-class DataBindingUpdater<T, I>(val renderer: DataBindingRenderer<T, I>) : Updatable<T, DataBindingViewData<T, I>> {
-    fun update(newData: T, payload: Any? = null): ActionU<DataBindingViewData<T, I>> {
-        val newVD = renderer.getData(newData)
-
-        return { oldVD -> updateVD(oldVD, newVD, payload) to newVD }
-    }
-}
-
-@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, I> UpdatableOf<T, DataBindingViewData<T, I>>.value(): DataBindingUpdater<T, I> =
-        this as DataBindingUpdater<T, I>

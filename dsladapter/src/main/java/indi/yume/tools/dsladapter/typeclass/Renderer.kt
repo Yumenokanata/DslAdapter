@@ -3,11 +3,8 @@ package indi.yume.tools.dsladapter.typeclass
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import arrow.Kind
-import arrow.Kind2
-import indi.yume.tools.dsladapter.Updatable
-import indi.yume.tools.dsladapter.datatype.UpdateActions
 
-interface Renderer<Data, VD : ViewData<Data>, UP : Updatable<Data, VD>> {
+interface Renderer<Data, VD : ViewData<Data>> {
     fun getData(content: Data): VD
 
     fun getItemId(data: VD, index: Int): Long = RecyclerView.NO_ID
@@ -19,8 +16,6 @@ interface Renderer<Data, VD : ViewData<Data>, UP : Updatable<Data, VD>> {
     fun bind(data: VD, index: Int, holder: RecyclerView.ViewHolder)
 
     fun recycle(holder: RecyclerView.ViewHolder)
-
-    val updater: UP
 }
 
 interface ViewData<out OriD> : ViewDataOf<OriD> {

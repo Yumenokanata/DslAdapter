@@ -4,7 +4,6 @@ import arrow.Kind
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
-import indi.yume.tools.dsladapter.Updatable
 import indi.yume.tools.dsladapter.datatype.HConsK
 import indi.yume.tools.dsladapter.datatype.HNilK
 import indi.yume.tools.dsladapter.datatype.hlistKOf
@@ -16,10 +15,10 @@ import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 
-fun <T, NVD : ViewData<Unit>, NUP : Updatable<Unit, NVD>,
-        SVD : ViewData<T>, SUP : Updatable<T, SVD>> optionRenderer(noneItemRenderer: BaseRenderer<Unit, NVD, NUP>,
-                                                                   itemRenderer: BaseRenderer<T, SVD, SUP>)
-        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SUP>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NUP>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
+fun <T, NVD : ViewData<Unit>, NBR : BaseRenderer<Unit, NVD>,
+        SVD : ViewData<T>, SBR : BaseRenderer<T, SVD>> optionRenderer(noneItemRenderer: NBR,
+                                                                   itemRenderer: SBR)
+        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SBR>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NBR>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
         SealedItemRenderer(hlistKOf(
                 item(type = type<Option<T>>(),
                         checker = { it is None },

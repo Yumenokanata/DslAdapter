@@ -11,9 +11,9 @@ import indi.yume.tools.dsladapter.typeclass.Renderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 
-class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
+class RendererAdapter<T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>(
         val initData: T,
-        val renderer: Renderer<T, VD, UP>
+        val renderer: BR
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val dataLock = Any()
 
@@ -35,25 +35,23 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
         setData(newData)
     }
 
-    fun getUpdater(): UP = renderer.updater
-
     @CheckResult
-    fun reduce(f: UP.(T) -> ActionU<VD>): UpdateResult<T, VD> {
+    fun reduce(f: BR.(T) -> ActionU<VD>): UpdateResult<T, VD> {
         val data = adapterViewData
-        val (actions, newVD) = getUpdater().f(data.originData)(data)
+        val (actions, newVD) = renderer.f(data.originData)(data)
 
         return UpdateResult(data, newVD, listOf(actions))
     }
 
     @CheckResult
-    fun update(f: UP.() -> ActionU<VD>): UpdateResult<T, VD> {
+    fun update(f: BR.() -> ActionU<VD>): UpdateResult<T, VD> {
         val data = adapterViewData
-        val (actions, newVD) = getUpdater().f()(data)
+        val (actions, newVD) = renderer.f()(data)
 
         return UpdateResult(data, newVD, listOf(actions))
     }
 
-    fun updateNow(f: UP.() -> ActionU<VD>) {
+    fun updateNow(f: BR.() -> ActionU<VD>) {
         update(f).dispatchUpdatesTo(this)
     }
 
@@ -111,14 +109,14 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
     }
 
     companion object {
-        fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
-                singleRenderer(initData: T, renderer: BaseRenderer<T, VD, UP>): RendererAdapter<T, VD, UP> =
+        fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>
+                singleRenderer(initData: T, renderer: BR): RendererAdapter<T, VD, BR> =
                 RendererAdapter(initData, renderer)
 
         fun <DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : HListK<ForComposeItemData, VDL>>
                 multiple(initData: DL,
                          f: ComposeBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>>.() -> ComposeBuilder<DL, IL, VDL>)
-                : RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>> =
+                : RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeRenderer<DL, IL, VDL>> =
                 RendererAdapter(initData, ComposeRenderer.startBuild.f().build())
 
         fun multipleBuild(): AdapterBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
@@ -130,7 +128,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
 data class UpdateResult<T, VD : ViewData<T>>(val oldData: VD,
                                              val newData: VD,
                                              val actions: List<UpdateActions>) {
-    fun <UP : Updatable<T, VD>> dispatchUpdatesTo(adapter: RendererAdapter<T, VD, UP>) =
+    fun <BR : BaseRenderer<T, VD>> dispatchUpdatesTo(adapter: RendererAdapter<T, VD, BR>) =
             adapter.updateData(this)
 }
 
@@ -139,16 +137,16 @@ class AdapterBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, V
         val initSumData: DL,
         val composeBuilder: ComposeBuilder<DL, IL, VDL>
 ) {
-    fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
-            add(initData: T, renderer: BaseRenderer<T, VD, UP>)
-            : AdapterBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, UP>, IL>, HConsK<ForComposeItemData, Pair<T, UP>, VDL>> =
+    fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>
+            add(initData: T, renderer: BR)
+            : AdapterBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
             AdapterBuilder(initSumData.extend(IdT(initData)), composeBuilder.add(renderer))
 
-    fun <VD : ViewData<Unit>, UP : Updatable<Unit, VD>>
-            add(renderer: BaseRenderer<Unit, VD, UP>)
-            : AdapterBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, UP>, IL>, HConsK<ForComposeItemData, Pair<Unit, UP>, VDL>> =
+    fun <VD : ViewData<Unit>, BR : BaseRenderer<Unit, VD>>
+            add(renderer: BR)
+            : AdapterBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, BR>, IL>, HConsK<ForComposeItemData, Pair<Unit, BR>, VDL>> =
             AdapterBuilder(initSumData.extend(IdT(Unit)), composeBuilder.add(renderer))
 
-    fun build(): RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeUpdater<DL, IL, VDL>> =
+    fun build(): RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeRenderer<DL, IL, VDL>> =
             RendererAdapter(initSumData, composeBuilder.build())
 }

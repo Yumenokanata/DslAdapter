@@ -2,6 +2,7 @@ package indi.yume.tools.sample
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.SyncStateContract.Helpers.update
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -12,12 +13,19 @@ import arrow.core.*
 import indi.yume.tools.adapterdatabinding.CLEAR_ALL
 import indi.yume.tools.adapterdatabinding.dataBindingItem
 import indi.yume.tools.adapterdatabinding.databindingOf
+import indi.yume.tools.adapterdatabinding.updater.update
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.rx2.rxBuild
 import indi.yume.tools.dsladapter.rx2.singleRxAutoUpdate
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
+import indi.yume.tools.dsladapter.updater.compose.*
+import indi.yume.tools.dsladapter.updater.layout.update
+import indi.yume.tools.dsladapter.updater.list.*
+import indi.yume.tools.dsladapter.updater.sealed.sealedItem
+import indi.yume.tools.dsladapter.updater.titleitem.title
+import indi.yume.tools.dsladapter.updater.titleitem.update
 import indi.yume.tools.sample.databinding.ItemLayoutBinding
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -107,15 +115,13 @@ class MainActivity : AppCompatActivity() {
                 .add(stringRenderer)
                 .build()
 
-        val act1 = composeRenderer.updater
-                .updateBy {
+        val act1 = composeRenderer.updateBy {
                     getLast0().up {
                         update("")
                     }
                 }
 
-        val act2 = composeRenderer.updater
-                .updateBy {
+        val act2 = composeRenderer.updateBy {
                     getLast1().up {
                         update(ItemModel())
                     }

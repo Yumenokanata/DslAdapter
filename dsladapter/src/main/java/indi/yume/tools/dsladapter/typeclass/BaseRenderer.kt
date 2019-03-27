@@ -3,11 +3,9 @@ package indi.yume.tools.dsladapter.typeclass
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import indi.yume.tools.dsladapter.Updatable
 
-abstract class BaseRenderer<T, VD : ViewData<T>, UP : Updatable<T, VD>> : Renderer<T, VD, UP> {
+abstract class BaseRenderer<T, VD : ViewData<T>> : Renderer<T, VD> {
 
     override fun getItemViewType(data: VD, position: Int): Int = getLayoutResId(data, position)
 

@@ -35,30 +35,6 @@ fun <E> HListK.Companion.singleId(e: E): HConsK<ForIdT, E, HNilK<ForIdT>> = HCon
 fun <E, L : HListK<ForIdT, L>> L.putF(e: E): HConsK<ForIdT, E, L> = extend(IdT(e))
 
 
-@UpdaterDslMarker
-interface Updatable<P, VD : ViewData<P>> : UpdatableOf<P, VD>
-
-interface Insertable<P, D : ViewData<P>, I> : Updatable<P, D> {
-    fun insert(pos: Int, insertedItems: I): ActionU<D>
-}
-
-interface Removable<P, D: ViewData<P>> : Updatable<P, D> {
-    fun remove(pos: Int, count: Int): ActionU<D>
-}
-
-interface Movable<P, D: ViewData<P>> : Updatable<P, D> {
-    fun move(fromPosition: Int, toPosition: Int): ActionU<D>
-}
-
-interface Changeable<P, D: ViewData<P>, I> : Updatable<P, D> {
-    fun change(pos: Int, newItems: I, payload: Any?): ActionU<D>
-}
-
-interface ListChangeable<P, D: ViewData<P>, I>
-    : Insertable<P, D, List<I>>,
-        Removable<P, D>,
-        Movable<P, D>,
-        Changeable<P, D, List<I>>
 
 data class ChangedData<T>(val newData: T, val payload: Any? = null)
 
@@ -81,12 +57,6 @@ operator fun <T, VD : ViewData<T>> ActionU<VD>.plus(a2: ActionU<VD>): ActionU<VD
             ActionComposite(0, listOf(firstAct, secondAct)) to secondVD
         }
 
-
-class ForUpdatable private constructor() { companion object }
-typealias UpdatableOf<P, VD> = Kind<ForUpdatable, Pair<P, VD>>
-@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <P, VD> UpdatableOf<P, VD>.fix(): Updatable<P, VD> where VD : ViewData<P> =
-        this as Updatable<P, VD>
 
 
 fun <T> List<T>.move(from: Int, to: Int): List<T>? {
