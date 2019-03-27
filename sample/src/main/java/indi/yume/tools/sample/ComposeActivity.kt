@@ -10,8 +10,7 @@ import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.renderers.databinding.CLEAR_ALL
 import indi.yume.tools.dsladapter.renderers.databinding.databindingOf
-import indi.yume.tools.dsladapter.updater.compose.*
-import indi.yume.tools.dsladapter.updater.list.updateAuto
+import indi.yume.tools.dsladapter.updater.*
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
@@ -115,11 +114,11 @@ class ComposeActivity : AppCompatActivity() {
             val newData = provideData(index)
             Single.fromCallable {
                 time = System.currentTimeMillis()
-                val r = adapter.update {
+                val r = adapter.update(::ComposeUpdater) {
 //                    getLast2().up {
 //                        update(newData)
 //                    } +
-                            getLast0().up {
+                            getLast0().up(::ListUpdater) {
                                 //                        move(2, 4) +
 //                        subs(3) {
 //                            update(ItemModel(189, "Subs Title $index", "subs Content"))

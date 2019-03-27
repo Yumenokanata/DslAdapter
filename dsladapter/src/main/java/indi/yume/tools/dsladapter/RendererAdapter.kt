@@ -35,26 +35,6 @@ class RendererAdapter<T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>(
         setData(newData)
     }
 
-    @CheckResult
-    fun reduce(f: BR.(T) -> ActionU<VD>): UpdateResult<T, VD> {
-        val data = adapterViewData
-        val (actions, newVD) = renderer.f(data.originData)(data)
-
-        return UpdateResult(data, newVD, listOf(actions))
-    }
-
-    @CheckResult
-    fun update(f: BR.() -> ActionU<VD>): UpdateResult<T, VD> {
-        val data = adapterViewData
-        val (actions, newVD) = renderer.f()(data)
-
-        return UpdateResult(data, newVD, listOf(actions))
-    }
-
-    fun updateNow(f: BR.() -> ActionU<VD>) {
-        update(f).dispatchUpdatesTo(this)
-    }
-
     @MainThread
     fun updateData(actions: ActionU<VD>) {
         val data = adapterViewData

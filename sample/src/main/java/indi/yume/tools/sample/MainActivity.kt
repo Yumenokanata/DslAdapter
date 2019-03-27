@@ -16,13 +16,7 @@ import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.rx2.rxBuild
 import indi.yume.tools.dsladapter.rx2.singleRxAutoUpdate
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
-import indi.yume.tools.dsladapter.updater.compose.*
-import indi.yume.tools.dsladapter.updater.layout.update
-import indi.yume.tools.dsladapter.updater.databinding.*
-import indi.yume.tools.dsladapter.updater.list.*
-import indi.yume.tools.dsladapter.updater.sealed.sealedItem
-import indi.yume.tools.dsladapter.updater.titleitem.title
-import indi.yume.tools.dsladapter.updater.titleitem.update
+import indi.yume.tools.dsladapter.updater.*
 import indi.yume.tools.sample.databinding.ItemLayoutBinding
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -112,14 +106,14 @@ class MainActivity : AppCompatActivity() {
                 .add(stringRenderer)
                 .build()
 
-        val act1 = composeRenderer.updateBy {
-                    getLast0().up {
+        val act1 = composeRenderer.updater.updateBy {
+                    getLast0().up(::LayoutUpdater) {
                         update("")
                     }
                 }
 
-        val act2 = composeRenderer.updateBy {
-                    getLast1().up {
+        val act2 = composeRenderer.updater.updateBy {
+                    getLast1().up(::DataBindingUpdater) {
                         update(ItemModel())
                     }
                 }
@@ -178,9 +172,9 @@ class MainActivity : AppCompatActivity() {
          * 3.3 By update() func, this function will return a UpdateResult, this time not really update data for adapter.
          *     please use [dispatchUpdatesTo()] to apply update action to adapter
          */
-        adapterDemo1.update {
-            getLast1().up {
-                title {
+        adapterDemo1.update(::ComposeUpdater) {
+            getLast1().up(::TitleItemUpdater) {
+                title(::LayoutUpdater) {
                     update("new Title-${random.nextInt()}")
                 }
             }
@@ -190,9 +184,9 @@ class MainActivity : AppCompatActivity() {
          * 3.4 By updateNow() func
          *     Unlike the update method, this method will apply the update directly to the Adapter.
          */
-        adapterDemo1.updateNow {
-            getLast1().up {
-                title {
+        adapterDemo1.updateNow(::ComposeUpdater) {
+            getLast1().up(::TitleItemUpdater) {
+                title(::LayoutUpdater) {
                     update("new Title-${random.nextInt()}")
                 }
             }
@@ -254,21 +248,21 @@ class MainActivity : AppCompatActivity() {
             index++
             val newData = provideData(index)
             Single.fromCallable {
-                adapter.update {
-                    getLast1().up {
+                adapter.update(::ComposeUpdater) {
+                    getLast1().up(::updatable) {
                         update(newData)
-                    } + getLast2().up {
+                    } + getLast2().up(::updatable) {
                         //                        move(2, 4) +
 //                        subs(3) {
 //                            update(ItemModel(189, "Subs Title $index", "subs Content"))
 //                        }
                         updateAuto(newData.shuffled(), diffUtilCheck { i, _ -> i.id })
-                    } + getLast3().up {
-                        getLast1().reduce { oldData ->
+                    } + getLast3().up(::updatable) {
+                        getLast1().reduce(::updatable) { oldData ->
                             update(oldData + ItemModel())
                         }
-                    } + getLast4().up {
-                        sealedItem({ get0().fix() }) {
+                    } + getLast4().up(::updatable) {
+                        sealedItem({ get0().fix() }, ::updatable) {
                             update(listOf(ItemModel().some(), none<ItemModel>()))
                         }
                     }

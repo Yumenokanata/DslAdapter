@@ -8,7 +8,6 @@ import indi.yume.tools.dsladapter.typeclass.ViewData
 
 typealias ActionU<VD> = (VD) -> Pair<UpdateActions, VD>
 
-
 class TypeCheck<T>
 
 private val typeFake = TypeCheck<Nothing>()
@@ -49,13 +48,6 @@ fun <P, VD : ViewData<P>> updateVD(oldVD: VD, newVD: VD, payload: Any? = null): 
                 OnInserted(0, newVD.count)
         ))
     }
-
-operator fun <T, VD : ViewData<T>> ActionU<VD>.plus(a2: ActionU<VD>): ActionU<VD> =
-        { oldVD ->
-            val (firstAct, firstVD) = this@plus(oldVD)
-            val (secondAct, secondVD) = a2(firstVD)
-            ActionComposite(0, listOf(firstAct, secondAct)) to secondVD
-        }
 
 
 
