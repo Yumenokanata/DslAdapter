@@ -1,19 +1,15 @@
 package indi.yume.tools.sample
 
-import android.content.Intent
 import android.os.Bundle
-import android.provider.SyncStateContract.Helpers.update
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import arrow.core.*
-import indi.yume.tools.adapterdatabinding.CLEAR_ALL
-import indi.yume.tools.adapterdatabinding.dataBindingItem
-import indi.yume.tools.adapterdatabinding.databindingOf
-import indi.yume.tools.adapterdatabinding.updater.update
+import indi.yume.tools.dsladapter.renderers.databinding.CLEAR_ALL
+import indi.yume.tools.dsladapter.renderers.databinding.dataBindingItem
+import indi.yume.tools.dsladapter.renderers.databinding.databindingOf
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
@@ -22,6 +18,7 @@ import indi.yume.tools.dsladapter.rx2.singleRxAutoUpdate
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 import indi.yume.tools.dsladapter.updater.compose.*
 import indi.yume.tools.dsladapter.updater.layout.update
+import indi.yume.tools.dsladapter.updater.databinding.*
 import indi.yume.tools.dsladapter.updater.list.*
 import indi.yume.tools.dsladapter.updater.sealed.sealedItem
 import indi.yume.tools.dsladapter.updater.titleitem.title

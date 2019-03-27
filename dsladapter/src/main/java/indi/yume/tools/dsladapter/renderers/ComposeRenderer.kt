@@ -75,7 +75,7 @@ fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>
 data class ComposeItem<T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>(
         val renderer: BR
 ) : ComposeOf<T, BR> {
-    internal val key = Any()
+    val key = Any()
 }
 
 //<editor-fold defaultstate="collapsed" desc="ComposeItem HighType">

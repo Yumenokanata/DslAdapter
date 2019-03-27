@@ -11,6 +11,9 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    dataBinding {
+        enabled = true
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -23,16 +26,14 @@ android {
     }
 }
 
-def library_arrow_version = "0.7.1"
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
-    implementation "io.arrow-kt:arrow-annotations:0.8.1"
-    kapt "io.arrow-kt:arrow-annotations-processor:0.8.1"
+    implementation "io.arrow-kt:arrow-annotations:$library_arrow_version"
+    kapt "io.arrow-kt:arrow-meta:$library_arrow_version"
 
     testImplementation 'junit:junit:4.12'
     testImplementation "io.arrow-kt:arrow-test:${library_arrow_version}"

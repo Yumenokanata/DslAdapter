@@ -1,1 +1,1 @@
-include ':dsladapter', ':sample', ':adapterdatabinding', ':dsladapter-rx2'
+include ':dsladapter', ':sample', ':dsladapter-rx2', ':dsladapter-updater'

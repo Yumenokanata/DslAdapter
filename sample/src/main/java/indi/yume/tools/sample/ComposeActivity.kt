@@ -6,9 +6,10 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import indi.yume.tools.adapterdatabinding.*
 import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.renderers.*
+import indi.yume.tools.dsladapter.renderers.databinding.CLEAR_ALL
+import indi.yume.tools.dsladapter.renderers.databinding.databindingOf
 import indi.yume.tools.dsladapter.updater.compose.*
 import indi.yume.tools.dsladapter.updater.list.updateAuto
 import io.reactivex.Single
