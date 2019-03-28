@@ -6,6 +6,7 @@ import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.RendererAdapter
 import indi.yume.tools.dsladapter.UpdateResult
 import indi.yume.tools.dsladapter.datatype.ActionComposite
+import indi.yume.tools.dsladapter.renderers.IgnoreRenderer
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
@@ -27,6 +28,10 @@ operator fun <T, VD : ViewData<T>> ActionU<VD>.plus(a2: ActionU<VD>): ActionU<VD
         }
 
 
+fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>, UP : Updatable<T, VD>> BR.ignoreTypeU(
+        updatable: (BR) -> UP,
+        reduceFun: UP.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
+        IgnoreRenderer.ignoreType(this) { p1, p2, p3 -> updatable(this).reduceFun(p1, p2, p3) }
 
 
 @CheckResult
