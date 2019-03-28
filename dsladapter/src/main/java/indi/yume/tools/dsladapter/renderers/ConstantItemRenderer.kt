@@ -43,3 +43,5 @@ class ConstantItemRenderer<T, I>(
 }
 
 data class ConstantViewData<T, I>(override val originData: T, override val count: Int, val data: I) : ViewData<T>
+
+fun <T, I> BaseRenderer<T, ConstantViewData<T, I>>.fix(): ConstantItemRenderer<T, I> = this as ConstantItemRenderer<T, I>

@@ -7,12 +7,11 @@ import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
-class ComposeRenderer<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : HListK<ForComposeItemData, VDL>>(
-        val composeList: IL,
-        val getMapper: (DL, IL) -> VDL
+class ComposeRenderer<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
+        val getMapper: (DL) -> VDL
 ) : BaseRenderer<DL, ComposeViewData<DL, VDL>>() {
     override fun getData(content: DL): ComposeViewData<DL, VDL> {
-        return ComposeViewData(content, getMapper(content, composeList))
+        return ComposeViewData(content, getMapper(content))
     }
 
     override fun getItemId(data: ComposeViewData<DL, VDL>, index: Int): Long {
@@ -39,83 +38,68 @@ class ComposeRenderer<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, 
     }
 
     companion object {
-        val startBuild: ComposeBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
-                ComposeBuilder(HListK.nil()) { _, _ -> HListK.nil() }
+        val startBuild: ComposeBuilder<HNilK<ForIdT>, HNilK<ForComposeItemData>> =
+                ComposeBuilder { _ -> HListK.nil() }
     }
 }
 
-class ComposeBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : HListK<ForComposeItemData, VDL>>(
-        val composeList: IL,
-        val getMapper: (DL, IL) -> VDL
+class ComposeBuilder<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
+        val getMapper: (DL) -> VDL
 ) {
-    fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>> add(renderer: BR)
+    fun <T, VD : ViewData<T>> add(renderer: BaseRenderer<T, VD>)
             : ComposeBuilder<HConsK<ForIdT, T, DL>,
-            HConsK<ForComposeItem, Pair<T, BR>, IL>,
-            HConsK<ForComposeItemData, Pair<T, BR>, VDL>> {
-        return ComposeBuilder(composeList.extend(ComposeItem(renderer)))
-        { dl, il ->
-            val item = il.head.fix()
-            getMapper(dl.tail, il.tail)
-                    .extend(ComposeItemData(item.renderer.getData(dl.head.value()), item))
+            HConsK<ForComposeItemData, Pair<T, VD>, VDL>> {
+        return ComposeBuilder { dl ->
+            getMapper(dl.tail)
+                    .extend(ComposeItemData(renderer.getData(dl.head.value()), ComposeItem(renderer)))
         }
     }
 
-    val start : ComposeBuilder<DL, IL, VDL> = this
+    val start : ComposeBuilder<DL, VDL> = this
 
-    fun build(): ComposeRenderer<DL, IL, VDL> = ComposeRenderer(composeList, getMapper)
+    fun build(): ComposeRenderer<DL, VDL> = ComposeRenderer(getMapper)
 }
 
 
 
-fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>
-        itemSub(renderer: BR)
-        : ComposeItem<T, VD, BR> =
+fun <T, VD : ViewData<T>>
+        itemSub(renderer: BaseRenderer<T, VD>)
+        : ComposeItem<T, VD> =
         ComposeItem(renderer)
 
-data class ComposeItem<T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>(
-        val renderer: BR
-) : ComposeOf<T, BR> {
+data class ComposeItem<T, VD : ViewData<T>>(
+        val renderer: BaseRenderer<T, VD>
+) {
     val key = Any()
 }
 
-//<editor-fold defaultstate="collapsed" desc="ComposeItem HighType">
-class ForComposeItem private constructor() {
-    companion object
-}
-typealias ComposeOf<T, BR> = Kind<ForComposeItem, Pair<T, BR>>
-@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T> Kind<ForComposeItem, Any?>.fixAny(): ComposeItem<Any?, ViewData<Any?>, BaseRenderer<Any?, ViewData<Any?>>> =
-        this as ComposeItem<Any?, ViewData<Any?>, BaseRenderer<Any?, ViewData<Any?>>>
-@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, VD, BR> ComposeOf<T, BR>.fix(): ComposeItem<T, VD, BR> where VD : ViewData<T>, BR : BaseRenderer<T, VD> =
-        this as ComposeItem<T, VD, BR>
-
-//</editor-fold>
-
-data class ComposeItemData<T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>(
+data class ComposeItemData<T, VD : ViewData<T>>(
         val viewData: VD,
-        val item: ComposeItem<T, VD, BR>) : ComposeDataOf<T, BR>
+        val item: ComposeItem<T, VD>) : ComposeDataOf<T, VD>
 
 //<editor-fold defaultstate="collapsed" desc="ComposeItemData HighType">
 class ForComposeItemData private constructor() {
     companion object
 }
-typealias ComposeDataOf<T, BR> = Kind<ForComposeItemData, Pair<T, BR>>
+typealias ComposeDataOf<T, VD> = Kind<ForComposeItemData, Pair<T, VD>>
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun Kind<ForComposeItemData, Any?>.fixAny(): ComposeItemData<Any?, ViewData<Any?>, BaseRenderer<Any?, ViewData<Any?>>> =
-        this as ComposeItemData<Any?, ViewData<Any?>, BaseRenderer<Any?, ViewData<Any?>>>
+inline fun Kind<ForComposeItemData, Any?>.fixAny(): ComposeItemData<Any?, ViewData<Any?>> =
+        this as ComposeItemData<Any?, ViewData<Any?>>
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, VD, BR> ComposeDataOf<T, BR>.fix(): ComposeItemData<T, VD, BR> where VD : ViewData<T>, BR : BaseRenderer<T, VD> =
-        this as ComposeItemData<T, VD, BR>
+inline fun <T, VD> ComposeDataOf<T, VD>.fix(): ComposeItemData<T, VD> where VD : ViewData<T> =
+        this as ComposeItemData<T, VD>
 //</editor-fold>
 
 data class ComposeViewData<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
         override val originData: DL,
         val vdList: VDL) : ViewData<DL> {
-    val vdNormalList: List<ComposeItemData<Any?, ViewData<Any?>, BaseRenderer<Any?, ViewData<Any?>>>> =
+    val vdNormalList: List<ComposeItemData<Any?, ViewData<Any?>>> =
             vdList.toList().map { it.fixAny() }
 
     val endsPoint: IntArray = vdNormalList.getEndsPoints { it.viewData.count }
 
     override val count: Int = endsPoint.getEndPoint()
 }
+
+fun <DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>> BaseRenderer<DL, ComposeViewData<DL, VDL>>.fix(): ComposeRenderer<DL, VDL> =
+        this as ComposeRenderer<DL, VDL>

@@ -8,10 +8,10 @@ import indi.yume.tools.dsladapter.typeclass.ViewData
  * Created by xuemaotang on 2017/11/16.
  */
 
-class ListRenderer<T, I, IV : ViewData<I>, BR : BaseRenderer<I, IV>>(
+class ListRenderer<T, I, IV : ViewData<I>>(
         val converter: (T) -> List<I>,
         val demapper: (oldData: T, newMapData: List<I>) -> T,
-        val subs: BR,
+        val subs: BaseRenderer<I, IV>,
         val keyGetter: KeyGetter<I>?,
         val itemIsSingle: Boolean = false
 ) : BaseRenderer<T, ListViewData<T, I, IV>>() {
@@ -52,5 +52,5 @@ data class ListViewData<T, I, VD : ViewData<I>>(override val originData: T, val 
 }
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, I, IV : ViewData<I>, BR : BaseRenderer<I, IV>> BaseRenderer<T, ListViewData<T, I, IV>>.fix(): ListRenderer<T, I, IV, BR> =
-        this as ListRenderer<T, I, IV, BR>
+inline fun <T, I, IV : ViewData<I>> BaseRenderer<T, ListViewData<T, I, IV>>.fix(): ListRenderer<T, I, IV> =
+        this as ListRenderer<T, I, IV>

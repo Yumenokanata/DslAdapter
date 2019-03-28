@@ -4,25 +4,27 @@ import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.ChangedData
 import indi.yume.tools.dsladapter.renderers.MapperRenderer
 import indi.yume.tools.dsladapter.renderers.MapperViewData
+import indi.yume.tools.dsladapter.renderers.fix
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.updateVD
 
 
-class MapperUpdater<T, D, VD : ViewData<D>, BR : BaseRenderer<D, VD>>(
-        val renderer: MapperRenderer<T, D, VD, BR>
+class MapperUpdater<T, D, VD : ViewData<D>>(
+        val renderer: MapperRenderer<T, D, VD>
 ) : Updatable<T, MapperViewData<T, D, VD>> {
+    constructor(base: BaseRenderer<T, MapperViewData<T, D, VD>>): this(base.fix())
 
     val mapOri = renderer.mapper
 
-    fun <UP : Updatable<D, VD>> mapWithOld(targetUpdatable: (BR) -> UP, f: UP.(oldData: T) -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> = { oldVD ->
+    fun <UP : Updatable<D, VD>> mapWithOld(targetUpdatable: (BaseRenderer<D, VD>) -> UP, f: UP.(oldData: T) -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> = { oldVD ->
         val mapperAction = targetUpdatable(renderer.targetRenderer).f(oldVD.originData)
         val (actions, newMapVD) = mapperAction(oldVD.mapVD)
 
         actions to MapperViewData(renderer.demapper(oldVD.originData, newMapVD.originData), newMapVD)
     }
 
-    fun <UP : Updatable<D, VD>> mapper(updatable: (BR) -> UP, f: UP.() -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> =
+    fun <UP : Updatable<D, VD>> mapper(updatable: (BaseRenderer<D, VD>) -> UP, f: UP.() -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> =
             mapWithOld(updatable) { f() }
 
     fun update(newData: T, payload: Any? = null): ActionU<MapperViewData<T, D, VD>> {
@@ -37,8 +39,8 @@ class MapperUpdater<T, D, VD : ViewData<D>, BR : BaseRenderer<D, VD>>(
     }
 }
 
-val <T, D, VD : ViewData<D>, BR : BaseRenderer<D, VD>> MapperRenderer<T, D, VD, BR>.updater
+val <T, D, VD : ViewData<D>> MapperRenderer<T, D, VD>.updater
     get() = MapperUpdater(this)
 
-fun <T, D, VD : ViewData<D>, BR : BaseRenderer<D, VD>> updatable(renderer: MapperRenderer<T, D, VD, BR>) =
-        MapperUpdater(renderer)
+fun <T, D, VD : ViewData<D>> updatable(renderer: BaseRenderer<T, MapperViewData<T, D, VD>>) =
+        MapperUpdater(renderer.fix())

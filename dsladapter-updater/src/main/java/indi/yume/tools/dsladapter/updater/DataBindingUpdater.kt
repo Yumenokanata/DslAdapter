@@ -3,9 +3,13 @@ package indi.yume.tools.dsladapter.updater
 import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.renderers.databinding.DataBindingRenderer
 import indi.yume.tools.dsladapter.renderers.databinding.DataBindingViewData
+import indi.yume.tools.dsladapter.renderers.databinding.fix
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.updateVD
 
 class DataBindingUpdater<T, I>(val renderer: DataBindingRenderer<T, I>) : Updatable<T, DataBindingViewData<T, I>> {
+    constructor(base: BaseRenderer<T, DataBindingViewData<T, I>>): this(base.fix())
+
     fun update(newData: T, payload: Any? = null): ActionU<DataBindingViewData<T, I>> {
         val newVD = renderer.getData(newData)
 
@@ -15,7 +19,7 @@ class DataBindingUpdater<T, I>(val renderer: DataBindingRenderer<T, I>) : Updata
 
 val <T, I> DataBindingRenderer<T, I>.updater get() = DataBindingUpdater(this)
 
-fun <T, I> updatable(renderer: DataBindingRenderer<T, I>) = DataBindingUpdater(renderer)
+fun <T, I> updatable(renderer: BaseRenderer<T, DataBindingViewData<T, I>>) = DataBindingUpdater(renderer.fix())
 
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")

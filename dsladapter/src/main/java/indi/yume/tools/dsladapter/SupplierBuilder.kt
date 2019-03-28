@@ -11,17 +11,17 @@ import indi.yume.tools.dsladapter.typeclass.ViewData
 
 typealias Supplier<T> = () -> T
 
-fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>
-        RendererAdapter.Companion.singleSupplier(supplier: Supplier<T>, renderer: BR):
-        Pair<RendererAdapter<T, VD, BR>, SupplierController<T, VD, BR>> =
+fun <T, VD : ViewData<T>>
+        RendererAdapter.Companion.singleSupplier(supplier: Supplier<T>, renderer: BaseRenderer<T, VD>):
+        Pair<RendererAdapter<T, VD>, SupplierController<T, VD>> =
         RendererAdapter.singleRenderer(supplier(), renderer).let { it to SupplierController(it, supplier) }
 
 fun RendererAdapter.Companion.supplierBuilder()
-        : SupplierBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
+        : SupplierBuilder<HNilK<ForIdT>, HNilK<ForComposeItemData>> =
         SupplierBuilder.start
 
-class SupplierController<T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>(
-        val adapter: RendererAdapter<T, VD, BR>,
+class SupplierController<T, VD : ViewData<T>>(
+        val adapter: RendererAdapter<T, VD>,
         val supplierSum: Supplier<T>
 ) {
     @MainThread
@@ -30,32 +30,32 @@ class SupplierController<T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>(
     }
 }
 
-class SupplierBuilder<DL : HListK<ForIdT, DL>, IL : HListK<ForComposeItem, IL>, VDL : HListK<ForComposeItemData, VDL>>(
+class SupplierBuilder<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
         val supplierSum: Supplier<DL>,
         val initSumData: DL,
-        val composeBuilder: ComposeBuilder<DL, IL, VDL>
+        val composeBuilder: ComposeBuilder<DL, VDL>
 ) {
-    fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>
-            addStatic(initData: T, renderer: BR)
-            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>>
+            addStatic(initData: T, renderer: BaseRenderer<T, VD>)
+            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItemData, Pair<T, VD>, VDL>> =
             SupplierBuilder({ supplierSum().extend(initData.toIdT()) }, initSumData.extend(IdT(initData)), composeBuilder.add(renderer))
 
-    fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>>
-            add(supplier: Supplier<T>, renderer: BR)
-            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItem, Pair<T, BR>, IL>, HConsK<ForComposeItemData, Pair<T, BR>, VDL>> =
+    fun <T, VD : ViewData<T>>
+            add(supplier: Supplier<T>, renderer: BaseRenderer<T, VD>)
+            : SupplierBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItemData, Pair<T, VD>, VDL>> =
             SupplierBuilder({ supplierSum().extend(supplier().toIdT()) }, initSumData.extend(IdT(supplier())), composeBuilder.add(renderer))
 
-    fun <VD : ViewData<Unit>, BR : BaseRenderer<Unit, VD>>
-            addStatic(renderer: BR)
-            : SupplierBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItem, Pair<Unit, BR>, IL>, HConsK<ForComposeItemData, Pair<Unit, BR>, VDL>> =
+    fun <VD : ViewData<Unit>>
+            addStatic(renderer: BaseRenderer<Unit, VD>)
+            : SupplierBuilder<HConsK<ForIdT, Unit, DL>, HConsK<ForComposeItemData, Pair<Unit, VD>, VDL>> =
             SupplierBuilder({ supplierSum().extend(Unit.toIdT()) }, initSumData.extend(IdT(Unit)), composeBuilder.add(renderer))
 
-    fun build(): Pair<RendererAdapter<DL, ComposeViewData<DL, VDL>, ComposeRenderer<DL, IL, VDL>>,
-            SupplierController<DL, ComposeViewData<DL, VDL>, ComposeRenderer<DL, IL, VDL>>> =
+    fun build(): Pair<RendererAdapter<DL, ComposeViewData<DL, VDL>>,
+            SupplierController<DL, ComposeViewData<DL, VDL>>> =
             RendererAdapter(initSumData, composeBuilder.build()).let { it to SupplierController(it, supplierSum) }
 
     companion object {
-        val start: SupplierBuilder<HNilK<ForIdT>, HNilK<ForComposeItem>, HNilK<ForComposeItemData>> =
+        val start: SupplierBuilder<HNilK<ForIdT>, HNilK<ForComposeItemData>> =
                 SupplierBuilder({ HListK.nil() }, HListK.nil(), ComposeRenderer.startBuild)
     }
 }

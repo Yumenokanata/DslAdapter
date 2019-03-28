@@ -27,9 +27,9 @@ class IgnoreRenderer<T> private constructor(
 
     companion object {
         @Suppress("UNCHECKED_CAST")
-        fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>> ignoreType(
-                renderer: BR,
-                reduceFun: BR.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
+        fun <T, VD : ViewData<T>> ignoreType(
+                renderer: BaseRenderer<T, VD>,
+                reduceFun: BaseRenderer<T, VD>.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
                 IgnoreRenderer(renderer as BaseRenderer<T, ViewData<T>>,
                         reduceFun as BaseRenderer<T, ViewData<T>>.(oldData: T, newData: T, payload: Any?) -> ActionU<ViewData<T>>)
     }

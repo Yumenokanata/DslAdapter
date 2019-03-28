@@ -15,10 +15,10 @@ import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 
-fun <T, NVD : ViewData<Unit>, NBR : BaseRenderer<Unit, NVD>,
-        SVD : ViewData<T>, SBR : BaseRenderer<T, SVD>> optionRenderer(noneItemRenderer: NBR,
-                                                                   itemRenderer: SBR)
-        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SBR>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NBR>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
+fun <T, NVD : ViewData<Unit>,
+        SVD : ViewData<T>> optionRenderer(noneItemRenderer: BaseRenderer<Unit, NVD>,
+                                                                   itemRenderer: BaseRenderer<T, SVD>)
+        : SealedItemRenderer<Option<T>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<T, SVD>, HConsK<Kind<ForSealedItem, Option<T>>, Pair<Unit, NVD>, HNilK<Kind<ForSealedItem, Option<T>>>>>> =
         SealedItemRenderer(hlistKOf(
                 item(type = type<Option<T>>(),
                         checker = { it is None },

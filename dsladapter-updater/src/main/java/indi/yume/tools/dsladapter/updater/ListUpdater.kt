@@ -6,8 +6,10 @@ import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
-class ListUpdater<T, I, IV : ViewData<I>, BR : BaseRenderer<I, IV>>(
-        val renderer: ListRenderer<T, I, IV, BR>) : Updatable<T, ListViewData<T, I, IV>> {
+class ListUpdater<T, I, IV : ViewData<I>>(
+        val renderer: ListRenderer<T, I, IV>) : Updatable<T, ListViewData<T, I, IV>> {
+    constructor(base: BaseRenderer<T, ListViewData<T, I, IV>>): this(base.fix())
+
     fun update(data: T, payload: Any? = null): ActionU<ListViewData<T, I, IV>> = { oldVD ->
         val newVD = renderer.getData(data)
 
@@ -55,7 +57,7 @@ class ListUpdater<T, I, IV : ViewData<I>, BR : BaseRenderer<I, IV>>(
                 ActionComposite(0, realActions) to newVD
             }
 
-    fun <UP : Updatable<I, IV>> subs(pos: Int, subUpdatable: (BR) -> UP, updater: UP.() -> ActionU<IV>): ActionU<ListViewData<T, I, IV>> {
+    fun <UP : Updatable<I, IV>> subs(pos: Int, subUpdatable: (BaseRenderer<I, IV>) -> UP, updater: UP.() -> ActionU<IV>): ActionU<ListViewData<T, I, IV>> {
         val subAction = subUpdatable(renderer.subs).updater()
 
         return subsAct@{ oldVD ->
@@ -174,8 +176,8 @@ class ListUpdater<T, I, IV : ViewData<I>, BR : BaseRenderer<I, IV>>(
             }
 }
 
-val <T, I, IV : ViewData<I>, BR : BaseRenderer<I, IV>> ListRenderer<T, I, IV, BR>.updater
+val <T, I, IV : ViewData<I>> ListRenderer<T, I, IV>.updater
     get() = ListUpdater(this)
 
-fun <T, I, IV : ViewData<I>, BR : BaseRenderer<I, IV>> updatable(renderer: ListRenderer<T, I, IV, BR>) =
-        ListUpdater(renderer)
+fun <T, I, IV : ViewData<I>> updatable(renderer: BaseRenderer<T, ListViewData<T, I, IV>>) =
+        ListUpdater(renderer.fix())

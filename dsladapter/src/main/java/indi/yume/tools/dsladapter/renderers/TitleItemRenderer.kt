@@ -10,11 +10,11 @@ import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
  * Created by xuemaotang on 2017/11/16.
  */
 
-class TitleItemRenderer<T, G, GData: ViewData<G>, GBR: BaseRenderer<G, GData>, I, IData: ViewData<I>, IBR: BaseRenderer<I, IData>>(
+class TitleItemRenderer<T, G, GData: ViewData<G>, I, IData: ViewData<I>>(
         val titleGetter: (T) -> G,
         val subsGetter: (T) -> List<I>,
-        val title: GBR,
-        val subs: IBR,
+        val title: BaseRenderer<G, GData>,
+        val subs: BaseRenderer<I, IData>,
 
         val titleDemapper: (T, G) -> T = doNotAffectOriData(),
         val subsDemapper: (T, List<I>) -> T = doNotAffectOriData()
@@ -23,8 +23,8 @@ class TitleItemRenderer<T, G, GData: ViewData<G>, GBR: BaseRenderer<G, GData>, I
             itemType: TypeCheck<T>,
             titleGetter: (T) -> G,
             subsGetter: (T) -> List<I>,
-            title: GBR,
-            subs: IBR,
+            title: BaseRenderer<G, GData>,
+            subs: BaseRenderer<I, IData>,
 
             titleDemapper: (T, G) -> T = doNotAffectOriData(),
             subsDemapper: (T, List<I>) -> T = doNotAffectOriData()
@@ -93,6 +93,6 @@ data class TitleViewData<T, G, GVD: ViewData<G>, I, IVD : ViewData<I>>(override 
 
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, G, GData: ViewData<G>, GBR: BaseRenderer<G, GData>, I, IData: ViewData<I>, IBR: BaseRenderer<I, IData>> BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>.fix()
-        : TitleItemRenderer<T, G, GData, GBR, I, IData, IBR> =
-        this as TitleItemRenderer<T, G, GData, GBR, I, IData, IBR>
+inline fun <T, G, GData: ViewData<G>, I, IData: ViewData<I>> BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>.fix()
+        : TitleItemRenderer<T, G, GData, I, IData> =
+        this as TitleItemRenderer<T, G, GData, I, IData>

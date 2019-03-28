@@ -107,13 +107,13 @@ class MainActivity : AppCompatActivity() {
                 .build()
 
         val act1 = composeRenderer.updater.updateBy {
-                    getLast0().up(::LayoutUpdater) {
+                    getLast0().up(::updatable) {
                         update("")
                     }
                 }
 
         val act2 = composeRenderer.updater.updateBy {
-                    getLast1().up(::DataBindingUpdater) {
+                    getLast1().up(::updatable) {
                         update(ItemModel())
                     }
                 }
@@ -172,9 +172,9 @@ class MainActivity : AppCompatActivity() {
          * 3.3 By update() func, this function will return a UpdateResult, this time not really update data for adapter.
          *     please use [dispatchUpdatesTo()] to apply update action to adapter
          */
-        adapterDemo1.update(::ComposeUpdater) {
-            getLast1().up(::TitleItemUpdater) {
-                title(::LayoutUpdater) {
+        adapterDemo1.update(::updatable) {
+            getLast1().up(::updatable) {
+                title(::updatable) {
                     update("new Title-${random.nextInt()}")
                 }
             }
@@ -184,9 +184,9 @@ class MainActivity : AppCompatActivity() {
          * 3.4 By updateNow() func
          *     Unlike the update method, this method will apply the update directly to the Adapter.
          */
-        adapterDemo1.updateNow(::ComposeUpdater) {
-            getLast1().up(::TitleItemUpdater) {
-                title(::LayoutUpdater) {
+        adapterDemo1.updateNow(::updatable) {
+            getLast1().up(::updatable) {
+                title(::updatable) {
                     update("new Title-${random.nextInt()}")
                 }
             }
@@ -248,7 +248,7 @@ class MainActivity : AppCompatActivity() {
             index++
             val newData = provideData(index)
             Single.fromCallable {
-                adapter.update(::ComposeUpdater) {
+                adapter.update(::updatable) {
                     getLast1().up(::updatable) {
                         update(newData)
                     } + getLast2().up(::updatable) {

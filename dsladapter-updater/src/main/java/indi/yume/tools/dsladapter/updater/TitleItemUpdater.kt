@@ -6,14 +6,17 @@ import indi.yume.tools.dsladapter.datatype.ActionComposite
 import indi.yume.tools.dsladapter.datatype.EmptyAction
 import indi.yume.tools.dsladapter.renderers.TitleItemRenderer
 import indi.yume.tools.dsladapter.renderers.TitleViewData
+import indi.yume.tools.dsladapter.renderers.fix
 import indi.yume.tools.dsladapter.renderers.getTargetStartPoint
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.updateVD
 
-class TitleItemUpdater<T, G, GData : ViewData<G>, GBR : BaseRenderer<G, GData>, I, IData : ViewData<I>, IBR : BaseRenderer<I, IData>>(
-        val renderer: TitleItemRenderer<T, G, GData, GBR, I, IData, IBR>)
+class TitleItemUpdater<T, G, GData : ViewData<G>, I, IData : ViewData<I>>(
+        val renderer: TitleItemRenderer<T, G, GData, I, IData>)
     : Updatable<T, TitleViewData<T, G, GData, I, IData>> {
+    constructor(base: BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>): this(base.fix())
+
     fun update(newData: T, payload: Any? = null): ActionU<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
         val newVD = renderer.getData(newData)
 
@@ -25,11 +28,11 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, GBR : BaseRenderer<G, GData>, 
         update(newData, payload)(oldVD)
     }
 
-    fun <UP : Updatable<G, GData>> title(titleUpdatable: (GBR) -> UP, updater: UP.() -> ActionU<GData>)
+    fun <UP : Updatable<G, GData>> title(titleUpdatable: (BaseRenderer<G, GData>) -> UP, updater: UP.() -> ActionU<GData>)
             : ActionU<TitleViewData<T, G, GData, I, IData>> =
             titleReduce(titleUpdatable) { updater() }
 
-    fun <UP : Updatable<G, GData>> titleReduce(titleUpdatable: (GBR) -> UP, updater: UP.(G) -> ActionU<GData>)
+    fun <UP : Updatable<G, GData>> titleReduce(titleUpdatable: (BaseRenderer<G, GData>) -> UP, updater: UP.(G) -> ActionU<GData>)
             : ActionU<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
         val (titleActions, titleVD) = titleUpdatable(renderer.title).updater(oldVD.titleItem.originData)(oldVD.titleItem)
 
@@ -51,10 +54,10 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, GBR : BaseRenderer<G, GData>, 
         updateTitle(newData, payload)(oldVD)
     }
 
-    fun <UP : Updatable<I, IData>> sub(pos: Int, subUpdatable: (IBR) -> UP, updater: UP.() -> ActionU<IData>): ActionU<TitleViewData<T, G, GData, I, IData>> =
+    fun <UP : Updatable<I, IData>> sub(pos: Int, subUpdatable: (BaseRenderer<I, IData>) -> UP, updater: UP.() -> ActionU<IData>): ActionU<TitleViewData<T, G, GData, I, IData>> =
             subReduce(pos, subUpdatable) { updater() }
 
-    fun <UP : Updatable<I, IData>> subReduce(pos: Int, subUpdatable: (IBR) -> UP, updater: UP.(I) -> ActionU<IData>): ActionU<TitleViewData<T, G, GData, I, IData>> = subs@{ oldVD ->
+    fun <UP : Updatable<I, IData>> subReduce(pos: Int, subUpdatable: (BaseRenderer<I, IData>) -> UP, updater: UP.(I) -> ActionU<IData>): ActionU<TitleViewData<T, G, GData, I, IData>> = subs@{ oldVD ->
         val subsData = oldVD.subsData
         val targetItem = subsData.getOrNull(pos) ?: return@subs EmptyAction to oldVD
 
@@ -69,15 +72,15 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, GBR : BaseRenderer<G, GData>, 
     }
 }
 
-val <T, G, GData : ViewData<G>, GBR : BaseRenderer<G, GData>, I, IData : ViewData<I>, IBR : BaseRenderer<I, IData>>
-        TitleItemRenderer<T, G, GData, GBR, I, IData, IBR>.updater
+val <T, G, GData : ViewData<G>, I, IData : ViewData<I>>
+        TitleItemRenderer<T, G, GData, I, IData>.updater
     get() = TitleItemUpdater(this)
 
-fun <T, G, GData : ViewData<G>, GBR : BaseRenderer<G, GData>, I, IData : ViewData<I>, IBR : BaseRenderer<I, IData>>
-        updatable(renderer: TitleItemRenderer<T, G, GData, GBR, I, IData, IBR>) = TitleItemUpdater(renderer)
+fun <T, G, GData : ViewData<G>, I, IData : ViewData<I>>
+        updatable(renderer: BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>) = TitleItemUpdater(renderer.fix())
 
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, G, GData : ViewData<G>, GBR : BaseRenderer<G, GData>, I, IData : ViewData<I>, IBR : BaseRenderer<I, IData>>
-        UpdatableOf<T, TitleViewData<T, G, GData, I, IData>>.value(): TitleItemUpdater<T, G, GData, GBR, I, IData, IBR> =
-        this as TitleItemUpdater<T, G, GData, GBR, I, IData, IBR>
+inline fun <T, G, GData : ViewData<G>, I, IData : ViewData<I>>
+        UpdatableOf<T, TitleViewData<T, G, GData, I, IData>>.value(): TitleItemUpdater<T, G, GData, I, IData> =
+        this as TitleItemUpdater<T, G, GData, I, IData>

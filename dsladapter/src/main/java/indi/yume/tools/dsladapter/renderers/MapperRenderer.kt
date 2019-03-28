@@ -4,10 +4,10 @@ import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
-class MapperRenderer<T, D, VD : ViewData<D>, BR : BaseRenderer<D, VD>>(
+class MapperRenderer<T, D, VD : ViewData<D>>(
         val mapper: (T) -> D,
         val demapper: (oldData: T, newSub: D)-> T,
-        val targetRenderer: BR
+        val targetRenderer: BaseRenderer<D, VD>
 ) : BaseRenderer<T, MapperViewData<T, D, VD>>() {
     override fun getData(content: T): MapperViewData<T, D, VD> = MapperViewData(content, targetRenderer.getData(mapper(content)))
 
@@ -30,5 +30,5 @@ data class MapperViewData<T, D, VD : ViewData<D>>(override val originData: T, va
 }
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-inline fun <T, D, VD : ViewData<D>, BR : BaseRenderer<D, VD>> BaseRenderer<T, MapperViewData<T, D, VD>>.fix(): MapperRenderer<T, D, VD, BR> =
-        this as MapperRenderer<T, D, VD, BR>
+inline fun <T, D, VD : ViewData<D>> BaseRenderer<T, MapperViewData<T, D, VD>>.fix(): MapperRenderer<T, D, VD> =
+        this as MapperRenderer<T, D, VD>

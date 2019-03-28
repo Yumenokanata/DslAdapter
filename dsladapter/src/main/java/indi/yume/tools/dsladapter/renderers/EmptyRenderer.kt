@@ -27,3 +27,5 @@ class EmptyRenderer<T> : BaseRenderer<T, EmptyViewData<T>>() {
 data class EmptyViewData<T>(override val originData: T) : ViewData<T> {
     override val count: Int = 0
 }
+
+fun <T> BaseRenderer<T, EmptyViewData<T>>.fix(): EmptyRenderer<T> = this as EmptyRenderer<T>

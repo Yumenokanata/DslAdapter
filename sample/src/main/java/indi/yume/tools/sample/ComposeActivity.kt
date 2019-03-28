@@ -118,7 +118,7 @@ class ComposeActivity : AppCompatActivity() {
 //                    getLast2().up {
 //                        update(newData)
 //                    } +
-                            getLast0().up(::ListUpdater) {
+                            getLast0().up(::updatable) {
                                 //                        move(2, 4) +
 //                        subs(3) {
 //                            update(ItemModel(189, "Subs Title $index", "subs Content"))

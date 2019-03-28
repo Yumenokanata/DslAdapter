@@ -28,15 +28,15 @@ operator fun <T, VD : ViewData<T>> ActionU<VD>.plus(a2: ActionU<VD>): ActionU<VD
         }
 
 
-fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>, UP : Updatable<T, VD>> BR.ignoreTypeU(
-        updatable: (BR) -> UP,
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> BaseRenderer<T, VD>.ignoreTypeU(
+        updatable: (BaseRenderer<T, VD>) -> UP,
         reduceFun: UP.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
         IgnoreRenderer.ignoreType(this) { p1, p2, p3 -> updatable(this).reduceFun(p1, p2, p3) }
 
 
 @CheckResult
-fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>, UP : Updatable<T, VD>> RendererAdapter<T, VD, BR>
-        .reduce(updatable: (BR) -> UP, f: UP.(T) -> ActionU<VD>): UpdateResult<T, VD> {
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
+        .reduce(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.(T) -> ActionU<VD>): UpdateResult<T, VD> {
     val data = getViewData()
     val (actions, newVD) = updatable(renderer).f(data.originData)(data)
 
@@ -44,15 +44,15 @@ fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>, UP : Updatable<T, VD>> Rende
 }
 
 @CheckResult
-fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>, UP : Updatable<T, VD>> RendererAdapter<T, VD, BR>
-        .update(updatable: (BR) -> UP, f: UP.() -> ActionU<VD>): UpdateResult<T, VD> {
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
+        .update(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.() -> ActionU<VD>): UpdateResult<T, VD> {
     val data = getViewData()
     val (actions, newVD) = updatable(renderer).f()(data)
 
     return UpdateResult(data, newVD, listOf(actions))
 }
 
-fun <T, VD : ViewData<T>, BR : BaseRenderer<T, VD>, UP : Updatable<T, VD>> RendererAdapter<T, VD, BR>
-        .updateNow(updatable: (BR) -> UP, f: UP.() -> ActionU<VD>) {
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
+        .updateNow(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.() -> ActionU<VD>) {
     update(updatable, f).dispatchUpdatesTo(this)
 }

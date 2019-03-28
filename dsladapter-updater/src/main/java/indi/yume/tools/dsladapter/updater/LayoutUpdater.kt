@@ -4,10 +4,14 @@ import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.ChangedData
 import indi.yume.tools.dsladapter.renderers.LayoutRenderer
 import indi.yume.tools.dsladapter.renderers.LayoutViewData
+import indi.yume.tools.dsladapter.renderers.fix
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.updateVD
 
 
 class LayoutUpdater<T>(val renderer: LayoutRenderer<T>) : Updatable<T, LayoutViewData<T>> {
+    constructor(base: BaseRenderer<T, LayoutViewData<T>>): this(base.fix())
+
     fun update(newData: T, payload: Any? = null): ActionU<LayoutViewData<T>> {
         val newVD = renderer.getData(newData)
 
@@ -22,4 +26,4 @@ class LayoutUpdater<T>(val renderer: LayoutRenderer<T>) : Updatable<T, LayoutVie
 
 val <T> LayoutRenderer<T>.updater get() = LayoutUpdater(this)
 
-fun <T> updatable(renderer: LayoutRenderer<T>) = LayoutUpdater(renderer)
+fun <T> updatable(renderer: BaseRenderer<T, LayoutViewData<T>>) = LayoutUpdater(renderer.fix())

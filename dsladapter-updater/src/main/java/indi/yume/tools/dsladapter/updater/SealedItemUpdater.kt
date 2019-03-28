@@ -5,25 +5,23 @@ import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.ChangedData
 import indi.yume.tools.dsladapter.datatype.EmptyAction
 import indi.yume.tools.dsladapter.datatype.HListK
-import indi.yume.tools.dsladapter.renderers.ForSealedItem
-import indi.yume.tools.dsladapter.renderers.SealedItem
-import indi.yume.tools.dsladapter.renderers.SealedItemRenderer
-import indi.yume.tools.dsladapter.renderers.SealedViewData
+import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.updateVD
 
 class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
         val renderer: SealedItemRenderer<T, L>)
-    : Updatable<T, SealedViewData<T>> {
+    : Updatable<T, SealedViewData<T, L>> {
+    constructor(base: BaseRenderer<T, SealedViewData<T, L>>): this(base.fix())
 
-    fun <D, VD : ViewData<D>, BR : BaseRenderer<D, VD>, UP : Updatable<D, VD>>
-            sealedItem(f: L.() -> SealedItem<T, D, VD, BR>, itemUpdatable: (BR) -> UP, act: UP.() -> ActionU<VD>): ActionU<SealedViewData<T>> =
+    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>>
+            sealedItem(f: L.() -> SealedItem<T, D, VD>, itemUpdatable: (BaseRenderer<D, VD>) -> UP, act: UP.() -> ActionU<VD>): ActionU<SealedViewData<T, L>> =
             sealedItemReduce(f, itemUpdatable) { act() }
 
     @Suppress("UNCHECKED_CAST")
-    fun <D, VD : ViewData<D>, BR : BaseRenderer<D, VD>, UP : Updatable<D, VD>>
-            sealedItemReduce(f: L.() -> SealedItem<T, D, VD, BR>, itemUpdatable: (BR) -> UP, act: UP.(D) -> ActionU<VD>): ActionU<SealedViewData<T>> {
+    fun <D, VD : ViewData<D>, UP : Updatable<D, VD>>
+            sealedItemReduce(f: L.() -> SealedItem<T, D, VD>, itemUpdatable: (BaseRenderer<D, VD>) -> UP, act: UP.(D) -> ActionU<VD>): ActionU<SealedViewData<T, L>> {
         val sealedItem = renderer.sealedList.f()
 
         return { oldVD ->
@@ -44,12 +42,12 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
         }
     }
 
-    fun update(data: T, payload: Any? = null): ActionU<SealedViewData<T>> = { oldVD ->
+    fun update(data: T, payload: Any? = null): ActionU<SealedViewData<T, L>> = { oldVD ->
         val newVD = renderer.getData(data)
         updateVD(oldVD, newVD, payload) to newVD
     }
 
-    fun reduce(f: (oldData: T) -> ChangedData<T>): ActionU<SealedViewData<T>> = { oldVD ->
+    fun reduce(f: (oldData: T) -> ChangedData<T>): ActionU<SealedViewData<T, L>> = { oldVD ->
         val (newData, payload) = f(oldVD.originData)
         update(newData, payload)(oldVD)
     }
@@ -58,5 +56,5 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
 val <T, L : HListK<Kind<ForSealedItem, T>, L>> SealedItemRenderer<T, L>.updater
     get() = SealedItemUpdater(this)
 
-fun <T, L : HListK<Kind<ForSealedItem, T>, L>> updatable(renderer: SealedItemRenderer<T, L>) =
-        SealedItemUpdater(renderer)
+fun <T, L : HListK<Kind<ForSealedItem, T>, L>> updatable(renderer: BaseRenderer<T, SealedViewData<T, L>>) =
+        SealedItemUpdater(renderer.fix())
