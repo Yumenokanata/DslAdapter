@@ -16,13 +16,13 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
     constructor(base: BaseRenderer<T, SealedViewData<T, L>>): this(base.fix())
 
     fun <D, VD : ViewData<D>, UP : Updatable<D, VD>>
-            sealedItem(f: L.() -> SealedItem<T, D, VD>, itemUpdatable: (BaseRenderer<D, VD>) -> UP, act: UP.() -> ActionU<VD>): ActionU<SealedViewData<T, L>> =
+            sealedItem(f: L.() -> SealedItemOf<T, D, VD>, itemUpdatable: (BaseRenderer<D, VD>) -> UP, act: UP.() -> ActionU<VD>): ActionU<SealedViewData<T, L>> =
             sealedItemReduce(f, itemUpdatable) { act() }
 
     @Suppress("UNCHECKED_CAST")
     fun <D, VD : ViewData<D>, UP : Updatable<D, VD>>
-            sealedItemReduce(f: L.() -> SealedItem<T, D, VD>, itemUpdatable: (BaseRenderer<D, VD>) -> UP, act: UP.(D) -> ActionU<VD>): ActionU<SealedViewData<T, L>> {
-        val sealedItem = renderer.sealedList.f()
+            sealedItemReduce(f: L.() -> SealedItemOf<T, D, VD>, itemUpdatable: (BaseRenderer<D, VD>) -> UP, act: UP.(D) -> ActionU<VD>): ActionU<SealedViewData<T, L>> {
+        val sealedItem = renderer.sealedList.f().fix()
 
         return { oldVD ->
             if (sealedItem == oldVD.item) {
