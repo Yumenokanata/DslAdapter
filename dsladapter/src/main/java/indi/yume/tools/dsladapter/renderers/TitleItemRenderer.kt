@@ -30,10 +30,15 @@ class TitleItemRenderer<T, G, GData: ViewData<G>, I, IData: ViewData<I>>(
             subsDemapper: (T, List<I>) -> T = doNotAffectOriData()
     ): this(titleGetter, subsGetter, title, subs, titleDemapper, subsDemapper)
 
-    override fun getData(content: T): TitleViewData<T, G, GData, I, IData> =
-            TitleViewData(content,
-                    title.getData(titleGetter(content)),
-                    subsGetter(content).map { subs.getData(it) })
+    override fun getData(content: T): TitleViewData<T, G, GData, I, IData> {
+        val titleData = titleGetter(content)
+        val subsData = subsGetter(content)
+
+        return TitleViewData(content,
+                title.getData(titleData),
+                subsData.map { subs.getData(it) },
+                subsData)
+    }
 
     override fun getItemId(data: TitleViewData<T, G, GData, I, IData>, index: Int): Long =
         when {
@@ -83,7 +88,8 @@ class TitleItemRenderer<T, G, GData: ViewData<G>, I, IData: ViewData<I>>(
 
 data class TitleViewData<T, G, GVD: ViewData<G>, I, IVD : ViewData<I>>(override val originData: T,
                                                                        val titleItem: GVD,
-                                                                       val subsData: List<IVD>) : ViewData<T> {
+                                                                       val subsData: List<IVD>,
+                                                                       val subs: List<I>) : ViewData<T> {
     val titleSize: Int = titleItem.count
 
     val subEndPoints: IntArray = subsData.getEndsPoints()

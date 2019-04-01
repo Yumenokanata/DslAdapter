@@ -2,7 +2,6 @@ package indi.yume.tools.dsladapter.renderers
 
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
-import io.kotlintest.properties.map
 import org.junit.Test
 
 import org.junit.Assert.*

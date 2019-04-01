@@ -1,1 +1,1 @@
-include ':dsladapter', ':sample', ':dsladapter-rx2', ':dsladapter-updater'
+include ':dsladapter', ':sample', ':dsladapter-rx2', ':dsladapter-updater', ':dsladapter-position'

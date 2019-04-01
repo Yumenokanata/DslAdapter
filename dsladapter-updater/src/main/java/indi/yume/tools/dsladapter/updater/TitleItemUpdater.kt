@@ -38,7 +38,7 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, I, IData : ViewData<I>>(
 
         val newOriData = renderer.titleDemapper(oldVD.originData, titleVD.originData)
 
-        ActionComposite(0, listOf(titleActions)) to TitleViewData(newOriData, titleVD, oldVD.subsData)
+        ActionComposite(0, listOf(titleActions)) to TitleViewData(newOriData, titleVD, oldVD.subsData, oldVD.subs)
     }
 
     fun updateTitle(newTitleData: G, payload: Any? = null): ActionU<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
@@ -46,7 +46,8 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, I, IData : ViewData<I>>(
 
         val newOriData = renderer.titleDemapper(oldVD.originData, newTitleVD.originData)
 
-        updateVD(oldVD.titleItem, newTitleVD, payload) to TitleViewData(newOriData, newTitleVD, oldVD.subsData)
+        updateVD(oldVD.titleItem, newTitleVD, payload) to
+                TitleViewData(newOriData, newTitleVD, oldVD.subsData, oldVD.subs)
     }
 
     fun reduceTitle(f: (oldData: G) -> ChangedData<G>): ActionU<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
@@ -68,7 +69,7 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, I, IData : ViewData<I>>(
 
         val newOriData = renderer.subsDemapper(oldVD.originData, newItemsData)
 
-        ActionComposite(targetRealPos, listOf(targetActions)) to TitleViewData(newOriData, oldVD.titleItem, newItemsVD)
+        ActionComposite(targetRealPos, listOf(targetActions)) to TitleViewData(newOriData, oldVD.titleItem, newItemsVD, newItemsData)
     }
 }
 

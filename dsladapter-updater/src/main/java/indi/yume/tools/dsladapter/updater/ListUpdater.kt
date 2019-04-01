@@ -57,10 +57,14 @@ class ListUpdater<T, I, IV : ViewData<I>>(
                 ActionComposite(0, realActions) to newVD
             }
 
-    fun <UP : Updatable<I, IV>> subs(pos: Int, subUpdatable: (BaseRenderer<I, IV>) -> UP, updater: UP.() -> ActionU<IV>): ActionU<ListViewData<T, I, IV>> {
+    fun <UP : Updatable<I, IV>> subs(pos: Int, subUpdatable: (BaseRenderer<I, IV>) -> UP, updater: UP.() -> ActionU<IV>): ActionU<ListViewData<T, I, IV>> =
+            subs({ _, _ -> pos }, subUpdatable, updater)
+
+    fun <UP : Updatable<I, IV>> subs(posFun: (T, List<I>) -> Int, subUpdatable: (BaseRenderer<I, IV>) -> UP, updater: UP.() -> ActionU<IV>): ActionU<ListViewData<T, I, IV>> {
         val subAction = subUpdatable(renderer.subs).updater()
 
         return subsAct@{ oldVD ->
+            val pos = posFun(oldVD.originData, oldVD.data)
             val subVD = oldVD.list.getOrNull(pos) ?: return@subsAct EmptyAction to oldVD
 
             val (subActions, subNewVD) = subAction(subVD)
