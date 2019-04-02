@@ -1,10 +1,9 @@
-package indi.yume.tools.dsladapter.renderers
+package indi.yume.tools.dsladapter.updater
 
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.forList
+import indi.yume.tools.dsladapter.renderers.ListViewData
 import org.junit.Test
-
-import org.junit.Assert.*
 
 class ListUpdaterTest {
 
@@ -25,19 +24,19 @@ class ListUpdaterTest {
                 UpdateData(listData, listOf(0, 1, 2, 13, 4, 5), ActionComposite(0, listOf(OnRemoved(3, 3), OnInserted(3, 3)))),
                 UpdateData(listOf(0, 1, 2, 13, 4, 5), listOf(0, 1, 2, 113, 4, 5), ActionComposite(0, listOf(OnChanged(3, 3, null)))),
                 UpdateData(listOf(11, 1, 2, 3, 4, 5), listOf(3, 1, 13, 2, 11, 4, 5), ActionComposite(0, listOf(
-                        OnInserted(pos=2, count=3), OnMoved(fromPosition=0, toPosition=7),
-                        OnRemoved(pos=7, count=3), OnInserted(pos=0, count=3)))),
+                        OnInserted(pos = 2, count = 3), OnMoved(fromPosition = 0, toPosition = 7),
+                        OnRemoved(pos = 7, count = 3), OnInserted(pos = 0, count = 3)))),
                 UpdateData(listOf(0, 1, 2, 3, 4, 5), listOf(3, 1, 13, 2, 0, 4, 5), ActionComposite(0, listOf(
-                        OnInserted(pos=1, count=3),
-                        OnInserted(pos=6, count=0), OnRemoved(pos=0, count=0),
-                        OnRemoved(pos=6, count=3), OnInserted(pos=0, count=3)))),
+                        OnInserted(pos = 1, count = 3),
+                        OnInserted(pos = 6, count = 0), OnRemoved(pos = 0, count = 0),
+                        OnRemoved(pos = 6, count = 3), OnInserted(pos = 0, count = 3)))),
                 UpdateData(emptyList(), listOf(0, 1, 2, 3, 4, 5), ActionComposite(0, listOf(OnInserted(0, 15))))
         )
 
         for ((oldData, newData, result) in testData) {
             val oldViewData = ListViewData(oldData, oldData, oldData.map { itemRenderer.getData(it) })
-//            val value: UpdateActions = listRenderer.updater.updateDiffUtil(newData, keyGetter)(oldViewData).first
-//            assert(result == value) { "oldData=${oldData.joinToString()}\n newData=${newData.joinToString()}\n error result=$value;\n right result=$result" }
+            val value: UpdateActions = listRenderer.updater.updateDiffUtil(newData, keyGetter)(oldViewData).first
+            assert(result == value) { "oldData=${oldData.joinToString()}\n newData=${newData.joinToString()}\n error result=$value;\n right result=$result" }
         }
     }
 

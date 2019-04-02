@@ -36,7 +36,7 @@ fun <T, VD : ViewData<T>> BaseRenderer<T, VD>.pos(f: BaseRenderer<T, VD>.() -> P
 
 fun <T, VD : ViewData<T>> me(): PosAction<VD> = { vd -> RendererPos(0, vd.count).right() }
 
-//<editor-fold defaultstate="collapsed" desc="ComposeRenderer">
+//<editor-fold desc="ComposeRenderer">
 fun <T, VD : ViewData<T>,
         DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>
         BaseRenderer<DL, ComposeViewData<DL, VDL>>.itemPos(getter: VDL.() -> ComposeDataOf<T, VD>,
@@ -61,7 +61,7 @@ fun <T, VD : ViewData<T>,
         }
 //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="ListRenderer">
+//<editor-fold desc="ListRenderer">
 fun <T, I, IV : ViewData<I>> BaseRenderer<T, ListViewData<T, I, IV>>.subsPos(
         index: Int,
         f: BaseRenderer<I, IV>.() -> PosAction<IV> = { me() }): PosAction<ListViewData<T, I, IV>> =
@@ -93,7 +93,7 @@ fun <T, I, IV : ViewData<I>> BaseRenderer<T, ListViewData<T, I, IV>>.subsPosWith
         }
 //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="MapperRenderer">
+//<editor-fold desc="MapperRenderer">
 fun <T, D, VD : ViewData<D>> BaseRenderer<T, MapperViewData<T, D, VD>>.mapper(
         f: BaseRenderer<D, VD>.() -> PosAction<VD> = { me() }): PosAction<MapperViewData<T, D, VD>> =
         result@{ vd ->
@@ -104,15 +104,22 @@ fun <T, D, VD : ViewData<D>> BaseRenderer<T, MapperViewData<T, D, VD>>.mapper(
         }
 //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="SealedItemRenderer">
+//<editor-fold desc="SealedItemRenderer">
+
 fun <T, D, VD : ViewData<D>,
         L : HListK<Kind<ForSealedItem, T>, L>> BaseRenderer<T, SealedViewData<T, L>>.sealedItem(
         sealedFun: L.() -> SealedItemOf<T, D, VD>,
         f: BaseRenderer<D, VD>.() -> PosAction<VD> = { me() }): PosAction<SealedViewData<T, L>> =
-        result@{ vd ->
-            val realRenderer = this@sealedItem.fix()
+        sealedItemWithVD({ sealedFun() }, f)
 
-            val sealedItem: SealedItem<T, D, VD> = realRenderer.sealedList.sealedFun().fix()
+fun <T, D, VD : ViewData<D>,
+        L : HListK<Kind<ForSealedItem, T>, L>> BaseRenderer<T, SealedViewData<T, L>>.sealedItemWithVD(
+        sealedFun: L.(T) -> SealedItemOf<T, D, VD>,
+        f: BaseRenderer<D, VD>.() -> PosAction<VD> = { me() }): PosAction<SealedViewData<T, L>> =
+        result@{ vd ->
+            val realRenderer = this@sealedItemWithVD.fix()
+
+            val sealedItem: SealedItem<T, D, VD> = realRenderer.sealedList.sealedFun(vd.originData).fix()
             if (sealedItem !== vd.item)
                 return@result ErrorMsg("SealedItemRenderer",
                         "sealedItem is not match: sealedFun=$sealedItem; but viewData is ${vd.item}.").left()
@@ -124,7 +131,7 @@ fun <T, D, VD : ViewData<D>,
 //</editor-fold>
 
 
-//<editor-fold defaultstate="collapsed" desc="TitleItemRenderer">
+//<editor-fold desc="TitleItemRenderer">
 fun <T, G, GData: ViewData<G>, I, IData: ViewData<I>>
         BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>.titlePos(
         f: BaseRenderer<G, GData>.() -> PosAction<GData> = { me() }): PosAction<TitleViewData<T, G, GData, I, IData>> =

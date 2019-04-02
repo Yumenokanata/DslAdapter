@@ -38,27 +38,27 @@ class ExampleUnitTest {
         subjectI.onNext(6)
         subjectI.onNext(7)
 
-        private var label = 0
-
-        override fun invokeSuspend(result: Result<Any?>): Any? {
-            when (label) {
-                0 -> {
-                    label = 1
-                    println("start")
-                    1
-                }
-                1 -> {
-                    label = 2
-                    println("end")
-                }
-                else -> error("This coroutine had already completed")
-            }
-        }
+//        private var label = 0
+//
+//        override fun invokeSuspend(result: Result<Any?>): Any? {
+//            when (label) {
+//                0 -> {
+//                    label = 1
+//                    println("start")
+//                    1
+//                }
+//                1 -> {
+//                    label = 2
+//                    println("end")
+//                }
+//                else -> error("This coroutine had already completed")
+//            }
+//        }
     }
 
     @Test
     fun testSeq() {
-        val s = buildSequence<Int> {
+        val s = sequence<Int> {
             println("start")
             yield(1)
             println("resume with 1")
@@ -66,7 +66,7 @@ class ExampleUnitTest {
             println("resume with 3")
             println("end")
         }.iterator()
-        buildSequence<Int> {
+        sequence<Int> {
             println("start")
             yield(1)
             println("resume with 1")
