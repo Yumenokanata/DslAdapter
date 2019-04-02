@@ -39,8 +39,8 @@ class MapperUpdater<T, D, VD : ViewData<D>>(
     }
 }
 
-val <T, D, VD : ViewData<D>> MapperRenderer<T, D, VD>.updater
+val <T, D, VD : ViewData<D>> BaseRenderer<T, MapperViewData<T, D, VD>>.updater
     get() = MapperUpdater(this)
 
 fun <T, D, VD : ViewData<D>> updatable(renderer: BaseRenderer<T, MapperViewData<T, D, VD>>) =
-        MapperUpdater(renderer.fix())
+        MapperUpdater(renderer)

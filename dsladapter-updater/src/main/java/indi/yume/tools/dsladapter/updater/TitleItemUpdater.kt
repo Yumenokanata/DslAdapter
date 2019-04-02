@@ -74,11 +74,11 @@ class TitleItemUpdater<T, G, GData : ViewData<G>, I, IData : ViewData<I>>(
 }
 
 val <T, G, GData : ViewData<G>, I, IData : ViewData<I>>
-        TitleItemRenderer<T, G, GData, I, IData>.updater
+        BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>.updater
     get() = TitleItemUpdater(this)
 
 fun <T, G, GData : ViewData<G>, I, IData : ViewData<I>>
-        updatable(renderer: BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>) = TitleItemUpdater(renderer.fix())
+        updatable(renderer: BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>) = TitleItemUpdater(renderer)
 
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")

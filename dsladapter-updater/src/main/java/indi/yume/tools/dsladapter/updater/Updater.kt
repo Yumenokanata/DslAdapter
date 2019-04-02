@@ -52,6 +52,15 @@ fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
     return UpdateResult(data, newVD, listOf(actions))
 }
 
+@CheckResult
+fun <T, VD : ViewData<T>> RendererAdapter<T, VD>
+        .update(f: BaseRenderer<T, VD>.() -> ActionU<VD>): UpdateResult<T, VD> {
+    val data = getViewData()
+    val (actions, newVD) = f(renderer)(data)
+
+    return UpdateResult(data, newVD, listOf(actions))
+}
+
 fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
         .updateNow(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.() -> ActionU<VD>) {
     update(updatable, f).dispatchUpdatesTo(this)

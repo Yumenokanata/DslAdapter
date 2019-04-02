@@ -1,17 +1,20 @@
 # DslAdapter
 [![](https://jitpack.io/v/Yumenokanata/DslAdapter.svg)](https://jitpack.io/#Yumenokanata/DslAdapter)
 
-[中文文档](https://github.com/Yumenokanata/DslAdapter/blob/master/README_CN.md)
+一个用于Android RecyclerView的Adapter构建工具, DSL语法, **面向组合子设计**. 专注**类型安全**, 所有代码采用Kotlin编写.
 
-A RecyclerView Adapter builder by DSL. Easy to use, **type safety**, and all code written by kotlin.
-
-* Type safety by HList (Heterogeneous lists)
-* Build DSL
-* Update DSL
+* 类型安全的Adapter
+* 使用异构列表HList实现完全的静态类型
+* DSL构建器
+* DSL更新器
+* 面向组合子设计, 极其灵活、便于扩展
+* 函数范式设计, 数据和算法分离, 副作用隔离
 
 ---
 
-Add this in your root build.gradle at the end of repositories:
+## 配置方法
+
+Step 1. 在项目根目录的 build.gradle 文件结尾添加仓库:
 ```groovy
 allprojects {
 	repositories {
@@ -21,22 +24,24 @@ allprojects {
 }
 ```
 
-Step 2. Add the dependency in your module's gradle file
+Step 2. 在需要使用的module的gradle文件中添加依赖:
 ```groovy
 dependencies {
     implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:x.y.z'
     implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-updater:x.y.z'
-    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-rx2:x.y.z' // Beta, optional
-    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-position:x.y.z' // optional
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-rx2:x.y.z' // Beta, 可选
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-position:x.y.z' // DSL position获取器, 可选
 }
 ```
 
-[Sample](https://github.com/Yumenokanata/DslAdapter/blob/master/sample/src/main/java/indi/yume/tools/sample/MainActivity.kt)
+[示例](https://github.com/Yumenokanata/DslAdapter/blob/master/sample/src/main/java/indi/yume/tools/sample/MainActivity.kt)
 
 
 ---
 
-Now you can simply build a complex RecyclerView structure, just by:
+## 概览
+
+现在你可以使用此工具构建复杂的RecyclerView的Adapter了(**Adapter的泛型中包含整个复杂结构的类型信息**):
 
 ```kotlin
 val adapter = RendererAdapter.multipleBuild()
@@ -91,7 +96,35 @@ val adapter = RendererAdapter.multipleBuild()
         .build()
 ```
 
-Part Update by DSL: (`dsladapter-updater` module)
+以上代码构建出的Adapter可图示为:
+
+```
+|--LayoutRenderer  header
+|
+|--SealedItemRenderer
+|    |--none -> LayoutRenderer placeholder count 5
+|    |
+|    |--some -> ListRenderer
+|                 |--DataBindingRenderer 1
+|                 |--DataBindingRenderer 2
+|                 |--...
+|
+|--ListRenderer
+|    |--LayoutRenderer simple item1
+|    |--LayoutRenderer simple item2
+|    |--...
+|
+|--ListRenderer
+|    |--DataBindingRenderer item with content1
+|    |--DataBindingRenderer item with content2
+|    |--...
+|
+|--DataBindingRenderer footer
+```
+
+由于构建出来的Adapter的泛型中包含有整个列表树的结构信息, 因此可以通过反推的方式提取其中的结构信息, 目前以这种手法实现了两个工具:
+
+1. `DSL更新器`: 可以进行部分更新 (需要`dsladapter-updater`模块)
 
 ```kotlin
 adapter.updateNow {
@@ -110,7 +143,7 @@ adapter.updateNow {
 }
 ```
 
-`DiffUtil` support:
+也支持`DiffUtil`工具:
 
 ```kotlin
 adapter.updateNow(::updatable) { // ListUpdater
@@ -118,7 +151,7 @@ adapter.updateNow(::updatable) { // ListUpdater
 }
 ```
 
-Position get by DSL: (`dsladapter-position` module)
+2. `DSL position获取器`: 可以获取结构中某个位置的Renderer数据的在全局坐标中的位置 (需要`dsladapter-position`模块)
 
 ```kotlin
 val pos = adapter.renderer.pos {
@@ -132,45 +165,26 @@ val pos = adapter.renderer.pos {
 
 ---
 
-### Base Renderer
+## 详细使用说明
 
-1. **EmptyRenderer**
-2. **LayoutRenderer**
-3. **ConstantItemRenderer**
-4. **MapperRenderer**
-5. **ListRenderer**: Make list for other renderer
-6. **SealedItemRenderer**: Choice different Renderer for different data.
-7. **ComposeRenderer**
-8. **DataBindingRenderer** : Bind with Android Databinding
-8. **TitleItemRenderer** : Deprecated, please instead by ComposeRenderer.
+### 基础Renderer
 
-Use this Base Renderers, you can Make a complex RecyclerView structure:
+DslAdapter这个库的基本组合子是`BaseRenderer`, 复杂的结构都是通过对基本Renderer进行组合而创造的
 
-```
-|--LayoutRenderer  header
-|
-|--SealedItemRenderer
-|    |--none -> LayoutRenderer placeholder count 5
-|    | 
-|    |--some -> ListRenderer
-|                 |--DataBindingRenderer 1
-|                 |--DataBindingRenderer 2
-|                 |--... 
-|
-|--ListRenderer
-|    |--LayoutRenderer simple item1
-|    |--LayoutRenderer simple item2
-|    |--...
-|
-|--ListRenderer
-|    |--DataBindingRenderer item with content1
-|    |--DataBindingRenderer item with content2
-|    |--...
-|
-|--DataBindingRenderer footer
-```
+以下是一些默认实现的基本Renderer, 基本可以满足大部分需求, 另外也可以通过实现`BaseRenderer`类的方式扩展自己的Renderer
 
-### Part1 Make Renderer
+1. **EmptyRenderer**: 空Renderer, count为0
+2. **LayoutRenderer**: 与View绑定的末端Renderer, 可自定义数量
+3. **ConstantItemRenderer**: 将常量绑定到View的末端Renderer, 可适配任意数据源, 可自定义数量
+4. **MapperRenderer**: 转换目标Renderer的数据源类型, 一般通过`mapT()`来使用它
+5. **ListRenderer**: 将目标Renderer转换为适配列表数据源
+6. **SealedItemRenderer**: 根据数据源具体数据选择不同的Renderer渲染, 比如对于`Int?`类型，可以在为`null`的时候用EmptyRenderer渲染; 不为`null`的时候使用LayoutRenderer渲染
+7. **ComposeRenderer**: 组合多个不同Renderer
+8. **DataBindingRenderer** : Android Databinding支持的Renderer
+8. **TitleItemRenderer** : 一个Title Renderer加列表的Renderer. `现已废弃`, 请使用ComposeRenderer代替.
+
+
+### Part1 基本Renderer的使用示例
 
 #### 1.1 LayoutRenderer
 ```kotlin
@@ -190,8 +204,8 @@ val itemRenderer = databindingOf<ItemModel>(R.layout.item_layout)
         .forItem()
 ```
 
-#### 1.3 TitleItemRenderer
-This Renderer will build a title with subs, like:
+#### 1.3 TitleItemRenderer (`现已废弃`, 请使用ComposeRenderer代替.)
+一个Title Renderer加列表的Renderer:
 
 ```
 |-- Title  (eg: stringRenderer)
@@ -210,8 +224,9 @@ val renderer = TitleItemRenderer(
 ```
 
 #### 1.4 SealedItemRenderer
-This Renderer will build a sealed Renderer, if checker is 'right' will show this renderer, eg:
+根据数据源具体数据选择不同的Renderer渲染, 通过由上到下调用`check`函数选择使用的item
 
+比如要构建一个类似这样选择条件的Renderer:
 ```
 when {
   list.isEmpty -> stringRenderer
@@ -219,6 +234,7 @@ when {
 }
 ```
 
+可以这样构建:
 ```kotlin
 val rendererSealed = SealedItemRenderer(hlistKOf(
         item(type = type<List<ItemModel>>(),
@@ -238,7 +254,7 @@ val rendererSealed = SealedItemRenderer(hlistKOf(
 
 #### 1.5 ComposeRenderer
 
-This Renderer will compose all item renderer, eg:
+组合多个不同Renderer, eg:
 
 ```
 |-- item1 (eg: itemRenderer)
@@ -254,9 +270,13 @@ val composeRenderer = ComposeRenderer.startBuild
 
 ---
 
-### Part2 BuildAdapter
+### Part2 Adapter的构建
 
-> Tips: RendererAdapter only have one renderer
+DslAdapter的核心Adapter是`RendererAdapter`, 虽然Renderer本身可以单独构建, 但Renderer构建时不会包括初始数据, 为了方便, 有以下的Builder构造器可以直接用:
+
+> Tip1: RendererAdapter中只有一个renderer
+
+> Tip2: 构建时需要与Renderer类型相同的初始数据, 如果想要初始数据为`null`, 则请构建能够支持`null`数据类型的Renderer
 
 1. constructor
 2. singleRenderer
@@ -267,7 +287,7 @@ val composeRenderer = ComposeRenderer.startBuild
 7. singleRxAutoUpdate
 8. rxBuild
 
-#### 2.1 By constructor
+#### 2.1 使用constructor构造
 
 ```kotlin
 val adapterDemo1 = RendererAdapter(
@@ -279,7 +299,7 @@ val adapterDemo1 = RendererAdapter(
 )
 ```
 
-#### 2.2 By singleRenderer func
+#### 2.2 使用`singleRenderer()`方法构建
 ```kotlin
 val adapterDemo2 = RendererAdapter.singleRenderer(
         initData = HListK.singleId(emptyList<ItemModel>()).putF("ss"),
@@ -290,7 +310,7 @@ val adapterDemo2 = RendererAdapter.singleRenderer(
 )
 ```
 
-#### 2.3 By multiple func
+#### 2.3 使用`multiple()`方法构建
 
 ```kotlin
 val adapterDemo3 = RendererAdapter.multiple(HListK.singleId(emptyList<ItemModel>()).putF("ss"))
@@ -301,7 +321,7 @@ val adapterDemo3 = RendererAdapter.multiple(HListK.singleId(emptyList<ItemModel>
 }
 ```
 
-#### 2.4 By multiple Builder
+#### 2.4 使用`multipleBuilder()`方法构建
 
 ```kotlin
 val adapterDemo4 = RendererAdapter.multipleBuild()
@@ -310,14 +330,14 @@ val adapterDemo4 = RendererAdapter.multipleBuild()
         .build()
 ```
 
-#### 2.5 By singleSupplier Builder
+#### 2.5 使用`singleSupplier()`方法构建
 
 ```kotlin
 val (adapter3, controller1) = RendererAdapter
         .singleSupplier({ provideData(index) }, renderer)
 ```
 
-#### 2.6 By supplierBuilder Builder
+#### 2.6 使用`supplierBuilder()`方法构建
 
 ```kotlin
 val (adapter2, controller) = RendererAdapter.supplierBuilder()
@@ -326,7 +346,7 @@ val (adapter2, controller) = RendererAdapter.supplierBuilder()
         .build()
 ```
 
-#### 2.7 By singleRxAutoUpdate Builder `Beta`
+#### 2.7 使用`singleRxAutoUpdate()`方法构建 `Beta`
 
 ```kotlin
 RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
@@ -335,7 +355,7 @@ RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
 }.subscribe()
 ```
 
-#### 2.8 By rxBuild Builder `Beta`
+#### 2.8 By 使用`rxBuild()`Builder构建 `Beta`
 
 ```kotlin
 RendererAdapter.rxBuild()
@@ -349,23 +369,31 @@ RendererAdapter.rxBuild()
 
 ---
 
-## Part3 Update Data
+## Part3 数据更新
 
-#### 3.1 Simple method is setData()
+#### 3.1 使用`setData()`更新
+
+最简单的是使用`setData()`进行更新
+
+> 注意这种方式会使用`notifyDataSetChanged()`方法通知Adapter数据改变
 
 ```kotlin
 adapterDemo1.setData(HListK.singleId(listOf(ItemModel())).putF("ss2"))
 ```
 
-#### 3.2 Or use reduce method
+#### 3.2 或者使用`reduce()`方法更新
+
+> 注意这种方式会使用`notifyDataSetChanged()`方法通知Adapter数据改变
 
 ```kotlin
 adapterDemo1.reduceData { oldData -> oldData.map1 { "ss3".toIdT() } }
 ```
 
-### Two way to part update data:
+> 除了以上两种强制更新的方法, 还可以进行部分更新(通过`notifyItemRangeInserted`等方法进行更新):
 
-#### 3.3 By update() func
+#### 3.3 使用`update()`方法
+
+方法中通过DSL方式构建自定义的更新计算方式
 
 This function will return a UpdateResult, this time not really update data for adapter.
 Please use [dispatchUpdatesTo()] to apply update action to adapter
@@ -380,9 +408,14 @@ adapterDemo1.update {
 }.dispatchUpdatesTo(adapterDemo1)
 ```
 
-#### 3.4 By updateNow() func
+其中`update`方法会返回一个`UpdateResult`, 这时只是计算了新旧数据之间的差异, 并没有实际更新视图(因此这一步可以放在计算线程计算);
+而通过`dispatchUpdatesTo`方法可以将计算结果实际应用到Adapter上, **这一步一定要在主线程执行**
 
-Unlike the update method, this method will apply the update directly to the Adapter.
+#### 3.4 通过`updateNow()`方法更新
+
+此方法不像上面的`update`方法, 它不会返回计算结果`UpdateResult`而是直接将计算结果应用到Adapter, 适用于计算量不大的更新场合.
+
+**此方法请一定要在主线程执行**
 
 ```kotlin
 adapterDemo1.updateNow {
@@ -394,13 +427,15 @@ adapterDemo1.updateNow {
 }
 ```
 
-### Auto Update
+### 自动更新
 
-#### 3.5 Bind Supplier
+> 注意!: `3.5`和`3.6`更新方法目前都是使用`update`进行更新, 即通过`notifyDataSetChanged()`方法通知Adapter数据改变
 
-Use supplierBuilder() or singleSupplier() to build adapter, and use controller to force update.
+#### 3.5 使用 `Supplier` 数据源
 
-Build Supplier Adapter:
+使用`supplierBuilder()`或者`singleSupplier()`来构建Adapter, 然后使用controller来控制强制数据刷新
+
+构建 Supplier Adapter:
 ```kotlin
 // 1
 val (adapter3, controller1) = RendererAdapter
@@ -413,14 +448,14 @@ val (adapter2, controller) = RendererAdapter.supplierBuilder()
         .build()
 ```
 
-Use controller to force update.
+使用 controller 来更新数据(调用此方法的时候会触发获取数据的方法来获取新的数据)
 ```kotlin
 controller.updateAll()
 ```
 
-#### 3.6 Bind RxJava(Observable) `Beta`
+#### 3.6 使用 RxJava(Observable) 数据源 `Beta`
 
-Use singleRxAutoUpdate() or rxBuild() to build adapter:
+可以使用`singleRxAutoUpdate()`或者`rxBuild()`来构建以RxJava作为数据源的Adapter:
 
 ```kotlin
 val dataProvider = PublishSubject.create<List<ItemModel>>()
@@ -441,15 +476,13 @@ RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
 }.subscribe()
 ```
 
-Adapter updates automatically when Observable's data is updated.
+Adapter将会在Observable有新数据的时候自动更新数据
 
 ```kotlin
 dataProvider.onNext(newData)
 ```
 
-#### 3.7 Bind RxJava(Observable) by part update
-
-eg:
+### 对RxJava数据源进行部分更新的实现示例:
 
 ```kotlin
 // Util func
@@ -466,6 +499,7 @@ fun <T, P, VD : ViewData<P>> Observable<T>.updateTo(
         }.ignoreElements()
 ```
 
+使用方法
 
 ```kotlin
 dataProvider3
@@ -480,7 +514,7 @@ dataProvider3
 ```
 
 
-  
+
 
 ### License
 <pre>

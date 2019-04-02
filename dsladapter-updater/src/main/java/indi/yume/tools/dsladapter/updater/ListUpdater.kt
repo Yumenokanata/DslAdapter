@@ -180,8 +180,8 @@ class ListUpdater<T, I, IV : ViewData<I>>(
             }
 }
 
-val <T, I, IV : ViewData<I>> ListRenderer<T, I, IV>.updater
+val <T, I, IV : ViewData<I>> BaseRenderer<T, ListViewData<T, I, IV>>.updater
     get() = ListUpdater(this)
 
 fun <T, I, IV : ViewData<I>> updatable(renderer: BaseRenderer<T, ListViewData<T, I, IV>>) =
-        ListUpdater(renderer.fix())
+        ListUpdater(renderer)

@@ -53,8 +53,8 @@ class SealedItemUpdater<T, L : HListK<Kind<ForSealedItem, T>, L>>(
     }
 }
 
-val <T, L : HListK<Kind<ForSealedItem, T>, L>> SealedItemRenderer<T, L>.updater
+val <T, L : HListK<Kind<ForSealedItem, T>, L>> BaseRenderer<T, SealedViewData<T, L>>.updater
     get() = SealedItemUpdater(this)
 
 fun <T, L : HListK<Kind<ForSealedItem, T>, L>> updatable(renderer: BaseRenderer<T, SealedViewData<T, L>>) =
-        SealedItemUpdater(renderer.fix())
+        SealedItemUpdater(renderer)

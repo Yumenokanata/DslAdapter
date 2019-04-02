@@ -17,7 +17,7 @@ class ConstantUpdater<T, I>(
     }
 }
 
-val <T, I> ConstantItemRenderer<T, I>.updater get() = ConstantUpdater(this)
+val <T, I> BaseRenderer<T, ConstantViewData<T, I>>.updater get() = ConstantUpdater(this)
 
-fun <T, I> updatable(renderer: BaseRenderer<T, ConstantViewData<T, I>>) = ConstantUpdater(renderer.fix())
+fun <T, I> updatable(renderer: BaseRenderer<T, ConstantViewData<T, I>>) = ConstantUpdater(renderer)
 

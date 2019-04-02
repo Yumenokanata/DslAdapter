@@ -9,7 +9,7 @@ import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 /**
  * Created by xuemaotang on 2017/11/16.
  */
-
+@Deprecated("Please instead by ComposeRenderer.")
 class TitleItemRenderer<T, G, GData: ViewData<G>, I, IData: ViewData<I>>(
         val titleGetter: (T) -> G,
         val subsGetter: (T) -> List<I>,
@@ -19,6 +19,7 @@ class TitleItemRenderer<T, G, GData: ViewData<G>, I, IData: ViewData<I>>(
         val titleDemapper: (T, G) -> T = doNotAffectOriData(),
         val subsDemapper: (T, List<I>) -> T = doNotAffectOriData()
 ) : BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>() {
+    @Deprecated("Please instead by ComposeRenderer.")
     constructor(
             itemType: TypeCheck<T>,
             titleGetter: (T) -> G,

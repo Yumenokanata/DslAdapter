@@ -15,9 +15,13 @@ import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.rx2.rxBuild
 import indi.yume.tools.dsladapter.rx2.singleRxAutoUpdate
+import indi.yume.tools.dsladapter.typeclass.BaseRenderer
+import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
 import indi.yume.tools.dsladapter.updater.*
 import indi.yume.tools.sample.databinding.ItemLayoutBinding
+import io.reactivex.Completable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
@@ -317,5 +321,30 @@ class MainActivity : AppCompatActivity() {
 //            index++
 //            dataProvider.onNext(provideData(index))
 //        }
+
+        // Part 7 Rx part update
+        val dataProvider3 = PublishSubject.create<List<ItemModel>>()
+
+        dataProvider3
+                .updateTo(adapter)
+                {
+                    updater.getLast4().up(::updatable) {
+                        sealedItem({ get0().fix() }, ::updatable) {
+                            update(listOf(ItemModel().some(), none<ItemModel>()))
+                        }
+                    }
+                }.subscribe()
     }
 }
+
+fun <T, P, VD : ViewData<P>> Observable<T>.updateTo(
+        adapter: RendererAdapter<P, VD>,
+        updater: BaseRenderer<P, VD>.(newData: T) -> ActionU<VD>): Completable =
+        distinctUntilChanged().concatMap {
+            observeOn(Schedulers.computation())
+                    .map { newData -> adapter.update { updater(newData) } }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext {
+                        it.dispatchUpdatesTo(adapter)
+                    }
+        }.ignoreElements()

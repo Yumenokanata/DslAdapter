@@ -63,6 +63,8 @@ class DataBindingBuilder<I : Any>(val layout: (I) -> Int) {
     fun <T : Any> forItem(mapper: (T) -> I): DataBindingRenderer<T, I> =
             forCollection { Collections.singletonList(mapper(it)) }
 
+    @Deprecated("Please instead by ListRenderer.",
+            ReplaceWith("indi.yume.tools.dsladapter.forList()"))
     fun <TCol> forCollection(converter: (TCol) -> List<I>): DataBindingRenderer<TCol, I> =
             DataBindingRenderer(
                     layout = layout,
@@ -73,6 +75,8 @@ class DataBindingBuilder<I : Any>(val layout: (I) -> Int) {
                     collectionId = collectionId,
                     converte = converter)
 
+    @Deprecated("Please instead by ListRenderer.",
+            ReplaceWith("indi.yume.tools.dsladapter.forList()"))
     fun forList(): DataBindingRenderer<List<I>, I> =
             forCollection { it }
 }

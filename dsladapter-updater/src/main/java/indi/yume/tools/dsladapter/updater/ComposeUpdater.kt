@@ -61,10 +61,10 @@ class ComposeUpdater<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, V
 }
 
 val <DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>
-        ComposeRenderer<DL, VDL>.updater get() = ComposeUpdater(this)
+        BaseRenderer<DL, ComposeViewData<DL, VDL>>.updater get() = ComposeUpdater(this)
 
 fun <DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>
-        updatable(renderer: BaseRenderer<DL, ComposeViewData<DL, VDL>>) = ComposeUpdater(renderer.fix())
+        updatable(renderer: BaseRenderer<DL, ComposeViewData<DL, VDL>>) = ComposeUpdater(renderer)
 
 
 //<editor-fold defaultstate="collapsed" desc="Updater getter">

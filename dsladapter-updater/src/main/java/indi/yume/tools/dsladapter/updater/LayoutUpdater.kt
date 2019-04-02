@@ -24,6 +24,6 @@ class LayoutUpdater<T>(val renderer: LayoutRenderer<T>) : Updatable<T, LayoutVie
     }
 }
 
-val <T> LayoutRenderer<T>.updater get() = LayoutUpdater(this)
+val <T> BaseRenderer<T, LayoutViewData<T>>.updater get() = LayoutUpdater(this)
 
 fun <T> updatable(renderer: BaseRenderer<T, LayoutViewData<T>>) = LayoutUpdater(renderer.fix())

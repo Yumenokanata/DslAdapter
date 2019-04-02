@@ -23,6 +23,6 @@ class IgnoreUpdater<T>(val renderer: IgnoreRenderer<T>) : Updatable<T, IgnoreVie
             }
 }
 
-val <T> IgnoreRenderer<T>.updater get() = IgnoreUpdater(this)
+val <T> BaseRenderer<T, IgnoreViewData<T>>.updater get() = IgnoreUpdater(this)
 
-fun <T> updatable(renderer: BaseRenderer<T, IgnoreViewData<T>>) = IgnoreUpdater(renderer.fix())
+fun <T> updatable(renderer: BaseRenderer<T, IgnoreViewData<T>>) = IgnoreUpdater(renderer)

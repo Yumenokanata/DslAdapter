@@ -17,9 +17,9 @@ class DataBindingUpdater<T, I>(val renderer: DataBindingRenderer<T, I>) : Updata
     }
 }
 
-val <T, I> DataBindingRenderer<T, I>.updater get() = DataBindingUpdater(this)
+val <T, I> BaseRenderer<T, DataBindingViewData<T, I>>.updater get() = DataBindingUpdater(this)
 
-fun <T, I> updatable(renderer: BaseRenderer<T, DataBindingViewData<T, I>>) = DataBindingUpdater(renderer.fix())
+fun <T, I> updatable(renderer: BaseRenderer<T, DataBindingViewData<T, I>>) = DataBindingUpdater(renderer)
 
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
