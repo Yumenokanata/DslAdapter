@@ -36,6 +36,29 @@ class RendererAdapter<T, VD : ViewData<T>>(
     }
 
     @MainThread
+    fun setViewData(newVD: VD) {
+        adapterViewData = newVD
+        notifyDataSetChanged()
+    }
+
+    @MainThread
+    fun reduceViewData(f: (VD) -> VD) {
+        val newVD = f(adapterViewData)
+        setViewData(newVD)
+    }
+
+    /**
+     * notifyDataSetChanged()
+     */
+    @CheckResult
+    fun updateAll(newData: T): UpdateResult<T, VD> {
+        val oldVD = adapterViewData
+        val newVD = renderer.getData(newData)
+
+        return UpdateResult(oldVD, newVD, null)
+    }
+
+    @MainThread
     fun updateData(actions: ActionU<VD>) {
         val data = adapterViewData
         val (update, newVD) = actions(data)
@@ -51,6 +74,7 @@ class RendererAdapter<T, VD : ViewData<T>>(
     fun updateData(updates: UpdateResult<T, VD>) {
         val dataHasChanged = synchronized(dataLock) {
             if (adapterViewData != updates.oldData) {
+                adapterViewData = updates.newData
                 true
             } else {
                 adapterViewData = updates.newData
@@ -58,7 +82,7 @@ class RendererAdapter<T, VD : ViewData<T>>(
             }
         }
 
-        if (dataHasChanged)
+        if (dataHasChanged || updates.actions == null)
             notifyDataSetChanged()
         else
             updates.actions.filterUselessAction().dispatchUpdatesTo(this)
@@ -107,7 +131,7 @@ class RendererAdapter<T, VD : ViewData<T>>(
 
 data class UpdateResult<T, VD : ViewData<T>>(val oldData: VD,
                                              val newData: VD,
-                                             val actions: List<UpdateActions>) {
+                                             val actions: List<UpdateActions>?) {
     fun dispatchUpdatesTo(adapter: RendererAdapter<T, VD>) =
             adapter.updateData(this)
 }
