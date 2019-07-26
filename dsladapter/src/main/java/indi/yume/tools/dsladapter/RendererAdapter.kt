@@ -35,6 +35,18 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
         setData(newData)
     }
 
+    @MainThread
+    fun setViewData(newVD: VD) {
+        adapterViewData = newVD
+        notifyDataSetChanged()
+    }
+
+    @MainThread
+    fun reduceViewData(f: (VD) -> VD) {
+        val newVD = f(adapterViewData)
+        setViewData(newVD)
+    }
+
     fun getUpdater(): UP = renderer.updater
 
     @CheckResult
@@ -51,6 +63,17 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
         val (actions, newVD) = getUpdater().f()(data)
 
         return UpdateResult(data, newVD, listOf(actions))
+    }
+
+    /**
+     * notifyDataSetChanged()
+     */
+    @CheckResult
+    fun updateAll(newData: T): UpdateResult<T, VD> {
+        val oldVD = adapterViewData
+        val newVD = renderer.getData(newData)
+
+        return UpdateResult(oldVD, newVD, null)
     }
 
     fun updateNow(f: UP.() -> ActionU<VD>) {
@@ -73,6 +96,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
     fun updateData(updates: UpdateResult<T, VD>) {
         val dataHasChanged = synchronized(dataLock) {
             if (adapterViewData != updates.oldData) {
+                adapterViewData = updates.newData
                 true
             } else {
                 adapterViewData = updates.newData
@@ -80,7 +104,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
             }
         }
 
-        if (dataHasChanged)
+        if (dataHasChanged || updates.actions == null)
             notifyDataSetChanged()
         else
             updates.actions.filterUselessAction().dispatchUpdatesTo(this)
@@ -129,7 +153,7 @@ class RendererAdapter<T, VD : ViewData<T>, UP : Updatable<T, VD>>(
 
 data class UpdateResult<T, VD : ViewData<T>>(val oldData: VD,
                                              val newData: VD,
-                                             val actions: List<UpdateActions>) {
+                                             val actions: List<UpdateActions>?) {
     fun <UP : Updatable<T, VD>> dispatchUpdatesTo(adapter: RendererAdapter<T, VD, UP>) =
             adapter.updateData(this)
 }
