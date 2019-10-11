@@ -19,13 +19,23 @@ class ComposeUpdater<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, V
         fun <UP : Updatable<T, VD>> up(itemUpdatable: (BaseRenderer<T, VD>) -> UP, act: UP.() -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> =
                 updateItem(this, itemUpdatable) { act() }
 
+        fun up(itemUpdatable: BaseRenderer<T, VD>.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> =
+                updateItem(this, itemUpdatable)
+
         fun <UP : Updatable<T, VD>> reduce(itemUpdatable: (BaseRenderer<T, VD>) -> UP, act: UP.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> =
                 updateItem(this, itemUpdatable, act)
+
+        fun reduce(itemUpdatable: BaseRenderer<T, VD>.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> =
+                updateItem(this, itemUpdatable)
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun <T, VD : ViewData<T>, UP : Updatable<T, VD>>
-            updateItem(getter: ComposeGetter<T, VD>, itemUpdatable: (BaseRenderer<T, VD>) -> UP, act: UP.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> = result@{ oldVD ->
+            updateItem(getter: ComposeGetter<T, VD>, itemUpdatable: (BaseRenderer<T, VD>) -> UP, act: UP.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> =
+            updateItem(getter, updateFun(itemUpdatable, act))
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T, VD : ViewData<T>>
+            updateItem(getter: ComposeGetter<T, VD>, itemUpdatable: BaseRenderer<T, VD>.(oldData: T) -> ActionU<VD>): ActionU<ComposeViewData<DL, VDL>> = result@{ oldVD ->
         val composeItem = getter.get(oldVD.vdList)
 
         val (index, target) = oldVD.vdNormalList.asSequence()
@@ -35,7 +45,7 @@ class ComposeUpdater<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, V
 
         val targetVD = target.viewData as VD
 
-        val resultAction = itemUpdatable(composeItem.renderer).act(targetVD.originData)
+        val resultAction = itemUpdatable(composeItem.renderer, targetVD.originData)
 
         val (actions, subVD) = resultAction(targetVD)
         val newDL = getter.put(oldVD.originData, subVD.originData)

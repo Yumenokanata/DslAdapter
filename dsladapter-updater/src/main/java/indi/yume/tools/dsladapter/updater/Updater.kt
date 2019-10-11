@@ -27,30 +27,34 @@ operator fun <T, VD : ViewData<T>> ActionU<VD>.plus(a2: ActionU<VD>): ActionU<VD
             ActionComposite(0, listOf(firstAct, secondAct)) to secondVD
         }
 
-
 fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> BaseRenderer<T, VD>.ignoreTypeU(
         updatable: (BaseRenderer<T, VD>) -> UP,
         reduceFun: UP.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
-        IgnoreRenderer.ignoreType(this) { p1, p2, p3 -> updatable(this).reduceFun(p1, p2, p3) }
+        ignoreTypeU { oldData: T, newData: T, payload: Any? -> updatable(this).reduceFun(oldData, newData, payload) }
+
+fun <T, VD : ViewData<T>> BaseRenderer<T, VD>.ignoreTypeU(
+        updatable: BaseRenderer<T, VD>.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
+        IgnoreRenderer.ignoreType(this) { p1, p2, p3 -> updatable(this, p1, p2, p3) }
 
 
 @CheckResult
 fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
-        .reduce(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.(T) -> ActionU<VD>): UpdateResult<T, VD> {
+        .reduce(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.(T) -> ActionU<VD>): UpdateResult<T, VD> =
+        reduce(updateFun(updatable, f))
+
+@CheckResult
+fun <T, VD : ViewData<T>> RendererAdapter<T, VD>
+        .reduce(updatable: BaseRenderer<T, VD>.(T) -> ActionU<VD>): UpdateResult<T, VD> {
     val data = getViewData()
-    val (actions, newVD) = updatable(renderer).f(data.originData)(data)
+    val (actions, newVD) = updatable(renderer, data.originData)(data)
 
     return UpdateResult(data, newVD, listOf(actions))
 }
 
 @CheckResult
 fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
-        .update(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.() -> ActionU<VD>): UpdateResult<T, VD> {
-    val data = getViewData()
-    val (actions, newVD) = updatable(renderer).f()(data)
-
-    return UpdateResult(data, newVD, listOf(actions))
-}
+        .update(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.() -> ActionU<VD>): UpdateResult<T, VD> =
+        update { updatable(this).f() }
 
 @CheckResult
 fun <T, VD : ViewData<T>> RendererAdapter<T, VD>
@@ -62,6 +66,14 @@ fun <T, VD : ViewData<T>> RendererAdapter<T, VD>
 }
 
 fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> RendererAdapter<T, VD>
-        .updateNow(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.() -> ActionU<VD>) {
-    update(updatable, f).dispatchUpdatesTo(this)
+        .updateNow(updatable: (BaseRenderer<T, VD>) -> UP, f: UP.() -> ActionU<VD>) =
+        updateNow { updatable(this).f() }
+
+fun <T, VD : ViewData<T>> RendererAdapter<T, VD>
+        .updateNow(updatable: BaseRenderer<T, VD>.() -> ActionU<VD>) {
+    update(updatable).dispatchUpdatesTo(this)
 }
+
+fun <T, VD : ViewData<T>, UP : Updatable<T, VD>> updateFun(itemUpdatable: (BaseRenderer<T, VD>) -> UP, act: UP.(oldData: T) -> ActionU<VD>)
+        : BaseRenderer<T, VD>.(oldData: T) -> ActionU<VD> =
+        { itemUpdatable(this).act(it) }

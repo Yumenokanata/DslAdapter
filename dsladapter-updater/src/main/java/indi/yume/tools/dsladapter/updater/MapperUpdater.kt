@@ -17,15 +17,21 @@ class MapperUpdater<T, D, VD : ViewData<D>>(
 
     val mapOri = renderer.mapper
 
-    fun <UP : Updatable<D, VD>> mapWithOld(targetUpdatable: (BaseRenderer<D, VD>) -> UP, f: UP.(oldData: T) -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> = { oldVD ->
-        val mapperAction = targetUpdatable(renderer.targetRenderer).f(oldVD.originData)
+    fun <UP : Updatable<D, VD>> mapWithOld(targetUpdatable: (BaseRenderer<D, VD>) -> UP, f: UP.(oldData: T) -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> =
+            mapWithOld { targetUpdatable(this).f(it) }
+
+    fun mapWithOld(targetUpdatable: BaseRenderer<D, VD>.(oldData: T) -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> = { oldVD ->
+        val mapperAction = targetUpdatable(renderer.targetRenderer, oldVD.originData)
         val (actions, newMapVD) = mapperAction(oldVD.mapVD)
 
         actions to MapperViewData(renderer.demapper(oldVD.originData, newMapVD.originData), newMapVD)
     }
 
     fun <UP : Updatable<D, VD>> mapper(updatable: (BaseRenderer<D, VD>) -> UP, f: UP.() -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> =
-            mapWithOld(updatable) { f() }
+            mapper { updatable(this).f() }
+
+    fun mapper(updatable: BaseRenderer<D, VD>.() -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> =
+            mapWithOld { updatable() }
 
     fun update(newData: T, payload: Any? = null): ActionU<MapperViewData<T, D, VD>> {
         val newVD = renderer.getData(newData)
