@@ -82,7 +82,8 @@ class RendererAdapter<T, VD : ViewData<T>>(
             }
         }
 
-        if (dataHasChanged || updates.actions == null)
+        if (dataHasChanged || updates.actions == null
+                || (updates.oldData != updates.newData && updates.actions.size == 1 && updates.actions.first() is EmptyAction))
             notifyDataSetChanged()
         else
             updates.actions.filterUselessAction().dispatchUpdatesTo(this)
