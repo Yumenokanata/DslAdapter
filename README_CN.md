@@ -12,6 +12,13 @@
 
 ---
 
+## 相关文章
+
+1. [DslAdapter开发简介](https://segmentfault.com/a/1190000018754660)
+2. [异构列表(DslAdapter开发日志)](https://segmentfault.com/a/1190000017497007)
+
+---
+
 ## 配置方法
 
 Step 1. 在项目根目录的 build.gradle 文件结尾添加仓库:
