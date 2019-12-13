@@ -19,10 +19,12 @@ fun <T : Any, DB : ViewDataBinding> LayoutRenderer.Companion.dataBindingItem(
                     val binding = DataBindingUtil.getBinding(view)
                             ?: bindBinding(view)
                     binder(binding, data, index)
+                    binding.executePendingBindings()
                 },
                 recycleFun =
                 { view ->
                     val binding = DataBindingUtil.getBinding(view)
                             ?: bindBinding(view)
                     recycleFun(binding)
+                    binding.executePendingBindings()
                 })
