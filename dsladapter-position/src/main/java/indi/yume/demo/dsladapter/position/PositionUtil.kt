@@ -61,6 +61,30 @@ fun <T, VD : ViewData<T>,
         }
 //</editor-fold>
 
+//<editor-fold desc="SplitRenderer">
+fun <T, VD : ViewData<T>> BaseRenderer<T, SplitViewData<T>>.itemPos(
+        pos: Int,
+        f: BaseRenderer<T, VD>.() -> PosAction<VD> = { me() }): PosAction<SplitViewData<T>> =
+        result@{ vd ->
+            val realRenderer = this@itemPos.fix()
+            val splitItemData = vd.vdList.getOrNull(pos)
+            val targetRenderer = realRenderer.renderers.getOrNull(pos)
+
+            if (splitItemData == null || targetRenderer == null)
+                return@result ErrorMsg("SplitRenderer",
+                        "Not have match splitItem. splitItemData: $splitItemData; pos=$pos; itemList: ${vd.vdList.joinToString()}")
+                        .left()
+
+            val itemRealStartPos = vd.endsPoint.getTargetStartPoint(pos)
+
+            (targetRenderer as BaseRenderer<T, VD>).f()(splitItemData as VD)
+                    .bimap({ it.push("SplitRenderer") })
+                    { pos ->
+                        RendererPos(itemRealStartPos + pos.start, pos.count)
+                    }
+        }
+//</editor-fold>
+
 //<editor-fold desc="ListRenderer">
 fun <T, I, IV : ViewData<I>> BaseRenderer<T, ListViewData<T, I, IV>>.subsPos(
         index: Int,
@@ -125,7 +149,32 @@ fun <T, D, VD : ViewData<D>,
                         "sealedItem is not match: sealedFun=$sealedItem; but viewData is ${vd.item}.").left()
 
             (sealedItem as SealedItem<T, D, VD>).renderer.f()(vd.data as VD)
-                    .bimap({ it.push("MapperRenderer") })
+                    .bimap({ it.push("SealedItemRenderer") })
+                    { pos -> pos }
+        }
+//</editor-fold>
+
+
+//<editor-fold desc="SealedItemRenderer">
+
+fun <T, D, VD : ViewData<D>> BaseRenderer<T, CaseViewData<T>>.caseItem(
+        caseFun: List<CaseItem<T, Any?, ViewData<Any?>>>.() -> CaseItem<T, D, VD>,
+        f: BaseRenderer<D, VD>.() -> PosAction<VD> = { me() }): PosAction<CaseViewData<T>> =
+        caseItemWithVD({ caseFun() }, f)
+
+fun <T, D, VD : ViewData<D>> BaseRenderer<T, CaseViewData<T>>.caseItemWithVD(
+        caseFun: List<CaseItem<T, Any?, ViewData<Any?>>>.(T) -> CaseItem<T, D, VD>,
+        f: BaseRenderer<D, VD>.() -> PosAction<VD> = { me() }): PosAction<CaseViewData<T>> =
+        result@{ vd ->
+            val realRenderer = this@caseItemWithVD.fix()
+
+            val caseItem: CaseItem<T, D, VD> = realRenderer.caseList.caseFun(vd.originData)
+            if (caseItem !== vd.item)
+                return@result ErrorMsg("CaseRenderer",
+                        "caseItem is not match: caseFun=$caseItem; but viewData is ${vd.item}.").left()
+
+            (caseItem as CaseItem<T, D, VD>).renderer.f()(vd.vd as VD)
+                    .bimap({ it.push("CaseRenderer") })
                     { pos -> pos }
         }
 //</editor-fold>
