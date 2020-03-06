@@ -10,11 +10,13 @@ import indi.yume.tools.dsladapter.updateVD
 class DataBindingUpdater<T, I>(val renderer: DataBindingRenderer<T, I>) : Updatable<T, DataBindingViewData<T, I>> {
     constructor(base: BaseRenderer<T, DataBindingViewData<T, I>>): this(base.fix())
 
-    fun update(newData: T, payload: Any? = null): ActionU<DataBindingViewData<T, I>> {
+    fun update(newData: T, payload: Any? = null): ActionU<DataBindingViewData<T, I>> = { oldVD ->
         val newVD = renderer.getData(newData)
-
-        return { oldVD -> updateVD(oldVD, newVD, payload) to newVD }
+        updateVD(oldVD, newVD, payload) to newVD
     }
+
+    override fun autoUpdate(newData: T): ActionU<DataBindingViewData<T, I>> =
+            update(newData)
 }
 
 val <T, I> BaseRenderer<T, DataBindingViewData<T, I>>.updater get() = DataBindingUpdater(this)

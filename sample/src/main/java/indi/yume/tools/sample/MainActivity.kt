@@ -112,13 +112,13 @@ class MainActivity : AppCompatActivity() {
 
         val act1 = composeRenderer.updater.updateBy {
                     getLast0().up(::updatable) {
-                        update("")
+                        autoUpdate("")
                     }
                 }
 
         val act2 = composeRenderer.updater.updateBy {
                     getLast1().up(::updatable) {
-                        update(ItemModel())
+                        autoUpdate(ItemModel())
                     }
                 }
 
@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity() {
         adapterDemo1.update(::updatable) {
             getLast1().up(::updatable) {
                 title(::updatable) {
-                    update("new Title-${random.nextInt()}")
+                    autoUpdate("new Title-${random.nextInt()}")
                 }
             }
         }.dispatchUpdatesTo(adapterDemo1)
@@ -191,7 +191,7 @@ class MainActivity : AppCompatActivity() {
         adapterDemo1.updateNow(::updatable) {
             getLast1().up(::updatable) {
                 title(::updatable) {
-                    update("new Title-${random.nextInt()}")
+                    autoUpdate("new Title-${random.nextInt()}")
                 }
             }
         }
@@ -254,7 +254,7 @@ class MainActivity : AppCompatActivity() {
             Single.fromCallable {
                 adapter.update(::updatable) {
                     getLast1().up(::updatable) {
-                        update(newData)
+                        autoUpdate(newData)
                     } + getLast2().up(::updatable) {
                         //                        move(2, 4) +
 //                        subs(3) {
@@ -263,11 +263,11 @@ class MainActivity : AppCompatActivity() {
                         updateAuto(newData.shuffled(), diffUtilCheck { i, _ -> i.id })
                     } + getLast3().up(::updatable) {
                         getLast1().reduce(::updatable) { oldData ->
-                            update(oldData + ItemModel())
+                            autoUpdate(oldData + ItemModel())
                         }
                     } + getLast4().up(::updatable) {
                         sealedItem({ get0().fix() }, ::updatable) {
-                            update(listOf(ItemModel().some(), none<ItemModel>()))
+                            autoUpdate(listOf(ItemModel().some(), none<ItemModel>()))
                         }
                     }
                 }
@@ -330,7 +330,7 @@ class MainActivity : AppCompatActivity() {
                 {
                     updater.getLast4().up(::updatable) {
                         sealedItem({ get0().fix() }, ::updatable) {
-                            update(listOf(ItemModel().some(), none<ItemModel>()))
+                            autoUpdate(listOf(ItemModel().some(), none<ItemModel>()))
                         }
                     }
                 }.subscribe()

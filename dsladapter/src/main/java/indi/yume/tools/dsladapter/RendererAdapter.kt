@@ -24,6 +24,14 @@ class RendererAdapter<T, VD : ViewData<T>>(
     fun getViewData(): VD = adapterViewData
 
     @MainThread
+    fun setDataAuto(newData: T) {
+        updateAuto(newData).dispatchUpdatesTo(this)
+    }
+
+    /**
+     * notifyDataSetChanged()
+     */
+    @MainThread
     fun setData(newData: T) {
         adapterViewData = renderer.getData(newData)
         notifyDataSetChanged()
@@ -56,6 +64,15 @@ class RendererAdapter<T, VD : ViewData<T>>(
         val newVD = renderer.getData(newData)
 
         return UpdateResult(oldVD, newVD, null)
+    }
+
+    @CheckResult
+    fun updateAuto(newData: T): UpdateResult<T, VD> {
+        val oldVD = adapterViewData
+        val (actions, newVD) =
+                renderer.defaultUpdater.autoUpdate(newData)(oldVD)
+
+        return UpdateResult(oldVD, newVD, listOf(actions))
     }
 
     @MainThread
@@ -126,6 +143,9 @@ class RendererAdapter<T, VD : ViewData<T>>(
 
         fun multipleBuild(): AdapterBuilder<HNilK<ForIdT>, HNilK<ForComposeItemData>> =
                 AdapterBuilder(HListK.nil(), ComposeRenderer.startBuild)
+
+        fun <T> splitBuild(initData: T, f: SplitBuilder<T>.() -> Unit): RendererAdapter<T, SplitViewData<T>> =
+                RendererAdapter(initData, SplitRenderer.build(f))
     }
 }
 

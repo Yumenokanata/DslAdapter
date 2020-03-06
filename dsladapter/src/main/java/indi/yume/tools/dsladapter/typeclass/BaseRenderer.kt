@@ -4,6 +4,7 @@ import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import indi.yume.tools.dsladapter.updater.Updatable
 
 abstract class BaseRenderer<T, VD : ViewData<T>> : Renderer<T, VD> {
 
@@ -24,6 +25,8 @@ abstract class BaseRenderer<T, VD : ViewData<T>> : Renderer<T, VD> {
 
         }
     }
+
+    abstract val defaultUpdater: Updatable<T, VD>
 
     companion object {
         private class Recycler(val f: (RecyclerView.ViewHolder) -> Unit)

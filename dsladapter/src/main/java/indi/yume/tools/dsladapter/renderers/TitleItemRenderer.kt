@@ -5,6 +5,8 @@ import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
+import indi.yume.tools.dsladapter.updater.TitleItemUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 /**
  * Created by xuemaotang on 2017/11/16.
@@ -30,6 +32,8 @@ class TitleItemRenderer<T, G, GData: ViewData<G>, I, IData: ViewData<I>>(
             titleDemapper: (T, G) -> T = doNotAffectOriData(),
             subsDemapper: (T, List<I>) -> T = doNotAffectOriData()
     ): this(titleGetter, subsGetter, title, subs, titleDemapper, subsDemapper)
+
+    override val defaultUpdater: Updatable<T, TitleViewData<T, G, GData, I, IData>> = TitleItemUpdater(this)
 
     override fun getData(content: T): TitleViewData<T, G, GData, I, IData> {
         val titleData = titleGetter(content)

@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.R
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.DataBindingUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 import java.util.*
 
 class DataBindingRenderer<T, I>(
@@ -17,6 +19,8 @@ class DataBindingRenderer<T, I>(
         val stableIdForItem: (I) -> Long,
         val collectionId: Int = BR_NO_ID
 ): BaseRenderer<T, DataBindingViewData<T, I>>() {
+    override val defaultUpdater: Updatable<T, DataBindingViewData<T, I>> = DataBindingUpdater(this)
+
     override fun getData(content: T): DataBindingViewData<T, I> =
             DataBindingViewData(content, converte(content))
 

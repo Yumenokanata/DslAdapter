@@ -33,11 +33,23 @@ class MapperUpdater<T, D, VD : ViewData<D>>(
     fun mapper(updatable: BaseRenderer<D, VD>.() -> ActionU<VD>): ActionU<MapperViewData<T, D, VD>> =
             mapWithOld { updatable() }
 
-    fun update(newData: T, payload: Any? = null): ActionU<MapperViewData<T, D, VD>> {
-        val newVD = renderer.getData(newData)
+    override fun autoUpdate(newData: T): ActionU<MapperViewData<T, D, VD>> = { oldVD ->
+        val innerNewData = mapOri(newData)
 
-        return { oldVD -> updateVD(oldVD, newVD, payload) to newVD }
+        val (innerActions, innerNewVD) =
+                renderer.targetRenderer.defaultUpdater.autoUpdate(innerNewData)(oldVD.mapVD)
+
+        val newVD = MapperViewData(newData, innerNewVD)
+
+        innerActions to newVD
     }
+
+    fun update(newData: T, payload: Any? = null): ActionU<MapperViewData<T, D, VD>> =
+            if (payload == null) autoUpdate(newData)
+            else { oldVD ->
+                val newVD = renderer.getData(newData)
+                updateVD(oldVD, newVD, payload) to newVD
+            }
 
     fun reduce(f: (oldData: T) -> ChangedData<T>): ActionU<MapperViewData<T, D, VD>> = { oldVD ->
         val (newData, payload) = f(oldVD.originData)

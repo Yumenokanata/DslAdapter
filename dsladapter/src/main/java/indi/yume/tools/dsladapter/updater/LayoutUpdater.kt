@@ -12,6 +12,9 @@ import indi.yume.tools.dsladapter.updateVD
 class LayoutUpdater<T>(val renderer: LayoutRenderer<T>) : Updatable<T, LayoutViewData<T>> {
     constructor(base: BaseRenderer<T, LayoutViewData<T>>): this(base.fix())
 
+    override fun autoUpdate(newData: T): ActionU<LayoutViewData<T>> =
+            update(newData)
+
     fun update(newData: T, payload: Any? = null): ActionU<LayoutViewData<T>> {
         val newVD = renderer.getData(newData)
 

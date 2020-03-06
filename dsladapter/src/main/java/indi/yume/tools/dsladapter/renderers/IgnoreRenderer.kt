@@ -5,11 +5,15 @@ import indi.yume.tools.dsladapter.ActionU
 import indi.yume.tools.dsladapter.ChangedData
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.IgnoreUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 class IgnoreRenderer<T> private constructor(
         val renderer: BaseRenderer<T, ViewData<T>>,
         val reduceFun: BaseRenderer<T, ViewData<T>>.(oldData: T, newData: T, payload: Any?) -> ActionU<ViewData<T>>
 ) : BaseRenderer<T, IgnoreViewData<T>>() {
+    override val defaultUpdater: Updatable<T, IgnoreViewData<T>> = IgnoreUpdater(this)
+
     override fun getData(content: T): IgnoreViewData<T> =
             IgnoreViewData(renderer.getData(content))
 

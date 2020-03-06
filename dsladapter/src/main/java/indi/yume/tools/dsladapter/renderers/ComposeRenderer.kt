@@ -6,10 +6,15 @@ import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.ComposeUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 class ComposeRenderer<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
         val getMapper: (DL) -> VDL
 ) : BaseRenderer<DL, ComposeViewData<DL, VDL>>() {
+
+    override val defaultUpdater: Updatable<DL, ComposeViewData<DL, VDL>> = ComposeUpdater(this)
+
     override fun getData(content: DL): ComposeViewData<DL, VDL> {
         return ComposeViewData(content, getMapper(content))
     }

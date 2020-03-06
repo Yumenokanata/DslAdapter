@@ -35,3 +35,5 @@ inline fun <T> ViewDataOf<T>.fix(): ViewData<T> =
  * Use for demapper, if you update mapper target is not affect the Original Data
  */
 fun <T, D> doNotAffectOriData(): (T, D) -> T = { oldOriData, newMapData -> oldOriData }
+
+fun <T> awaysReturnNewData(): (T, T) -> T = { oldOriData, newMapData -> newMapData }

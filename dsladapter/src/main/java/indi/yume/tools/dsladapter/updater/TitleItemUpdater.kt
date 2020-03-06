@@ -12,10 +12,14 @@ import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.updateVD
 
+@Deprecated("Please instead by ComposeUpdater.")
 class TitleItemUpdater<T, G, GData : ViewData<G>, I, IData : ViewData<I>>(
         val renderer: TitleItemRenderer<T, G, GData, I, IData>)
     : Updatable<T, TitleViewData<T, G, GData, I, IData>> {
     constructor(base: BaseRenderer<T, TitleViewData<T, G, GData, I, IData>>): this(base.fix())
+
+    override fun autoUpdate(newData: T): ActionU<TitleViewData<T, G, GData, I, IData>> =
+            update(newData)
 
     fun update(newData: T, payload: Any? = null): ActionU<TitleViewData<T, G, GData, I, IData>> = { oldVD ->
         val newVD = renderer.getData(newData)

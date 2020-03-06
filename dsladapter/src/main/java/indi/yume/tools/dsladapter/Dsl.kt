@@ -36,6 +36,7 @@ fun <T, D, VD : ViewData<D>> BaseRenderer<D, VD>.mapT(type: TypeCheck<T>,
         MapperRenderer(mapper = mapper, demapper = demapper, targetRenderer = this)
 
 fun <T, VD : ViewData<T>> BaseRenderer<T, VD>.ignoreType(
-        reduceFun: BaseRenderer<T, VD>.(oldData: T, newData: T, payload: Any?) -> ActionU<VD>): IgnoreRenderer<T> =
+        reduceFun: BaseRenderer<T, VD>.(oldData: T, newData: T, payload: Any?) -> ActionU<VD> =
+                { oldData, newData, payload -> defaultUpdater.autoUpdate(newData) }): IgnoreRenderer<T> =
         IgnoreRenderer.ignoreType(this, reduceFun)
 

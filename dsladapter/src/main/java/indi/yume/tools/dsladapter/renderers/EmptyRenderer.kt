@@ -3,12 +3,16 @@ package indi.yume.tools.dsladapter.renderers
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.EmptyUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 /**
  * Created by yume on 18-3-20.
  */
 
 class EmptyRenderer<T> : BaseRenderer<T, EmptyViewData<T>>() {
+    override val defaultUpdater: Updatable<T, EmptyViewData<T>> = EmptyUpdater(this)
+
     override fun getData(content: T): EmptyViewData<T> = EmptyViewData(content)
 
     override fun getItemViewType(data: EmptyViewData<T>, position: Int): Int =

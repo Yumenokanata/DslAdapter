@@ -10,6 +10,9 @@ import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 class IgnoreUpdater<T>(val renderer: IgnoreRenderer<T>) : Updatable<T, IgnoreViewData<T>> {
     constructor(base: BaseRenderer<T, IgnoreViewData<T>>): this(base.fix())
 
+    override fun autoUpdate(newData: T): ActionU<IgnoreViewData<T>> =
+            update(newData)
+
     fun update(newData: T, payload: Any? = null): ActionU<IgnoreViewData<T>> =
             { oldVD ->
                 val (act, realVD) = renderer.reduceFun(renderer.renderer, oldVD.originData, newData, payload)(oldVD.originVD)

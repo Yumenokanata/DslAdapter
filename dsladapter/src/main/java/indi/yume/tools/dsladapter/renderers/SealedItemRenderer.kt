@@ -8,6 +8,8 @@ import indi.yume.tools.dsladapter.datatype.*
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
+import indi.yume.tools.dsladapter.updater.SealedItemUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 import kotlin.reflect.KClass
 
 /**
@@ -56,6 +58,8 @@ class SealedItemRenderer<T, L : HListK<Kind<ForSealedItem, T>, L>>(
         val sealedList: L
 ) : BaseRenderer<T, SealedViewData<T, L>>() {
     private val sealedRealList: List<Kind<Kind<ForSealedItem, T>, *>> by lazy { sealedList.toList() }
+
+    override val defaultUpdater: Updatable<T, SealedViewData<T, L>> = SealedItemUpdater(this)
 
     override fun getData(content: T): SealedViewData<T, L> {
         val item = sealedRealList.find {

@@ -10,6 +10,9 @@ class ListUpdater<T, I, IV : ViewData<I>>(
         val renderer: ListRenderer<T, I, IV>) : Updatable<T, ListViewData<T, I, IV>> {
     constructor(base: BaseRenderer<T, ListViewData<T, I, IV>>): this(base.fix())
 
+    override fun autoUpdate(newData: T): ActionU<ListViewData<T, I, IV>> =
+            update(newData)
+
     fun update(data: T, payload: Any? = null): ActionU<ListViewData<T, I, IV>> = { oldVD ->
         val newVD = renderer.getData(data)
 

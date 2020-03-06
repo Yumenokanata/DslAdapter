@@ -6,6 +6,8 @@ import android.view.View
 import indi.yume.tools.dsladapter.TypeCheck
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.ConstantUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 class ConstantItemRenderer<T, I>(
         val count: Int = 1,
@@ -24,6 +26,8 @@ class ConstantItemRenderer<T, I>(
             recycleFun: (View) -> Unit = { },
             stableIdForItem: (I, Int) -> Long = { _, _ -> -1L }
     ) : this(count, layout, data, binder, recycleFun, stableIdForItem)
+
+    override val defaultUpdater: Updatable<T, ConstantViewData<T, I>> = ConstantUpdater(this)
 
     override fun getData(content: T): ConstantViewData<T, I> = ConstantViewData(content, count, data)
 

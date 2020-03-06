@@ -5,6 +5,8 @@ import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.LayoutUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 class LayoutRenderer<T>(
         @LayoutRes val layout: Int,
@@ -26,6 +28,8 @@ class LayoutRenderer<T>(
             recycleHolderFun = { holder -> recycleFun(viewGetter(holder)) },
             stableIdForItem = stableIdForItem
     )
+
+    override val defaultUpdater: Updatable<T, LayoutViewData<T>> = LayoutUpdater(this)
 
     override fun getData(content: T): LayoutViewData<T> = LayoutViewData(count, content)
 

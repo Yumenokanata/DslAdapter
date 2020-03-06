@@ -22,6 +22,19 @@ allprojects {
 ```
 
 Step 2. Add the dependency in your module's gradle file
+
+Since Ver2.0:
+
+```groovy
+dependencies {
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:x.y.z'
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-rx2:x.y.z' // Beta, optional
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-position:x.y.z' // optional
+}
+```
+
+Before Ver2.0:
+
 ```groovy
 dependencies {
     implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:x.y.z'
@@ -132,6 +145,63 @@ val pos = adapter.renderer.pos {
 
 ---
 
+### Ver.2.0 New
+
+Make new simplify Renderer for `ComposeRenderer` and `SealedItemRenderer`, If you don't need to use strong static typing, use them first
+
+#### SplitRenderer
+
+No high type ComposeRenderer.
+
+Sample:
+
+```kotlin
+SplitRenderer.build<String> {
+    +LayoutRenderer<String>(layout = R.layout.sample_layout)
+
+    !LayoutRenderer<Unit>(layout = R.layout.sample_layout)
+}
+```
+
+#### CaseRenderer
+
+No strong static typing type SealedItemRenderer
+
+Sample:
+
+```kotlin
+CaseRenderer.build<String> {
+    caseItem(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    caseItemSame(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    case(checker = { true },
+            mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    case(checker = { true },
+            demapper = doNotAffectOriData(),
+            renderer = LayoutRenderer(layout = 1))
+
+    elseCase(mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    elseCase(renderer = LayoutRenderer(layout = 1))
+}
+```
+
+---
+
 ### Base Renderer
 
 1. **EmptyRenderer**
@@ -142,7 +212,9 @@ val pos = adapter.renderer.pos {
 6. **SealedItemRenderer**: Choice different Renderer for different data.
 7. **ComposeRenderer**
 8. **DataBindingRenderer** : Bind with Android Databinding
-8. **TitleItemRenderer** : Deprecated, please instead by ComposeRenderer.
+9. **TitleItemRenderer** : Deprecated, please instead by ComposeRenderer.
+10. **SplitRenderer**: No strong static typing type ComposeRenderer
+11. **CaseRenderer**: No strong static typing type SealedItemRenderer
 
 Use this Base Renderers, you can Make a complex RecyclerView structure:
 
@@ -191,6 +263,9 @@ val itemRenderer = databindingOf<ItemModel>(R.layout.item_layout)
 ```
 
 #### 1.3 TitleItemRenderer
+
+`Deprecated， Please instead by ComposeRenderer.`
+
 This Renderer will build a title with subs, like:
 
 ```
@@ -236,6 +311,43 @@ val rendererSealed = SealedItemRenderer(hlistKOf(
 ))
 ```
 
+##### CaseRenderer
+
+No strong static typing type SealedItemRenderer
+
+Sample:
+
+```kotlin
+CaseRenderer.build<String> {
+    caseItem(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    caseItemSame(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    case(checker = { true },
+            mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    case(checker = { true },
+            demapper = doNotAffectOriData(),
+            renderer = LayoutRenderer(layout = 1))
+
+    elseCase(mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    elseCase(renderer = LayoutRenderer(layout = 1))
+}
+```
+
 #### 1.5 ComposeRenderer
 
 This Renderer will compose all item renderer, eg:
@@ -252,6 +364,20 @@ val composeRenderer = ComposeRenderer.startBuild
         .build()
 ```
 
+##### SplitRenderer
+
+No high type ComposeRenderer.
+
+Sample:
+
+```kotlin
+SplitRenderer.build<String> {
+    +LayoutRenderer<String>(layout = R.layout.sample_layout)
+
+    !LayoutRenderer<Unit>(layout = R.layout.sample_layout)
+}
+```
+
 ---
 
 ### Part2 BuildAdapter
@@ -262,10 +388,11 @@ val composeRenderer = ComposeRenderer.startBuild
 2. singleRenderer
 3. multiple
 4. multipleBuild
-5. singleSupplier
-6. supplierBuilder
-7. singleRxAutoUpdate
-8. rxBuild
+5. splitBuild
+6. singleSupplier
+7. supplierBuilder
+8. singleRxAutoUpdate
+9. rxBuild
 
 #### 2.1 By constructor
 
@@ -310,14 +437,24 @@ val adapterDemo4 = RendererAdapter.multipleBuild()
         .build()
 ```
 
-#### 2.5 By singleSupplier Builder
+#### 2.5 By split Builder
+
+```kotlin
+val adapterDemo42 = RendererAdapter.splitBuild(emptyList<ItemModel>()) {
+    +rendererSealed
+
+    !unitRenderer
+}
+```
+
+#### 2.6 By singleSupplier Builder
 
 ```kotlin
 val (adapter3, controller1) = RendererAdapter
         .singleSupplier({ provideData(index) }, renderer)
 ```
 
-#### 2.6 By supplierBuilder Builder
+#### 2.7 By supplierBuilder Builder
 
 ```kotlin
 val (adapter2, controller) = RendererAdapter.supplierBuilder()
@@ -326,7 +463,7 @@ val (adapter2, controller) = RendererAdapter.supplierBuilder()
         .build()
 ```
 
-#### 2.7 By singleRxAutoUpdate Builder `Beta`
+#### 2.8 By singleRxAutoUpdate Builder `Beta`
 
 ```kotlin
 RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
@@ -335,7 +472,7 @@ RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
 }.subscribe()
 ```
 
-#### 2.8 By rxBuild Builder `Beta`
+#### 2.9 By rxBuild Builder `Beta`
 
 ```kotlin
 RendererAdapter.rxBuild()
@@ -353,14 +490,24 @@ RendererAdapter.rxBuild()
 
 #### 3.1 Simple method is setData()
 
+> Use notifyDataSetChanged
+
 ```kotlin
 adapterDemo1.setData(HListK.singleId(listOf(ItemModel())).putF("ss2"))
 ```
 
 #### 3.2 Or use reduce method
 
+> Use notifyDataSetChanged
+
 ```kotlin
 adapterDemo1.reduceData { oldData -> oldData.map1 { "ss3".toIdT() } }
+```
+
+#### 3.3 Or auto part update data
+
+```kotlin
+adapterDemo1.setDataAuto(listOf(ItemModel()))
 ```
 
 ### Two way to part update data:

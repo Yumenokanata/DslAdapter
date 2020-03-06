@@ -3,6 +3,8 @@ package indi.yume.tools.dsladapter.renderers
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.ListUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 /**
  * Created by xuemaotang on 2017/11/16.
@@ -15,6 +17,8 @@ class ListRenderer<T, I, IV : ViewData<I>>(
         val keyGetter: KeyGetter<I>?,
         val itemIsSingle: Boolean = false
 ) : BaseRenderer<T, ListViewData<T, I, IV>>() {
+    override val defaultUpdater: Updatable<T, ListViewData<T, I, IV>> = ListUpdater(this)
+
     override fun getData(content: T): ListViewData<T, I, IV> {
         val oriData = converter(content)
         return ListViewData(content, oriData, oriData.map { subs.getData(it) })

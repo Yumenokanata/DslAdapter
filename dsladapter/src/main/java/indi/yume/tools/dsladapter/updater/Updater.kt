@@ -11,7 +11,9 @@ import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 
 
-interface Updatable<P, VD : ViewData<P>> : UpdatableOf<P, VD>
+interface Updatable<P, VD : ViewData<P>> : UpdatableOf<P, VD> {
+    fun autoUpdate(newData: P): ActionU<VD>
+}
 
 class ForUpdatable private constructor() { companion object }
 typealias UpdatableOf<P, VD> = Kind<ForUpdatable, Pair<P, VD>>

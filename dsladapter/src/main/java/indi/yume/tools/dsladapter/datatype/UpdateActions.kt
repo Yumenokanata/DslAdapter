@@ -19,7 +19,9 @@ data class OnMoved(val fromPosition: Int, val toPosition: Int) : UpdateActions()
 
 data class OnChanged(val pos: Int, val count: Int, val payload: Any?) : UpdateActions()
 
-data class ActionComposite(val offset: Int, val actions: List<UpdateActions>) : UpdateActions()
+data class ActionComposite(val offset: Int, val actions: List<UpdateActions>) : UpdateActions() {
+    constructor(offset: Int, action: UpdateActions): this(offset, listOf(action))
+}
 
 fun DiffUtil.DiffResult.toUpdateActions(): List<UpdateActions> {
     val recorder = LinkedList<UpdateActions>()

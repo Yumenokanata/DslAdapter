@@ -7,13 +7,12 @@ import indi.yume.tools.dsladapter.datatype.toUpdateActions
 import indi.yume.tools.dsladapter.keyMe
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import java.util.*
-import kotlin.coroutines.experimental.buildSequence
 
 typealias KeyGetter<T> = (T, Int) -> Any?
 
 fun <T1, T2, T3, V> zip3(it1: Iterable<T1>, it2: Iterable<T2>, it3: Iterable<T3>,
                          zipper: (T1, T2, T3) -> V): Sequence<V> =
-        buildSequence {
+        sequence {
             val iter1 = it1.iterator()
             val iter2 = it2.iterator()
             val iter3 = it3.iterator()

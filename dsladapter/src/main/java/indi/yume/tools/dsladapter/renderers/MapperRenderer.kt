@@ -3,12 +3,16 @@ package indi.yume.tools.dsladapter.renderers
 import androidx.recyclerview.widget.RecyclerView
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
+import indi.yume.tools.dsladapter.updater.MapperUpdater
+import indi.yume.tools.dsladapter.updater.Updatable
 
 class MapperRenderer<T, D, VD : ViewData<D>>(
         val mapper: (T) -> D,
         val demapper: (oldData: T, newSub: D)-> T,
         val targetRenderer: BaseRenderer<D, VD>
 ) : BaseRenderer<T, MapperViewData<T, D, VD>>() {
+    override val defaultUpdater: Updatable<T, MapperViewData<T, D, VD>> = MapperUpdater(this)
+
     override fun getData(content: T): MapperViewData<T, D, VD> = MapperViewData(content, targetRenderer.getData(mapper(content)))
 
     override fun getItemId(data: MapperViewData<T, D, VD>, index: Int): Long = targetRenderer.getItemId(data.mapVD, index)

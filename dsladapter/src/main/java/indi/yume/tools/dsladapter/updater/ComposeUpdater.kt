@@ -59,10 +59,30 @@ class ComposeUpdater<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, V
     fun updateBy(act: ComposeUpdater<DL, VDL>.() -> ActionU<ComposeViewData<DL, VDL>>): ActionU<ComposeViewData<DL, VDL>> =
             act()
 
-    fun update(data: DL, payload: Any? = null): ActionU<ComposeViewData<DL, VDL>> = { oldVD ->
-        val newVD = renderer.getData(data)
-        updateVD(oldVD, newVD, payload) to newVD
+    override fun autoUpdate(newData: DL): ActionU<ComposeViewData<DL, VDL>> = { oldVD ->
+        val newVD = renderer.getData(newData)
+
+        val vdPairList =
+                oldVD.vdNormalList.zip(newVD.vdNormalList)
+        val sumActions = sequence<UpdateActions> {
+            var index = 0
+            for ((oldItem, newItem) in vdPairList) {
+                val subActionU = newItem.item.renderer.defaultUpdater.autoUpdate(newItem.viewData.originData)
+                yield(ActionComposite(index,
+                        listOf(subActionU(oldItem.viewData).first)))
+                index += oldItem.viewData.count
+            }
+        }.toList()
+
+        ActionComposite(0, sumActions) to newVD
     }
+
+    fun update(data: DL, payload: Any? = null): ActionU<ComposeViewData<DL, VDL>> =
+            if (payload == null) autoUpdate(data)
+            else { oldVD ->
+                val newVD = renderer.getData(data)
+                updateVD(oldVD, newVD, payload) to newVD
+            }
 
     fun reduce(f: (oldData: DL) -> ChangedData<DL>): ActionU<ComposeViewData<DL, VDL>> = { oldVD ->
         val (newData, payload) = f(oldVD.originData)

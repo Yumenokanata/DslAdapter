@@ -32,12 +32,25 @@ allprojects {
 ```
 
 Step 2. 在需要使用的module的gradle文件中添加依赖:
+
+从 Ver2.0:
+
+```groovy
+dependencies {
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:x.y.z'
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-rx2:x.y.z' // Beta, optional
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-position:x.y.z' // optional
+}
+```
+
+Ver2.0 之前:
+
 ```groovy
 dependencies {
     implementation 'com.github.Yumenokanata.DslAdapter:dsladapter:x.y.z'
     implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-updater:x.y.z'
-    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-rx2:x.y.z' // Beta, 可选
-    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-position:x.y.z' // DSL position获取器, 可选
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-rx2:x.y.z' // Beta, optional
+    implementation 'com.github.Yumenokanata.DslAdapter:dsladapter-position:x.y.z' // optional
 }
 ```
 
@@ -172,6 +185,72 @@ val pos = adapter.renderer.pos {
 
 ---
 
+### Ver.2.0 新增
+
+为类型很复杂的`ComposeRenderer`和`SealedItemRenderer`两种Renderer新增了两种简化的替代品。
+如果你不需要`ComposeRenderer`和`SealedItemRenderer`带来的强类型安全的话可以尝试使用它们。
+
+#### SplitRenderer
+
+去除强静态类型的 ComposeRenderer，构造上在于把一个数据分发给多个子Renderer，多个子Renderer按顺序进行渲染。
+
+```
+Data --|--> Renderer1<Data>
+       |--> Renderer2<Data>
+       ...
+```
+
+Sample:
+
+```kotlin
+SplitRenderer.build<String> {
+    +LayoutRenderer<String>(layout = R.layout.sample_layout)
+
+    !LayoutRenderer<Unit>(layout = R.layout.sample_layout)
+}
+```
+
+#### CaseRenderer
+
+去除了强静态类型的SealedItemRenderer，构造上为根据判定式选择第一个符合的Case进行渲染。
+
+Sample:
+
+```kotlin
+CaseRenderer.build<String> {
+    caseItem(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    caseItemSame(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    case(checker = { true },
+            mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    case(checker = { true },
+            demapper = doNotAffectOriData(),
+            renderer = LayoutRenderer(layout = 1))
+
+    // 所有条件均不满足的情况下执行elseCase
+    elseCase(mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    // elseCase只能设置一个，如果设置多次、以最后的设定为准
+    elseCase(renderer = LayoutRenderer(layout = 1))
+}
+```
+
+---
+
 ## 详细使用说明
 
 ### 基础Renderer
@@ -188,7 +267,9 @@ DslAdapter这个库的基本组合子是`BaseRenderer`, 复杂的结构都是通
 6. **SealedItemRenderer**: 根据数据源具体数据选择不同的Renderer渲染, 比如对于`Int?`类型，可以在为`null`的时候用EmptyRenderer渲染; 不为`null`的时候使用LayoutRenderer渲染
 7. **ComposeRenderer**: 组合多个不同Renderer
 8. **DataBindingRenderer** : Android Databinding支持的Renderer
-8. **TitleItemRenderer** : 一个Title Renderer加列表的Renderer. `现已废弃`, 请使用ComposeRenderer代替.
+9. **TitleItemRenderer** : 一个Title Renderer加列表的Renderer. `现已废弃`, 请使用ComposeRenderer代替.
+10. **SplitRenderer**: 去除了强静态类型的ComposeRenderer
+11. **CaseRenderer**: 去除了强静态类型的SealedItemRenderer
 
 
 ### Part1 基本Renderer的使用示例
@@ -259,6 +340,26 @@ val rendererSealed = SealedItemRenderer(hlistKOf(
 ))
 ```
 
+##### SplitRenderer
+
+去除强静态类型的 ComposeRenderer，构造上在于把一个数据分发给多个子Renderer，多个子Renderer按顺序进行渲染。
+
+```
+Data --|--> Renderer1<Data>
+       |--> Renderer2<Data>
+       ...
+```
+
+Sample:
+
+```kotlin
+SplitRenderer.build<String> {
+    +LayoutRenderer<String>(layout = R.layout.sample_layout)
+
+    !LayoutRenderer<Unit>(layout = R.layout.sample_layout)
+}
+```
+
 #### 1.5 ComposeRenderer
 
 组合多个不同Renderer, eg:
@@ -275,6 +376,45 @@ val composeRenderer = ComposeRenderer.startBuild
         .build()
 ```
 
+##### CaseRenderer
+
+去除了强静态类型的SealedItemRenderer，构造上为根据判定式选择第一个符合的Case进行渲染。
+
+Sample:
+
+```kotlin
+CaseRenderer.build<String> {
+    caseItem(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    caseItemSame(CaseItem(
+            checker = { true },
+            mapper = { it },
+            demapper = awaysReturnNewData(),
+            renderer = LayoutRenderer(layout = 1)
+    ))
+
+    case(checker = { true },
+            mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    case(checker = { true },
+            demapper = doNotAffectOriData(),
+            renderer = LayoutRenderer(layout = 1))
+
+    // 所有条件均不满足的情况下执行elseCase
+    elseCase(mapper = { Unit },
+            renderer = LayoutRenderer<Unit>(layout = 1))
+
+    // elseCase只能设置一个，如果设置多次、以最后的设定为准
+    elseCase(renderer = LayoutRenderer(layout = 1))
+}
+```
+
 ---
 
 ### Part2 Adapter的构建
@@ -289,10 +429,11 @@ DslAdapter的核心Adapter是`RendererAdapter`, 虽然Renderer本身可以单独
 2. singleRenderer
 3. multiple
 4. multipleBuild
-5. singleSupplier
-6. supplierBuilder
-7. singleRxAutoUpdate
-8. rxBuild
+5. splitBuild
+6. singleSupplier
+7. supplierBuilder
+8. singleRxAutoUpdate
+9. rxBuild
 
 #### 2.1 使用constructor构造
 
@@ -337,14 +478,24 @@ val adapterDemo4 = RendererAdapter.multipleBuild()
         .build()
 ```
 
-#### 2.5 使用`singleSupplier()`方法构建
+#### 2.5 使用`splitBuild`方法构建
+
+```kotlin
+val adapterDemo42 = RendererAdapter.splitBuild(emptyList<ItemModel>()) {
+    +rendererSealed
+
+    !unitRenderer
+}
+```
+
+#### 2.6 使用`singleSupplier()`方法构建
 
 ```kotlin
 val (adapter3, controller1) = RendererAdapter
         .singleSupplier({ provideData(index) }, renderer)
 ```
 
-#### 2.6 使用`supplierBuilder()`方法构建
+#### 2.7 使用`supplierBuilder()`方法构建
 
 ```kotlin
 val (adapter2, controller) = RendererAdapter.supplierBuilder()
@@ -353,7 +504,7 @@ val (adapter2, controller) = RendererAdapter.supplierBuilder()
         .build()
 ```
 
-#### 2.7 使用`singleRxAutoUpdate()`方法构建 `Beta`
+#### 2.8 使用`singleRxAutoUpdate()`方法构建 `Beta`
 
 ```kotlin
 RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
@@ -362,7 +513,7 @@ RendererAdapter.singleRxAutoUpdate(dataProvider, renderer)
 }.subscribe()
 ```
 
-#### 2.8 By 使用`rxBuild()`Builder构建 `Beta`
+#### 2.9 By 使用`rxBuild()`Builder构建 `Beta`
 
 ```kotlin
 RendererAdapter.rxBuild()
@@ -394,6 +545,14 @@ adapterDemo1.setData(HListK.singleId(listOf(ItemModel())).putF("ss2"))
 
 ```kotlin
 adapterDemo1.reduceData { oldData -> oldData.map1 { "ss3".toIdT() } }
+```
+
+#### 3.3 或者使用`setDataAuto()`方法更新
+
+这个方法会自动根据数据的变化自动计算部分更新进行更新，不是使用`notifyDataSetChanged()`
+
+```kotlin
+adapterDemo1.setDataAuto(listOf(ItemModel()))
 ```
 
 > 除了以上两种强制更新的方法, 还可以进行部分更新(通过`notifyItemRangeInserted`等方法进行更新):
