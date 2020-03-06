@@ -12,14 +12,14 @@ fun <T> keyMe(): KeyGetter<T> = { i, _ -> i }
 
 
 fun <T, VD: ViewData<T>> BaseRenderer<T, VD>.forList(
-        keyGetter: KeyGetter<T>? = null,
+        keyGetter: KeyGetter<T>? = keyMe(),
         demapper: (oldData: List<T>, newMapData: List<T>) -> List<T> = { oldData, newMapData -> newMapData })
         : ListRenderer<List<T>, T, VD> =
         ListRenderer(converter = { it }, demapper = demapper, subs = this, keyGetter = keyGetter)
 
 fun <T, VD: ViewData<T>> BaseRenderer<T, VD>.forList(
         itemIsSingle: Boolean = false,
-        keyGetter: KeyGetter<T>? = null,
+        keyGetter: KeyGetter<T>? = keyMe(),
         demapper: (oldData: List<T>, newMapData: List<T>) -> List<T> = { oldData, newMapData -> newMapData })
         : ListRenderer<List<T>, T, VD> =
         ListRenderer(converter = { it }, demapper = demapper, subs = this, keyGetter = keyGetter, itemIsSingle = itemIsSingle)
