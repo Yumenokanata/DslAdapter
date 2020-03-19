@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="name"
+            type="String" />
+    </data>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Space
+            android:id="@+id/left_anchor"
+            android:layout_width="8dp"
+            android:layout_height="match_parent"/>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_document"
+            android:layout_marginStart="24dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="17sp"
+            android:textColor="@color/color_bk"
+            android:text="@{name}"
+            tools:text="file"/>
+    </LinearLayout>
+</layout>

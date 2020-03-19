@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="30dp"
         android:onClick="@{() -> click.invoke(model)}"
-        app:selected="@{true}" >
+        app:selected="@{false}" >
 
         <TextView
             android:id="@+id/title_text_view"

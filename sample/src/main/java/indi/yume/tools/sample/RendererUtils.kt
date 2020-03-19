@@ -1,5 +1,10 @@
 package indi.yume.tools.sample
 
+import android.content.Context
+import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.Dimension
+import androidx.annotation.Px
 import arrow.Kind
 import arrow.core.None
 import arrow.core.Option
@@ -31,3 +36,19 @@ fun <T, NVD : ViewData<Unit>,
                         renderer = itemRenderer
                 )
         ))
+
+fun Context.dp2px(dipValue: Float): Int {
+    val scale = resources.displayMetrics.density
+    return (dipValue * scale + 0.5f).toInt()
+}
+
+
+fun View.setLeftMarginDp(@Dimension(unit = Dimension.DP) leftMargin: Int) {
+    setLeftMargin(context.dp2px(leftMargin.toFloat()))
+}
+
+fun View.setLeftMargin(@Px leftMargin: Int) {
+    val params = layoutParams as ViewGroup.MarginLayoutParams
+    params.leftMargin = leftMargin
+    layoutParams = params
+}

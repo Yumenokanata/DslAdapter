@@ -38,6 +38,12 @@ class RendererAdapter<T, VD : ViewData<T>>(
     }
 
     @MainThread
+    fun reduceDataAuto(f: (T) -> T) {
+        val newData = f(adapterViewData.originData)
+        setDataAuto(newData)
+    }
+
+    @MainThread
     fun reduceData(f: (T) -> T) {
         val newData = f(adapterViewData.originData)
         setData(newData)

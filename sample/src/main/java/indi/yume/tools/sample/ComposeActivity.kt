@@ -23,6 +23,7 @@ class ComposeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_compose)
+        setTitle("Multiple compose Demo")
 
         val recyclerView = findViewById<RecyclerView>(R.id.compose_recycler_view)
 

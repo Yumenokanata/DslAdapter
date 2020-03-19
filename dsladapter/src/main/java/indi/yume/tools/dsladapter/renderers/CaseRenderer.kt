@@ -138,8 +138,11 @@ class CaseBuilder<T> {
     }
 
     fun build(): CaseRenderer<T> = CaseRenderer(caseList.apply {
+        @Suppress("UNCHECKED_CAST")
         val item = elseCaseItem
-        if (item != null) this += item
+                ?: CaseItem({ true }, { it }, doNotAffectOriData<T ,T>(),
+                        EmptyRenderer<T>()) as CaseItem<T, Any?, ViewData<Any?>>
+        this += item
     }.toList())
 }
 

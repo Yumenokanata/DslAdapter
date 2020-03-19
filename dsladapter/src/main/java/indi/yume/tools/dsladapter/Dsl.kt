@@ -40,3 +40,6 @@ fun <T, VD : ViewData<T>> BaseRenderer<T, VD>.ignoreType(
                 { oldData, newData, payload -> defaultUpdater.autoUpdate(newData) }): IgnoreRenderer<T> =
         IgnoreRenderer.ignoreType(this, reduceFun)
 
+@Suppress("UNCHECKED_CAST")
+fun <T, VD: ViewData<T>, BR : BaseRenderer<T, VD>> BR.toBaseType(): BaseRenderer<T, ViewData<T>> =
+        this as BaseRenderer<T, ViewData<T>>

@@ -12,6 +12,10 @@
 
 ---
 
+<img src="https://raw.githubusercontent.com/TellH/RecyclerTreeView/master/screen/tree.gif" width="260" height="480">    <img src="https://raw.githubusercontent.com/TellH/RecyclerTreeView/master/screen/compose.gif" width="260" height="480">    <img src="https://raw.githubusercontent.com/TellH/RecyclerTreeView/master/screen/drag.gif" width="260" height="480">
+
+---
+
 ## 相关文章
 
 1. [DslAdapter开发简介](https://segmentfault.com/a/1190000018754660)
@@ -184,6 +188,65 @@ val pos = adapter.renderer.pos {
 ```
 
 ---
+
+### Ver.2.1 New
+
+#### TreeExtension
+
+使用DSL式`TreeNodeBuilder`工具来构建树状数据:
+
+```kotlin
+val sampleFiles = TreeNodeBuilder.buildTree<FolderNode.Folder, FolderNode.File> {
+    addLeaf("file1", FolderNode.File)
+
+    addNode("program", FolderNode.Folder) {
+        addLeaf("clear.sh", FolderNode.File)
+        addLeaf("thumbnail.db", FolderNode.File)
+        addNode("AndroidStudio", FolderNode.Folder) {
+            addLeaf("studio32.sh", FolderNode.File)
+            addLeaf("studio64.sh", FolderNode.File)
+        }
+        addLeaf("temp.db", FolderNode.File)
+    }
+
+    // Infinitely recursive lazy folder
+    // 无限递归的惰性文件夹
+    lateinit var subCreator: TreeBuilderFun<FolderNode.Folder, FolderNode.File>
+    var times = 0
+    subCreator = {
+        addNodeLazy("Infinitely Folder${times++}", FolderNode.Folder, isOpen = false) {
+            addLeaf("img1.jpg", FolderNode.File)
+            addLeaf("img2.jpg", FolderNode.File)
+            subCreator()
+        }
+    }
+    subCreator()
+
+    addLeaf("file2", FolderNode.File)
+    addLeaf("file3", FolderNode.File)
+
+    addNode("projects", FolderNode.Folder) {
+        addNode("DslAdapter", FolderNode.Folder) {
+            addLeaf("Readme.md", FolderNode.File)
+        }
+    }
+
+    addNode("picture", FolderNode.Folder) {
+        addLeaf("img1.jpg", FolderNode.File)
+        addLeaf("img2.jpg", FolderNode.File)
+        addLeaf("img3.jpg", FolderNode.File)
+    }
+}
+```
+
+将数据直接渲染到Adapter
+
+```koltin
+RendererAdapter.singleRenderer(sampleFiles,
+                treeRenderer(folderItemRenderer, fileRenderer))
+```
+
+或者将`treeRenderer()`和其他Renderer进行组合
 
 ### Ver.2.0 新增
 
