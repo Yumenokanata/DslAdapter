@@ -86,7 +86,7 @@ fun <T> List<FakeUpdateActions<T>>.getMockList(oldData: List<T>): List<FakeItem<
             is FakeOnMoved -> {
                 act.item = (data[act.fromPosition] as FakeReal<T>).t
                 if (act.fromPosition < act.toPosition) {
-                    data.subList(0, act.fromPosition) + data.subList(act.fromPosition + 1, act.toPosition) + data[act.fromPosition] + data.subList(act.toPosition, data.size)
+                    data.subList(0, act.fromPosition) + data.subList(act.fromPosition + 1, act.toPosition + 1) + data[act.fromPosition] + data.subList(act.toPosition + 1, data.size)
                 } else {
                     data.subList(0, act.toPosition) + data[act.fromPosition] + data.subList(act.toPosition, act.fromPosition) + data.subList(act.fromPosition + 1, data.size)
                 }

@@ -67,7 +67,7 @@ fun <G, L> nodeBaseRenderer(
     }
 
     rootRenderer =
-            itemRenderer.forList()
+            itemRenderer.forList({ item, i -> "${item.deep}|${item.id}|${item.name}" })
                     .mapT(type<TreeNode.Root<G, L>>(),
                             mapper = { parent -> parent.nodes },
                             demapper = { oldData, newMapData ->
@@ -77,7 +77,7 @@ fun <G, L> nodeBaseRenderer(
         case(checker = { it.isOpen },
                 renderer = SplitRenderer.build {
                     add(nodeItemRenderer)
-                    add(itemRenderer.forList()
+                    add(itemRenderer.forList({ item, i -> "${item.deep}|${item.id}|${item.name}" })
                             .mapT(type<TreeNode.Node<G, L>>(),
                                     mapper = { parent -> parent.nodes.value() },
                                     demapper = { oldData, newMapData ->
