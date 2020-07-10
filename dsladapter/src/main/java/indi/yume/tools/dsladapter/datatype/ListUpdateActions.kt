@@ -143,12 +143,16 @@ fun <T> List<FakeUpdateActions<T>>.toActionsWithRealIndex(
                     val secondList = data.subList(act.fromPosition + 1, act.toPosition + 1)
 
                     val realCount = countGet(act.item!!)
-                    val realFromPosition = firstList.sum()
-                    val realToPosition = realFromPosition + realCount + secondList.sum()
 
                     if(realCount == 1) {
+                        val realFromPosition = firstList.sum()
+                        val realToPosition = realFromPosition + realCount + secondList.sum() - 1
+
                         realActions += OnMoved(realFromPosition, realToPosition)
                     } else {
+                        val realFromPosition = firstList.sum()
+                        val realToPosition = realFromPosition + realCount + secondList.sum()
+
                         realActions += OnInserted(realToPosition, realCount)
                         realActions += OnRemoved(realFromPosition, realCount)
                     }
@@ -159,12 +163,16 @@ fun <T> List<FakeUpdateActions<T>>.toActionsWithRealIndex(
                     val secondList = data.subList(act.toPosition, act.fromPosition)
 
                     val realCount = countGet(act.item!!)
-                    val realToPosition = firstList.sum()
-                    val realFromPosition = realToPosition + secondList.sum()
 
                     if(realCount == 1) {
+                        val realToPosition = firstList.sum()
+                        val realFromPosition = realToPosition + secondList.sum() - 1
+
                         realActions += OnMoved(realFromPosition, realToPosition)
                     } else {
+                        val realToPosition = firstList.sum()
+                        val realFromPosition = realToPosition + secondList.sum()
+
                         realActions += OnRemoved(realFromPosition, realCount)
                         realActions += OnInserted(realToPosition, realCount)
                     }
