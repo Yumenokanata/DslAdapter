@@ -18,10 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TreeActivity"></activity>
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".TreeActivity" />
+        <activity android:name=".MainActivity" />
         <activity android:name=".DragActivity" />
         <activity android:name=".ComposeActivity" />
+        <activity android:name=".ListPagingActivity"/>
     </application>
 
 </manifest>

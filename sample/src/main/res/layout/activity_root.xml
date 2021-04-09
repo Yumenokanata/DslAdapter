@@ -28,4 +28,11 @@
         android:textAllCaps="false"
         android:text="ItemTouchHelper drag Demo"/>
 
+    <Button
+        android:id="@+id/list_paging_demo_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAllCaps="false"
+        android:text="Paging Support(Normal List) Demo"/>
+
 </LinearLayout>

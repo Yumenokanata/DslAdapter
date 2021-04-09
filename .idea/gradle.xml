@@ -11,12 +11,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/dsladapter" />
+            <option value="$PROJECT_DIR$/dsladapter-paging" />
             <option value="$PROJECT_DIR$/dsladapter-position" />
             <option value="$PROJECT_DIR$/dsladapter-rx2" />
             <option value="$PROJECT_DIR$/sample" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
+        <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>
   </component>

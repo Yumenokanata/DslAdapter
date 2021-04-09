@@ -36,6 +36,6 @@ fun provideData(pageIndex: Int): List<ItemModel> {
 }
 
 fun dataSupplier(pageIndex: Int): Single<List<ItemModel>> {
-    return Single.just(genList(0, 10 - pageIndex % 10))
+    return Single.just(genList(pageIndex * 10 - 10, 10))
             .subscribeOn(Schedulers.io())
 }

@@ -20,5 +20,8 @@ class RootActivity : AppCompatActivity() {
         findViewById<View>(R.id.drop_demo_btn).setOnClickListener {
             startActivity(Intent(this, DragActivity::class.java))
         }
+        findViewById<View>(R.id.list_paging_demo_btn).setOnClickListener {
+            startActivity(Intent(this, ListPagingActivity::class.java))
+        }
     }
 }
