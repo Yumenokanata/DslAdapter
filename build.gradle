@@ -2,6 +2,9 @@
 
 buildscript {
     ext.kotlin_version = '1.4.32'
+    ext.multidex_version = "2.0.1"
+    ext.atomicfu_version = '0.14.3'
+    ext.lifecycle_version = '2.3.1'
     ext.library_support_version = '28.0.0'
     ext.library_androidx_version = '1.0.0'
     ext.library_arrow_version = '0.10.4'
@@ -14,6 +17,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfu_version"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
