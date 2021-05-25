@@ -1,21 +1,23 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.4.32'
+    ext.kotlin_version = '1.5.0'
     ext.multidex_version = "2.0.1"
-    ext.atomicfu_version = '0.14.3'
+    ext.atomicfu_version = '0.16.1'
     ext.lifecycle_version = '2.3.1'
+    ext.library_recyclerview_version = '1.2.0'
     ext.library_support_version = '28.0.0'
     ext.library_androidx_version = '1.0.0'
     ext.library_arrow_version = '0.10.4'
-    ext.library_paging_version = "3.0.0-beta02"
+    ext.library_paging_version = "3.0.0"
 
     repositories {
         google()
+        mavenCentral()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfu_version"
 
@@ -27,6 +29,7 @@ buildscript {
 allprojects {
     repositories {
         google()
+        mavenCentral()
         jcenter()
         maven { url 'https://jitpack.io' }
     }

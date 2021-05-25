@@ -53,7 +53,7 @@ class TreeActivity : AppCompatActivity() {
                             bind.isOpen = item.isOpen
                             bind.leftAnchor.setLeftMarginDp(16 * item.deep)
                             bind.containerLayout.setOnClickListener {
-                                adapter.reduceDataAuto { root ->
+                                adapter.reduceData { root ->
                                     root.updateRoot(item.update(isOpen = !item.isOpen))
                                 }
                             }
@@ -78,45 +78,45 @@ sealed class FolderNode {
 }
 
 val sampleFiles = TreeNodeBuilder.buildTree<FolderNode.Folder, FolderNode.File> {
-//    addLeaf("file1", FolderNode.File)
+    addLeaf("file1", FolderNode.File)
 
     addNode("program", FolderNode.Folder) {
-//        addLeaf("clear.sh", FolderNode.File)
-//        addLeaf("thumbnail.db", FolderNode.File)
+        addLeaf("clear.sh", FolderNode.File)
+        addLeaf("thumbnail.db", FolderNode.File)
         addNode("AndroidStudio", FolderNode.Folder) {
             addLeaf("studio32.sh", FolderNode.File)
             addLeaf("studio64.sh", FolderNode.File)
         }
-//        addLeaf("temp.db", FolderNode.File)
+        addLeaf("temp.db", FolderNode.File)
     }
 
-//    // Infinitely recursive lazy folder
-//    // 无限递归的惰性文件夹
-//    lateinit var subCreator: TreeBuilderFun<FolderNode.Folder, FolderNode.File>
-//    var times = 0
-//    subCreator = {
-//        addNodeLazy("Infinitely Folder${times++}", FolderNode.Folder, isOpen = false) {
-//            addLeaf("img1.jpg", FolderNode.File)
-//            addLeaf("img2.jpg", FolderNode.File)
-//            subCreator()
-//        }
-//    }
-//    subCreator()
-//
-//    addLeaf("file2", FolderNode.File)
-//    addLeaf("file3", FolderNode.File)
-//
-//    addNode("projects", FolderNode.Folder) {
-//        addNode("DslAdapter", FolderNode.Folder) {
-//            addLeaf("Readme.md", FolderNode.File)
-//        }
-//    }
-//
-//    addNode("picture", FolderNode.Folder) {
-//        addLeaf("img1.jpg", FolderNode.File)
-//        addLeaf("img2.jpg", FolderNode.File)
-//        addLeaf("img3.jpg", FolderNode.File)
-//    }
+    // Infinitely recursive lazy folder
+    // 无限递归的惰性文件夹
+    lateinit var subCreator: TreeBuilderFun<FolderNode.Folder, FolderNode.File>
+    var times = 0
+    subCreator = {
+        addNodeLazy("Infinitely Folder${times++}", FolderNode.Folder, isOpen = false) {
+            addLeaf("img1.jpg", FolderNode.File)
+            addLeaf("img2.jpg", FolderNode.File)
+            subCreator()
+        }
+    }
+    subCreator()
+
+    addLeaf("file2", FolderNode.File)
+    addLeaf("file3", FolderNode.File)
+
+    addNode("projects", FolderNode.Folder) {
+        addNode("DslAdapter", FolderNode.Folder) {
+            addLeaf("Readme.md", FolderNode.File)
+        }
+    }
+
+    addNode("picture", FolderNode.Folder) {
+        addLeaf("img1.jpg", FolderNode.File)
+        addLeaf("img2.jpg", FolderNode.File)
+        addLeaf("img3.jpg", FolderNode.File)
+    }
 }
 
 
