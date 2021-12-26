@@ -84,7 +84,7 @@ class ListUpdater<T, I, IV : ViewData<I>>(
 
     fun insert(pos: Int, insertedItems: List<I>): ActionU<ListViewData<T, I, IV>> =
             result@{ oldVD ->
-                if (pos !in 0 until oldVD.data.size)
+                if (pos !in 0..oldVD.data.size)
                     return@result EmptyAction to oldVD
 
                 val newData = oldVD.data.toMutableList().apply {
