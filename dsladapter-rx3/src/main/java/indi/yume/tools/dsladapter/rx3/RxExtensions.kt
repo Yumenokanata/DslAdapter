@@ -34,12 +34,12 @@ class RxBuilder<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
         val dataProvider: Observable<DL>,
         val composeBuilder: ComposeBuilder<DL, VDL>
 ) {
-    fun <T, VD : ViewData<T>>
+    fun <T : Any, VD : ViewData<T>>
             add(supplier: Supplier<T>, renderer: BaseRenderer<T, VD>)
             : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItemData, Pair<T, VD>, VDL>> =
             add(Observable.fromCallable(supplier), renderer)
 
-    fun <T, VD : ViewData<T>>
+    fun <T : Any, VD : ViewData<T>>
             add(obs: Observable<T>, renderer: BaseRenderer<T, VD>)
             : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItemData, Pair<T, VD>, VDL>> =
             RxBuilder(
@@ -49,7 +49,7 @@ class RxBuilder<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
                             }),
                     composeBuilder = composeBuilder.add(renderer))
 
-    fun <T, VD : ViewData<T>>
+    fun <T : Any, VD : ViewData<T>>
             add(initData: T, obs: Observable<T>, renderer: BaseRenderer<T, VD>)
             : RxBuilder<HConsK<ForIdT, T, DL>, HConsK<ForComposeItemData, Pair<T, VD>, VDL>> =
             add(Observable.concat(Observable.just(initData), obs), renderer)
@@ -98,7 +98,7 @@ class RxBuilder<DL : HListK<ForIdT, DL>, VDL : HListK<ForComposeItemData, VDL>>(
 }
 
 @CheckResult
-fun <T, VD : ViewData<T>>
+fun <T : Any, VD : ViewData<T>>
         RendererAdapter.Companion.singleRxAutoUpdate(
         obs: Observable<T>, renderer: BaseRenderer<T, VD>,
         f: (RendererAdapter<T, VD>) -> Unit): Completable =

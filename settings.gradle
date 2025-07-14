@@ -1,1 +1,0 @@
-include ':dsladapter', ':sample', ':dsladapter-rx2', ':dsladapter-rx3', ':dsladapter-livedata', ':dsladapter-position', ':dsladapter-paging'

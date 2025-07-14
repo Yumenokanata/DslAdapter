@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import indi.yume.tools.dsladapter.renderers.databinding.databindingOf
 import indi.yume.tools.dsladapter.RendererAdapter
 import indi.yume.tools.dsladapter.forList
 import indi.yume.tools.dsladapter.layout

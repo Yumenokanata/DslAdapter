@@ -7,14 +7,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import arrow.core.*
+import indi.yume.tools.dsladapter.ActionU
+import indi.yume.tools.dsladapter.RendererAdapter
 import indi.yume.tools.dsladapter.renderers.databinding.CLEAR_ALL
 import indi.yume.tools.dsladapter.renderers.databinding.dataBindingItem
 import indi.yume.tools.dsladapter.renderers.databinding.databindingOf
-import indi.yume.tools.dsladapter.*
 import indi.yume.tools.dsladapter.datatype.*
+import indi.yume.tools.dsladapter.forList
+import indi.yume.tools.dsladapter.layout
+import indi.yume.tools.dsladapter.putF
 import indi.yume.tools.dsladapter.renderers.*
 import indi.yume.tools.dsladapter.rx2.rxBuild
 import indi.yume.tools.dsladapter.rx2.singleRxAutoUpdate
+import indi.yume.tools.dsladapter.singleId
+import indi.yume.tools.dsladapter.singleSupplier
+import indi.yume.tools.dsladapter.supplierBuilder
+import indi.yume.tools.dsladapter.toIdT
+import indi.yume.tools.dsladapter.type
 import indi.yume.tools.dsladapter.typeclass.BaseRenderer
 import indi.yume.tools.dsladapter.typeclass.ViewData
 import indi.yume.tools.dsladapter.typeclass.doNotAffectOriData
@@ -84,20 +93,21 @@ class MainActivity : AppCompatActivity() {
          *   list.isNotEmpty -> list of itemRenderer
          * }
          */
-        val rendererSealed = SealedItemRenderer(hlistKOf(
-                item(type = type<List<ItemModel>>(),
-                        checker = { it.isEmpty() },
-                        mapper = { "empty" },
-                        demapper = doNotAffectOriData(),
-                        renderer = stringRenderer
-                ),
-                item(type = type<List<ItemModel>>(),
-                        checker = { it.isNotEmpty() },
-                        mapper = { it },
-                        demapper = { oldData, newSubData -> newSubData },
-                        renderer = itemRenderer.forList()
-                )
-        ))
+        val hlist = hlistKOf(
+            item<List<ItemModel>, _, _>(type = type(),
+                checker = { it.isEmpty() },
+                mapper = { "empty" },
+                demapper = doNotAffectOriData(),
+                renderer = stringRenderer
+            ),
+            item(type = type<List<ItemModel>>(),
+                checker = { it.isNotEmpty() },
+                mapper = { it },
+                demapper = { oldData, newSubData -> newSubData },
+                renderer = itemRenderer.forList()
+            )
+        )
+        val rendererSealed = SealedItemRenderer(hlist)
 
         // 1.5 ComposeRenderer
         /**

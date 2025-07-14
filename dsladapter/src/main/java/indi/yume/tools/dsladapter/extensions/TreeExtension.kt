@@ -349,15 +349,15 @@ fun <G, L> TreeNode<G, L>.prettyString(): String =
 
 internal fun <G, L> TreeNode<G, L>.prettyStringInner(builder: StringBuilder): Unit = when(this) {
     is TreeNode.Root -> {
-        builder.appendln("root")
+        builder.appendLine("root")
         nodes.forEach { it.prettyStringInner(builder) }
     }
     is TreeNode.Node -> {
-        builder.appendln("${' '.repeat(deep * 2)}|+ ${name}")
+        builder.appendLine("${' '.repeat(deep * 2)}|+ ${name}")
         nodes.value().forEach { it.prettyStringInner(builder) }
     }
     is TreeNode.Leaf -> {
-        builder.appendln("${' '.repeat(deep * 2)}|- ${name}")
+        builder.appendLine("${' '.repeat(deep * 2)}|- ${name}")
         Unit
     }
 }
