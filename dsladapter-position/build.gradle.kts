@@ -38,15 +38,15 @@ kotlin {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.recyclerview)
     implementation(project(":dsladapter"))
 
     implementation(libs.arrow.core.data)
 
-    testImplementation("junit:junit:4.12")
-    androidTestImplementation("com.android.support.test:runner:1.0.2")
-    androidTestImplementation("com.android.support.test.espresso:espresso-core:3.0.2")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.support.test.runner)
+    androidTestImplementation(libs.support.test.espresso.core)
 }
 
 apply(from = rootProject.file("gradle/gradle-mvn-push.gradle"))

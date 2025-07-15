@@ -42,16 +42,17 @@ kotlin {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.recyclerview)
 
     api(libs.arrow.core.data)
 
-    testImplementation("junit:junit:4.12")
+    testImplementation(libs.junit)
     testImplementation(libs.arrow.test)
-    androidTestImplementation("androidx.test:runner:1.1.1")
-    androidTestImplementation("androidx.test:rules:1.1.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.1.1")
+
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
 
 apply(from = rootProject.file("gradle/gradle-mvn-push.gradle"))

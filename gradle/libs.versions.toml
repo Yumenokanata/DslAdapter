@@ -11,6 +11,20 @@ lifecycleViewModelKtx = "2.9.1"
 paging = "3.3.6"
 recyclerview = "1.4.0"
 arrowCore = "0.10.4"
+appcompat = "1.7.1"
+legacySupportV4 = "1.0.0"
+constraintlayout = "2.2.1"
+material = "1.12.0"
+atomicfu = "0.29.0"
+coroutinesRx2 = "1.10.2"
+rxandroid2 = "2.1.1"
+rxkotlin2 = "2.4.0"
+rxandroid3 = "3.0.0"
+rxjava3 = "3.0.10"
+testRunner = "1.6.2"
+testRules = "1.6.2"
+supportTestRunner = "1.0.2"
+supportTestEspressoCore = "3.0.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +44,20 @@ androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", 
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 arrow-core-data = { group = "io.arrow-kt", name = "arrow-core-data", version.ref = "arrowCore" }
 arrow-test = { group = "io.arrow-kt", name = "arrow-test", version.ref = "arrowCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+atomicfu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "atomicfu" }
+coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2", version.ref = "coroutinesRx2" }
+rxandroid2 = { group = "io.reactivex.rxjava2", name = "rxandroid", version.ref = "rxandroid2" }
+rxkotlin2 = { group = "io.reactivex.rxjava2", name = "rxkotlin", version.ref = "rxkotlin2" }
+rxandroid3 = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = "rxandroid3" }
+rxjava3 = { group = "io.reactivex.rxjava3", name = "rxjava", version.ref = "rxjava3" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "testRunner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "testRules" }
+support-test-runner = { group = "com.android.support.test", name = "runner", version.ref = "supportTestRunner" }
+support-test-espresso-core = { group = "com.android.support.test.espresso", name = "espresso-core", version.ref = "supportTestEspressoCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

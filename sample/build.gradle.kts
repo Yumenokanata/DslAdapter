@@ -47,29 +47,26 @@ kotlin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.10.2")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation(libs.coroutines.rx2)
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.recyclerview)
-
-    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
-
+    implementation(libs.androidx.constraintlayout)
     implementation(project(":dsladapter"))
     implementation(project(":dsladapter-livedata"))
     implementation(project(":dsladapter-rx2"))
     implementation(project(":dsladapter-rx3"))
     implementation(project(":dsladapter-position"))
     implementation(project(":dsladapter-paging"))
-
     implementation(libs.androidx.paging.runtime)
     implementation(libs.arrow.core.data)
+    implementation(libs.rxandroid2)
+    implementation(libs.rxkotlin2)
+    
+    testImplementation(libs.junit)
 
-    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
-    implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
-
-    testImplementation("junit:junit:4.12")
-    androidTestImplementation("androidx.test:runner:1.1.1")
-    androidTestImplementation("androidx.test:rules:1.1.1")
-    androidTestImplementation("androidx.test.ext:junit:1.1.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.1.1")
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
