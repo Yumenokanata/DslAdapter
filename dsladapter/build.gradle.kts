@@ -33,6 +33,12 @@ android {
     buildFeatures {
         dataBinding = true
     }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 kotlin {
